@@ -1,4 +1,4 @@
-// File: C:\Users\ACER\Desktop\Admin Project 2\Admin\src\app\[lng]\(MainBody)\layout.tsx
+// File: C:\Users\ACER\Desktop\Admin version\AdminUI\src\app\[lng]\(MainBody)\layout.tsx
 import * as entry from '../../../../../src/app/[lng]/(MainBody)/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

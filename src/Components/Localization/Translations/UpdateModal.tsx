@@ -1,5 +1,9 @@
+// UpdateModal.tsx
 import React, { useState, useEffect } from "react";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Alert } from "reactstrap";
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { FaStore, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaTimes, FaSave } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "./ModalStyle.scss"
 
 interface KioskUpdateModalProps {
   isOpen: boolean;
@@ -11,9 +15,7 @@ interface KioskUpdateModalProps {
     phoneNumber: string;
     email: string;
     openingHours: string;
-    createdAt: string; // Keep existing createdAt
-    updatedAt: string; // Update to current time
-    status: boolean; // Ensure status is boolean
+    status: boolean;
   }) => void;
   kioskData: {
     id: number;
@@ -22,8 +24,7 @@ interface KioskUpdateModalProps {
     phoneNumber: string;
     email: string;
     openingHours: string;
-    createdAt: string; // Existing createdAt
-    status: boolean; // Ensure status is boolean
+    status: boolean;
   } | null;
 }
 
@@ -31,153 +32,282 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
   isOpen,
   toggle,
   onSave,
-  kioskData,
+  kioskData
 }) => {
-  const [formData, setFormData] = useState<{
-    name: string;
-    address: string;
-    phoneNumber: string;
-    email: string;
-    openingHours: string;
-    status: boolean; // Keep status as boolean
-  }>({
+  const [formData, setFormData] = useState({
+    id: 0,
     name: "",
     address: "",
     phoneNumber: "",
     email: "",
     openingHours: "",
-    status: false, // Default status
+    status: true
   });
 
-  const [alertVisible, setAlertVisible] = useState(false);
+  const [errors, setErrors] = useState({
+    name: "",
+    address: "",
+    phoneNumber: "",
+    email: "",
+    openingHours: ""
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (kioskData) {
-      setFormData({
-        name: kioskData.name,
-        address: kioskData.address,
-        phoneNumber: kioskData.phoneNumber,
-        email: kioskData.email,
-        openingHours: kioskData.openingHours,
-        status: kioskData.status,
-
-      });
+      setFormData(kioskData);
     }
   }, [kioskData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-
-    // Convert value to boolean for status
-    if (name === "status") {
-      setFormData({ ...formData, [name]: value === "true" });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleSave = () => {
-    // Simple validation example
-    if (!formData.name || !formData.address || !formData.phoneNumber || !formData.email || !formData.openingHours) {
-      alert("Please fill in all required fields.");
+  const validatePhone = (phone: string) => {
+    return /^[0-9]{10,11}$/.test(phone);
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    const newValue = name === "status" ? value === "true" : value;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: newValue
+    }));
+    
+    setHasChanges(true);
+    setErrors(prev => ({
+      ...prev,
+      [name]: ""
+    }));
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = {
+      name: "",
+      address: "",
+      phoneNumber: "",
+      email: "",
+      openingHours: ""
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Kiosk name is required";
+      isValid = false;
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = "Address is required";
+      isValid = false;
+    }
+
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = "Phone number is required";
+      isValid = false;
+    } else if (!validatePhone(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Please enter a valid phone number";
+      isValid = false;
+    }
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+      isValid = false;
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+      isValid = false;
+    }
+
+    if (!formData.openingHours.trim()) {
+      newErrors.openingHours = "Opening hours is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast.error("Please check all required fields");
       return;
     }
 
-    const updatedData = {
-      ...formData,
-      id: kioskData?.id || 0,
-      createdAt: kioskData?.createdAt || new Date().toISOString(), // Keep existing createdAt
-      updatedAt: new Date().toISOString(), // Set updatedAt to current time
-    };
-
-    console.log("Updated Kiosk Data:", updatedData); // Log the updated data to the console
-
-    onSave(updatedData);
-    setAlertVisible(true); // Show alert after saving
-    toggle(); // Close the modal
+    try {
+      setIsSubmitting(true);
+      await onSave(formData);
+      toast.success("Kiosk updated successfully!");
+      setHasChanges(false);
+      toggle();
+    } catch (error) {
+      toast.error("Failed to update kiosk. Please try again.");
+      console.error("Error updating kiosk:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Update Kiosk</ModalHeader>
+    <Modal 
+      isOpen={isOpen} 
+      toggle={toggle} 
+      className="kiosk-modal"
+      size="lg"
+    >
+      <ModalHeader toggle={toggle} className="border-bottom-0">
+        <div className="modal-title-with-icon">
+          <FaStore className="modal-title-icon" />
+          <h5>Update Kiosk</h5>
+        </div>
+      </ModalHeader>
+
       <ModalBody>
-        {alertVisible && (
-          <Alert color="success" toggle={() => setAlertVisible(false)}>
-            Kiosk updated successfully!
-          </Alert>
-        )}
-        <form>
+        <div className="modal-form">
           <div className="form-group">
-            <label>Name</label>
+            <label>
+              <FaStore className="field-icon" />
+              Kiosk Name <span className="required">*</span>
+            </label>
             <input
               type="text"
               name="name"
-              className="form-control"
+              className={`form-control ${errors.name ? 'is-invalid' : ''}`}
               value={formData.name}
               onChange={handleInputChange}
             />
+            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
           </div>
+
           <div className="form-group">
-            <label>Address</label>
-            <input
-              type="text"
+            <label>
+              <FaMapMarkerAlt className="field-icon" />
+              Address <span className="required">*</span>
+            </label>
+            <textarea
               name="address"
-              className="form-control"
+              className={`form-control ${errors.address ? 'is-invalid' : ''}`}
               value={formData.address}
               onChange={handleInputChange}
+              rows={3}
             />
+            {errors.address && <div className="invalid-feedback">{errors.address}</div>}
           </div>
-          <div className="form-group">
-            <label>Phone Number</label>
-            <input
-              type="text"
-              name="phoneNumber"
-              className="form-control"
-              value={formData.phoneNumber}
-              onChange={handleInputChange}
-            />
+
+          <div className="form-row">
+            <div className="form-group col-md-6">
+              <label>
+                <FaPhone className="field-icon" />
+                Phone Number <span className="required">*</span>
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+              />
+              {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
+            </div>
+
+            <div className="form-group col-md-6">
+              <label>
+                <FaEnvelope className="field-icon" />
+                Email <span className="required">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+   
+              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+            </div>
           </div>
+
           <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              className="form-control"
-              value={formData.email}
-              onChange={handleInputChange}
-            />
-          </div>
-          <div className="form-group">
-            <label>Opening Hours</label>
+            <label>
+              <FaClock className="field-icon" />
+              Opening Hours <span className="required">*</span>
+            </label>
             <input
               type="text"
               name="openingHours"
-              className="form-control"
+              className={`form-control ${errors.openingHours ? 'is-invalid' : ''}`}
               value={formData.openingHours}
               onChange={handleInputChange}
             />
+            {errors.openingHours && <div className="invalid-feedback">{errors.openingHours}</div>}
           </div>
+
           <div className="form-group">
-            <label>Status</label>
-            <select
-              name="status"
-              className="form-control"
-              value={formData.status.toString()} // Convert boolean to string for select
-              onChange={handleInputChange}
-            >
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
+            <label className="d-block">Status</label>
+            <div className="status-toggle">
+              <label className={`status-option ${formData.status ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name="status"
+                  value="true"
+                  checked={formData.status}
+                  onChange={handleInputChange}
+                />
+                <span className="status-label">
+                  <span className="status-dot"></span>
+                  Active
+                </span>
+              </label>
+              <label className={`status-option ${!formData.status ? 'active' : ''}`}>
+                <input
+                  type="radio"
+                  name="status"
+                  value="false"
+                  checked={!formData.status}
+                  onChange={handleInputChange}
+                />
+                <span className="status-label">
+                  <span className="status-dot"></span>
+                  Inactive
+                </span>
+              </label>
+            </div>
           </div>
-        </form>
+        </div>
       </ModalBody>
-      <ModalFooter>
-        <Button color="primary" onClick={handleSave}>
-          Save Changes
-        </Button>
-        <Button color="secondary" onClick={toggle}>
-          Cancel
-        </Button>
+
+      <ModalFooter className="border-top-0">
+        <div className="modal-actions">
+          <button
+            className="btn btn-secondary"
+            onClick={toggle}
+            disabled={isSubmitting}
+          >
+            <FaTimes className="button-icon" />
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            disabled={isSubmitting || !hasChanges}
+          >
+            {isSubmitting ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <FaSave className="button-icon" />
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
       </ModalFooter>
     </Modal>
   );

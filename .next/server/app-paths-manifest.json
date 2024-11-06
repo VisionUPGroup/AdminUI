@@ -1,8 +1,5 @@
 {
-  "/[lng]/(MainBody)/localization/translations/page": "app/[lng]/(MainBody)/localization/translations/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
   "/[lng]/(MainBody)/dashboard/page": "app/[lng]/(MainBody)/dashboard/page.js",
-  "/[lng]/(MainBody)/localization/kiosk-map/page": "app/[lng]/(MainBody)/localization/kiosk-map/page.js",
-  "/[lng]/(MainBody)/sales/orders/page": "app/[lng]/(MainBody)/sales/orders/page.js",
-  "/[lng]/(MainBody)/vendors/list-user/page": "app/[lng]/(MainBody)/vendors/list-user/page.js",
-  "/[lng]/(MainBody)/vendors/list-staff/page": "app/[lng]/(MainBody)/vendors/list-staff/page.js"
+  "/[lng]/(MainBody)/localization/translations/page": "app/[lng]/(MainBody)/localization/translations/page.js"
 }

@@ -1,181 +1,311 @@
-import CommonBreadcrumb from "@/CommonComponents/CommonBreadcrumb";
-import Datatable from "@/CommonComponents/DataTable";
-import { Fragment, useEffect, useState } from "react";
-import { Card, CardBody, CardHeader, Col, Container, Row, Button } from "reactstrap";
+import React, { Fragment, useEffect, useState } from "react";
+import {
+  FaStore,
+  FaSearch,
+  FaPlus,
+  FaMapMarkerAlt,
+  FaChartLine,
+  FaUsers,
+  FaPen,
+  FaTrash,
+  FaFilter,
+  FaArrowUp,
+} from "react-icons/fa";
 import { useKioskService } from "../../../../Api/kioskService";
-import KioskModal from "./KioskModal"; // Modal for creating a kiosk
-import KioskUpdateModal from "./UpdateModal"; // Modal for updating a kiosk
-import Swal from 'sweetalert2';
-
+import KioskModal from "./KioskModal";
+import KioskUpdateModal from "./UpdateModal";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
+import "./KioskStyle.scss";
 interface KioskDataType {
   id: number;
   name: string;
   address: string;
   phoneNumber: string;
   email: string;
-  accountID: number;
   openingHours: string;
-  createdAt: string;
-  updatedAt: string;
   status: boolean;
 }
-
 const Kiosk: React.FC = () => {
-  const { fetchAllKiosk, createKiosk, updateKiosk, deleteKiosk } = useKioskService();
+  const { fetchAllKiosk, deleteKiosk } = useKioskService();
   const [kioskData, setKioskData] = useState<KioskDataType[]>([]);
+  const [filteredData, setFilteredData] = useState<KioskDataType[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedKiosk, setSelectedKiosk] = useState<KioskDataType | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Stats calculations
+  const totalKiosks = kioskData.length;
+  const activeKiosks = kioskData.filter(k => k.status).length;
+  const uniqueLocations = new Set(kioskData.map(k => k.address)).size;
 
   useEffect(() => {
-    const getKioskData = async () => {
-      try {
-        const data = await fetchAllKiosk();
-        const formattedData = data.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          address: item.address,
-          phoneNumber: item.phoneNumber,
-          email: item.email,
-          accountID: item.accountID,
-          openingHours: item.openingHours,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
-          status: item.status,
-        }));
-        setKioskData(formattedData);
-      } catch (error) {
-        console.error("Error fetching kiosk data:", error);
-      }
-    };
+    fetchKioskData();
+  }, []);
 
-    getKioskData();
-  }, [fetchAllKiosk]);
-
-  const toggleCreateModal = () => {
-    setCreateModalOpen(!createModalOpen);
-  };
-
-  const toggleUpdateModal = () => {
-    setUpdateModalOpen(!updateModalOpen);
-  };
-
-  const handleSaveKiosk = async (data: {
-    name: string;
-    address: string;
-    phoneNumber: string;
-    email: string;
-    openingHours: string;
-    status: boolean;
-  }) => {
+  const fetchKioskData = async () => {
     try {
-      // Add missing fields and timestamps
-      const kioskPayload = {
-        id: selectedKiosk ? selectedKiosk.id : 0, // Use existing ID or 0 for new kiosk
-        name: data.name,
-        address: data.address,
-        phoneNumber: data.phoneNumber,
-        email: data.email,
-        openingHours: data.openingHours,
-        createdAt: selectedKiosk ? selectedKiosk.createdAt : new Date().toISOString(), // Use existing timestamp or set current time
-        updatedAt: new Date().toISOString(), // Always set current time on update
-        status: data.status,
-      };
-
-      if (selectedKiosk) {
-        // Update existing kiosk
-        const updatedKiosk = await updateKiosk(kioskPayload);
-        setKioskData(kioskData.map(kiosk => (kiosk.id === updatedKiosk.id ? updatedKiosk : kiosk)));
-        Swal.fire({
-          icon: 'success',
-          title: 'Kiosk updated successfully!',
-          showConfirmButton: false,
-          timer: 1500
-        });
-        toggleUpdateModal(); // Close the update modal
-      } else {
-        // Create new kiosk
-        const newKiosk = await createKiosk(kioskPayload);
-        setKioskData([...kioskData, newKiosk]);
-        Swal.fire({
-          icon: 'success',
-          title: 'Kiosk created successfully!',
-          showConfirmButton: false,
-          timer: 1500
-        });
-        toggleCreateModal(); // Close the create modal
-      }
+      setIsLoading(true);
+      const data = await fetchAllKiosk();
+      setKioskData(data);
+      setFilteredData(data);
     } catch (error) {
-      console.error("Error saving kiosk:", error);
+      toast.error("Failed to fetch kiosk data");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleEditKiosk = (id: number) => {
-    const kioskToEdit = kioskData.find(kiosk => kiosk.id === id);
-    if (kioskToEdit) {
-      setSelectedKiosk(kioskToEdit);
-      toggleUpdateModal(); // Open update modal
-    }
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
   };
 
-  const handleDeleteKiosk = async (id: number) => {
+  const handleFilter = (status: "all" | "active" | "inactive") => {
+    setFilterStatus(status);
+  };
+
+  useEffect(() => {
+    let filtered = kioskData;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(kiosk => 
+        kiosk.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        kiosk.address.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(kiosk => 
+        kiosk.status === (filterStatus === "active")
+      );
+    }
+
+    setFilteredData(filtered);
+  }, [searchTerm, filterStatus, kioskData]);
+
+  const handleDelete = async (id: number) => {
     try {
-      await deleteKiosk(id);
-      setKioskData(kioskData.filter((item) => item.id !== id));
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "This action cannot be undone",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#c79816',
+        cancelButtonColor: '#000000',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        await deleteKiosk(id);
+        setKioskData(prev => prev.filter(kiosk => kiosk.id !== id));
+        toast.success("Kiosk deleted successfully");
+      }
     } catch (error) {
-      console.error("Error deleting kiosk:", error);
+      toast.error("Failed to delete kiosk");
     }
   };
 
   return (
-    <Fragment>
-      <CommonBreadcrumb title="Kiosk" parent="Localization" />
-      <Container fluid>
-        <Row>
-          <Col sm="12">
-            <Card>
-              <CardHeader>
-                <h5>Kiosk</h5>
-                <div className="btn-popup pull-right">
-                  <Button color="primary" onClick={toggleCreateModal}>
-                    Create Kiosk
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardBody>
-                <div id="basicScenario" className="product-list translation-list">
-                  {kioskData.length > 0 ? (
-                    <Datatable
-                      multiSelectOption={false}
-                      myData={kioskData}
-                      pageSize={10}
-                      pagination={true}
-                      class="-striped -highlight"
-                      onDelete={handleDeleteKiosk}
-                      onEdit={handleEditKiosk}
-                    />
-                  ) : (
-                    <p>No data available</p>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+    <div className="kiosk-dashboard">
+      <div className="dashboard-container">
+        {/* Header Section */}
+        <div className="dashboard-header">
+          <div className="header-content">
+            <div className="title-wrapper">
+              <h1>Kiosk Management</h1>
+              <p>Manage and monitor your kiosk locations</p>
+            </div>
+          </div>
+          <div className="header-actions">
+            <button className="create-btn" onClick={() => setCreateModalOpen(true)}>
+              <FaPlus className="btn-icon" />
+              Add New Kiosk
+            </button>
+          </div>
+        </div>
 
+        {/* Stats Section */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{totalKiosks}</div>
+              <div className="stat-label">Total Kiosks</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                12% from last month
+              </div>
+            </div>
+            <FaStore className="stat-icon" />
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{activeKiosks}</div>
+              <div className="stat-label">Active Kiosks</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                8% from last month
+              </div>
+            </div>
+            <FaUsers className="stat-icon" />
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{uniqueLocations}</div>
+              <div className="stat-label">Unique Locations</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                5% from last month
+              </div>
+            </div>
+            <FaChartLine className="stat-icon" />
+          </div>
+        </div>
+
+        {/* Main Content Section */}
+        <div className="content-section">
+          <div className="content-header">
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search kiosks..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+            <div className="filters">
+              <button
+                className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
+                onClick={() => handleFilter('all')}
+              >
+                All Kiosks
+              </button>
+              <button
+                className={`filter-btn ${filterStatus === 'active' ? 'active' : ''}`}
+                onClick={() => handleFilter('active')}
+              >
+                Active
+              </button>
+              <button
+                className={`filter-btn ${filterStatus === 'inactive' ? 'active' : ''}`}
+                onClick={() => handleFilter('inactive')}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
+
+          <div className="table-container">
+            {isLoading ? (
+              <div className="loading-state">
+                <div className="spinner"></div>
+                <p>Loading kiosks...</p>
+              </div>
+            ) : filteredData.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Kiosk Information</th>
+                    <th>Contact Details</th>
+                    <th>Opening Hours</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredData.map((kiosk) => (
+                    <tr key={kiosk.id}>
+                      <td>
+                        <div className="kiosk-info">
+                          <div className="kiosk-icon">
+                            <FaStore />
+                          </div>
+                          <div className="kiosk-details">
+                            <div className="name">{kiosk.name}</div>
+                            <div className="location">
+                              <FaMapMarkerAlt />
+                              {kiosk.address}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="contact-info">
+                          <div>{kiosk.email}</div>
+                          <div>{kiosk.phoneNumber}</div>
+                        </div>
+                      </td>
+                      <td>{kiosk.openingHours}</td>
+                      <td>
+                        <span className={`status-badge ${kiosk.status ? 'active' : 'inactive'}`}>
+                          {kiosk.status ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="actions">
+                          <button
+                            className="edit-btn"
+                            onClick={() => {
+                              setSelectedKiosk(kiosk);
+                              setUpdateModalOpen(true);
+                            }}
+                          >
+                            <FaPen />
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => handleDelete(kiosk.id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">
+                <FaStore className="empty-icon" />
+                <h3>No Kiosks Found</h3>
+                <p>{searchTerm ? "No kiosks match your search criteria" : "Start by adding your first kiosk"}</p>
+                <button className="create-btn" onClick={() => setCreateModalOpen(true)}>
+                  <FaPlus className="btn-icon" />
+                  Create First Kiosk
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
       <KioskModal
         isOpen={createModalOpen}
-        toggle={toggleCreateModal}
-        onSave={handleSaveKiosk}
+        toggle={() => setCreateModalOpen(false)}
+        onSave={async (data) => {
+          await fetchKioskData();
+          setCreateModalOpen(false);
+          toast.success("Kiosk created successfully");
+        }}
       />
+
       <KioskUpdateModal
         isOpen={updateModalOpen}
-        toggle={toggleUpdateModal}
-        onSave={handleSaveKiosk}
+        toggle={() => setUpdateModalOpen(false)}
         kioskData={selectedKiosk}
+        onSave={async (data) => {
+          await fetchKioskData();
+          setUpdateModalOpen(false);
+          toast.success("Kiosk updated successfully");
+        }}
       />
-    </Fragment>
+    </div>
   );
 };
 

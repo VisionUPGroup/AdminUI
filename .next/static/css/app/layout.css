@@ -12775,11 +12775,11 @@ textarea.form-control-lg {
 }
 
 .order-datatable .rdt_Table {
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 10px solid rgba(0, 0, 0, 0.05);
 }
 .order-datatable .rdt_Table .rdt_TableCell,
 .order-datatable .rdt_Table .rdt_TableCol {
-  padding: 7px 5px;
+  padding: 10px 15px;
 }
 .order-datatable .rdt_Table .rdt_TableHead {
   z-index: 1;
@@ -12797,10 +12797,10 @@ textarea.form-control-lg {
 }
 .order-datatable .rdt_Table .rdt_TableHead .rdt_TableHeadRow .rdt_TableCol .rdt_TableCol_Sortable {
   justify-content: center;
-  padding: 18px;
+  padding: 15px;
 }
 .order-datatable .rdt_Table .rdt_TableHead .rdt_TableHeadRow .rdt_TableCol b {
-  font-size: 14px;
+  font-size: 16px;
   color: #313131;
 }
 .order-datatable .rdt_Table .rdt_TableBody .rdt_TableRow {
@@ -12808,7 +12808,7 @@ textarea.form-control-lg {
 }
 .order-datatable .rdt_Table .rdt_TableBody .rdt_TableRow .rdt_TableCell {
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   background-color: #ffffff;
 }
 .order-datatable .rdt_Table .rdt_TableBody .rdt_TableRow .rdt_TableCell + .rdt_TableCell {
@@ -12819,9 +12819,10 @@ textarea.form-control-lg {
   flex: unset;
   width: 100%;
   line-height: 1.5;
+  font-size: 16px;
 }
 .order-datatable .rdt_Table .rdt_TableBody .rdt_TableRow .rdt_TableCell > div .badge {
-  padding: 6px 6px 4px;
+  padding: 8px 10px;
 }
 .order-datatable .rdt_Table .rdt_TableBody .rdt_TableRow .rdt_TableCell:last-child {
   border-right: 0;
@@ -13290,7 +13291,7 @@ a:hover {
   border-radius: 4px;
 }
 .order-graph .order-graph-bottom .media .order-shape-secondary {
-  background-color: #13c9ca;
+  background-color: #000;
   width: 18px;
   height: 8px;
   margin-top: 7px;
@@ -13346,7 +13347,7 @@ a:hover {
   border-radius: 2px;
 }
 .order-graph .order-graph-bottom .order-color-secondary {
-  background-color: #13c9ca;
+  background-color: #000;
   width: 8px;
   height: 8px;
   margin-top: 7px;
@@ -14160,7 +14161,7 @@ a:hover {
   box-shadow: 0 3px 5px 1px rgba(88, 103, 221, 0.15) !important;
 }
 .input-air-secondary:focus {
-  border-color: #13c9ca;
+  border-color: #000;
 }
 
 .input-air-success {
@@ -14222,18 +14223,18 @@ a:hover {
 }
 
 .form-bg-secondary {
-  background: #13c9ca;
-  border-color: #13c9ca;
+  background: #000;
+  border-color: #000;
   color: #ffffff;
 }
 .form-bg-secondary:focus {
-  border-color: #13c9ca;
-  background: #13c9ca;
+  border-color: #000;
+  background: #000;
   color: #ffffff;
 }
 .form-bg-secondary:focus:active {
-  border-color: #13c9ca;
-  background: #13c9ca;
+  border-color: #000;
+  background: #000;
   color: #ffffff;
 }
 
@@ -14354,7 +14355,7 @@ a:hover {
 }
 
 .btn-secondary-gradien {
-  background-image: linear-gradient(to right, rgb(28.1384615385, 232.5384615385, 233.6615384615) 0%, rgb(15.4923076923, 163.8923076923, 164.7076923077) 51%, rgb(28.1384615385, 232.5384615385, 233.6615384615) 100%);
+  background-image: linear-gradient(to right, rgb(20.4, 20.4, 20.4) 0%, black 51%, rgb(20.4, 20.4, 20.4) 100%);
   border: none;
   color: #ffffff;
   background-size: auto 200%;
@@ -14363,7 +14364,7 @@ a:hover {
 .btn-secondary-gradien:hover, .btn-secondary-gradien:focus, .btn-secondary-gradien:active, .btn-secondary-gradien.active, .btn-secondary-gradien.hover {
   transition: 1.5s;
   background-position: right center;
-  background-image: linear-gradient(to right, rgb(28.1384615385, 232.5384615385, 233.6615384615), 0%, rgb(15.4923076923, 163.8923076923, 164.7076923077), 100%, #ffffff) !important;
+  background-image: linear-gradient(to right, rgb(20.4, 20.4, 20.4), 0%, black, 100%, #ffffff) !important;
 }
 
 .btn-success-gradien {
@@ -16419,7 +16420,7 @@ ul.notification-dropdown.onhover-show-div li + li:hover {
 }
 
 .font-secondary {
-  color: #13c9ca !important;
+  color: #000 !important;
 }
 
 .font-success {
@@ -16464,7 +16465,7 @@ ul.notification-dropdown.onhover-show-div li + li:hover {
 }
 
 .badge-secondary {
-  background-color: #13c9ca;
+  background-color: #000;
 }
 
 .badge-success {
@@ -16499,7 +16500,7 @@ ul.notification-dropdown.onhover-show-div li + li:hover {
 }
 
 .bg-secondary {
-  background-color: #13c9ca !important;
+  background-color: #000 !important;
   color: #ffffff;
 }
 
@@ -16558,23 +16559,23 @@ ul.notification-dropdown.onhover-show-div li + li:hover {
 }
 
 .btn-secondary {
-  background-color: #13c9ca !important;
-  border-color: #13c9ca !important;
+  background-color: #000 !important;
+  border-color: #000 !important;
 }
 .btn-secondary.disabled {
-  background-color: #13c9ca !important;
-  border-color: #13c9ca !important;
+  background-color: #000 !important;
+  border-color: #000 !important;
 }
 .btn-secondary:disabled {
-  background-color: #13c9ca !important;
-  border-color: #13c9ca !important;
+  background-color: #000 !important;
+  border-color: #000 !important;
 }
 .btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active, .btn-secondary.active {
-  background-color: rgb(14.6153846154, 154.6153846154, 155.3846153846) !important;
-  border-color: rgb(14.6153846154, 154.6153846154, 155.3846153846) !important;
+  background-color: black !important;
+  border-color: black !important;
 }
 .btn-secondary:focus {
-  box-shadow: 0 0 0 0.2rem rgb(130.6923076923, 242.6923076923, 243.3076923077);
+  box-shadow: 0 0 0 0.2rem rgb(76.5, 76.5, 76.5);
 }
 
 .btn-success {
@@ -16710,14 +16711,14 @@ ul.notification-dropdown.onhover-show-div li + li:hover {
 }
 
 .btn-secondary:not([disabled]):not(.disabled).active {
-  background-color: rgb(14.6153846154, 154.6153846154, 155.3846153846);
-  border-color: rgb(14.6153846154, 154.6153846154, 155.3846153846);
+  background-color: black;
+  border-color: black;
   box-shadow: none !important;
 }
 .btn-secondary:not([disabled]):not(.disabled).active:hover, .btn-secondary:not([disabled]):not(.disabled).active:focus, .btn-secondary:not([disabled]):not(.disabled).active:active, .btn-secondary:not([disabled]):not(.disabled).active.active {
   color: white;
-  background-color: rgb(14.6153846154, 154.6153846154, 155.3846153846);
-  border-color: rgb(14.6153846154, 154.6153846154, 155.3846153846);
+  background-color: black;
+  border-color: black;
 }
 
 .btn-success:not([disabled]):not(.disabled).active {
@@ -16800,16 +16801,16 @@ ul.notification-dropdown.onhover-show-div li + li:hover {
 }
 
 .btn-outline-secondary-2x:not([disabled]):not(.disabled).active {
-  background-color: #13c9ca;
-  border-color: #13c9ca;
+  background-color: #000;
+  border-color: #000;
   box-shadow: none !important;
   color: white;
 }
 .btn-outline-secondary-2x:not([disabled]):not(.disabled).active:hover, .btn-outline-secondary-2x:not([disabled]):not(.disabled).active:focus, .btn-outline-secondary-2x:not([disabled]):not(.disabled).active:active, .btn-outline-secondary-2x:not([disabled]):not(.disabled).active.active {
   color: white;
   box-shadow: none !important;
-  background-color: rgb(14.6153846154, 154.6153846154, 155.3846153846) !important;
-  border-color: rgb(14.6153846154, 154.6153846154, 155.3846153846) !important;
+  background-color: black !important;
+  border-color: black !important;
 }
 
 .btn-outline-success-2x:not([disabled]):not(.disabled).active {
@@ -16900,7 +16901,7 @@ table tbody .border-bottom-primary td {
 table thead .border-bottom-secondary th,
 table tbody .border-bottom-secondary th,
 table tbody .border-bottom-secondary td {
-  border-bottom: 1px solid #13c9ca;
+  border-bottom: 1px solid #000;
 }
 
 table thead .border-bottom-success th,
@@ -16955,14 +16956,14 @@ table tbody .border-bottom-warning td {
 
 .table-styling .table-secondary,
 .table-styling.table-secondary {
-  background-color: #13c9ca;
+  background-color: #000;
   color: #ffffff;
-  border: 3px solid #13c9ca;
+  border: 3px solid #000;
 }
 .table-styling .table-secondary thead,
 .table-styling.table-secondary thead {
-  background-color: rgb(14.6153846154, 154.6153846154, 155.3846153846);
-  border: 3px solid rgb(14.6153846154, 154.6153846154, 155.3846153846);
+  background-color: black;
+  border: 3px solid black;
 }
 
 .table-styling .table-success,
@@ -17060,23 +17061,23 @@ table tbody .border-bottom-warning td {
 }
 
 .b-secondary {
-  border: 1px solid #13c9ca !important;
+  border: 1px solid #000 !important;
 }
 
 .b-t-secondary {
-  border-top: 1px solid #13c9ca !important;
+  border-top: 1px solid #000 !important;
 }
 
 .b-b-secondary {
-  border-bottom: 1px solid #13c9ca !important;
+  border-bottom: 1px solid #000 !important;
 }
 
 .b-l-secondary {
-  border-left: 1px solid #13c9ca !important;
+  border-left: 1px solid #000 !important;
 }
 
 .b-r-secondary {
-  border-right: 1px solid #13c9ca !important;
+  border-right: 1px solid #000 !important;
 }
 
 .b-success {
@@ -18059,9 +18060,6 @@ table tbody .border-bottom-warning td {
   width: auto;
 }
 
-/*=====================
-  Responsive CSS End
-==========================*/
 .custom-theme {
   position: fixed;
   right: 0;
@@ -33762,7 +33760,7 @@ a .icon-rotate-90:before, a .icon-rotate-180:before, a .icon-rotate-270:before, 
 @font-face {
   font-family: "slick";
   src: url(/_next/static/media/slick.25572f22.eot);
-  src: url(/_next/static/media/slick.25572f22.eot) format("embedded-opentype"), url(/_next/static/media/slick.653a4cbb.woff) format("woff"), url(/_next/static/media/slick.6aa1ee46.ttf) format("truetype"), url(/_next/static/media/slick.f895cfdf.svg) format("svg");
+  src: url(/_next/static/media/slick.25572f22.eot) format("embedded-opentype"), url(/_next/static/media/slick.653a4cbb.woff) format("woff"), url(/_next/static/media/slick.6aa1ee46.ttf) format("truetype"), url(/_next/static/media/slick.b3d9b478.svg) format("svg");
   font-weight: normal;
   font-style: normal;
 }
