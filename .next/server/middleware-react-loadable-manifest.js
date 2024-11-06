@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"Components\\\\Dashboard\\\\index.tsx -> ./MarketValue\":{\"id\":\"Components\\\\Dashboard\\\\index.tsx -> ./MarketValue\",\"files\":[\"static/chunks/_app-pages-browser_src_Components_Dashboard_MarketValue_tsx.js\"]}}"
