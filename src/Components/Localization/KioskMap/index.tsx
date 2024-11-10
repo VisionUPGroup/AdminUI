@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useKioskService } from '../../../../Api/kioskService';
-
+import "./KioskMapStyle.scss"
 // Define type for kiosk data
 interface Kiosk {
   id: number;
@@ -44,17 +44,12 @@ const Map: React.FC = () => {
     const kioskIcon = L.divIcon({
       className: 'custom-kiosk-icon',
       html: `
-<svg xmlns="http://www.w3.org/2000/svg" width="25" height="41" viewBox="0 0 25 41">
-  <rect width="25" height="41" fill="none"/>
-  <path d="M 5 20 L 12.5 10 L 20 20" stroke="black" stroke-width="2" fill="none"/>
-  <path d="M 5 20 L 5 30 L 20 30 L 20 20" stroke="black" stroke-width="2" fill="none"/>
-</svg>
-
-
+        <div class="marker-pin"></div>
+        <i class="fas fa-map-marker-alt"></i>
       `,
-      iconSize: [25, 41], // Size of the icon
-      iconAnchor: [12.5, 41], // Point of the icon which will correspond to marker's location
-      popupAnchor: [0, -34], // Point from which the popup should open relative to the iconAnchor
+      iconSize: [30, 42],
+      iconAnchor: [15, 42],
+      popupAnchor: [0, -40],
     });
 
     const geocodeCache: { [address: string]: [number, number] } = {};
@@ -99,7 +94,12 @@ const Map: React.FC = () => {
             if (result) {
               const marker = L.marker([result.coordinates[1], result.coordinates[0]], { icon: kioskIcon }).addTo(map);
               marker.bindPopup(
-                `<b>${result.name}</b><br>${result.address}<br>${result.phoneNumber}<br>${result.openingHours}`
+                `<div class="kiosk-popup">
+                   <h3><i class="fas fa-store"></i> ${result.name}</h3>
+                   <p><i class="fas fa-map-marker-alt"></i> ${result.address}</p>
+                   <p><i class="fas fa-phone"></i> ${result.phoneNumber}</p>
+                   <p><i class="fas fa-clock"></i> ${result.openingHours}</p>
+                 </div>`
               );
             }
           });

@@ -2,7 +2,6 @@ import { Unlock, User } from "react-feather";
 import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
 import { Card, CardBody, Col } from "reactstrap";
 import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
 
 const LoginTabs = () => {
   return (
@@ -15,17 +14,17 @@ const LoginTabs = () => {
                 <User />
                 Login
               </Tab>
-              <Tab className="nav-link">
+              {/* <Tab className="nav-link">
                 <Unlock />
                 Register
-              </Tab>
+              </Tab> */}
             </TabList>
             <TabPanel>
               <LoginForm />
             </TabPanel>
-            <TabPanel>
+            {/* <TabPanel>
               <RegisterForm />
-            </TabPanel>
+            </TabPanel> */}
           </Tabs>
         </CardBody>
       </Card>

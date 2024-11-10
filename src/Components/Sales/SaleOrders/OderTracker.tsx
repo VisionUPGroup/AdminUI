@@ -21,11 +21,13 @@ interface OrderStatusTrackerProps {
   status: number;
   orderId: number;
   onStatusUpdate?: (newStatus: number) => void;
+  onDeleteOrder?: (orderId: number) => void; // Thêm prop mới
 }
 
 const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   status,
   orderId,
+  onDeleteOrder,
   onStatusUpdate
 }) => {
   const { updateOrderProcess } = useOrderService();
@@ -35,7 +37,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
 
   const statusSteps = [
     {
-      label: 'Order Received',
+      label: 'Pending',
       subLabel: 'Awaiting confirmation',
       icon: <FaHourglassHalf />,
       color: '#c79816',
@@ -70,7 +72,42 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
       estimate: null
     }
   ];
-
+  const handleCancelOrder = async () => {
+    try {
+      setIsUpdating(true);
+      
+      // Gọi hàm xóa order
+      if (onDeleteOrder) {
+        await onDeleteOrder(orderId);
+      }
+      
+      // Update UI status sang cancelled
+      if (onStatusUpdate) {
+        onStatusUpdate(5);
+      }
+      
+      // toast.success('Order has been cancelled successfully', {
+      //   icon: <FaBan />
+      // });
+      
+      setShowConfirmation(false);
+      setPendingStatus(null);
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast.error("Failed to cancel order", {
+        icon: <FaExclamationTriangle />
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  const handleConfirmAction = async () => {
+    if (pendingStatus === 5) {
+      await handleCancelOrder();
+    } else {
+      await handleStatusUpdate(pendingStatus!);
+    }
+  };
   const handleStatusUpdate = async (newStatus: number) => {
     try {
       setIsUpdating(true);
@@ -164,7 +201,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
 
       {status < 4 && (
         <div className="status-actions">
-          {status > 0 && (
+          {/* {status > 0 && (
             <button
               className="action-btn prev"
               onClick={() => initiateStatusUpdate(status - 1)}
@@ -173,7 +210,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
               <FaArrowLeft />
               Previous Status
             </button>
-          )}
+          )} */}
           
           {status < 4 && (
             <button
@@ -197,40 +234,38 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
         </div>
       )}
 
-      {showConfirmation && (
-        <div className="confirmation-overlay">
-          <div className="confirmation-dialog">
-            <h4>Update Order Status</h4>
-            <p>
-              Are you sure you want to change the order status to{' '}
-              <strong>
-                {pendingStatus === 5 
-                  ? 'Cancelled' 
-                  : statusSteps[pendingStatus!]?.label}
-              </strong>?
-            </p>
-            <div className="dialog-actions">
-              <button 
-                className="dialog-btn confirm"
-                onClick={() => handleStatusUpdate(pendingStatus!)}
-                disabled={isUpdating}
-              >
-                {isUpdating ? <FaSpinner className="spinning" /> : 'Confirm'}
-              </button>
-              <button 
-                className="dialog-btn cancel"
-                onClick={() => {
-                  setShowConfirmation(false);
-                  setPendingStatus(null);
-                }}
-                disabled={isUpdating}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+{showConfirmation && (
+    <div className="confirmation-overlay">
+      <div className="confirmation-dialog">
+        <h4>{pendingStatus === 5 ? 'Cancel Order' : 'Update Order Status'}</h4>
+        <p>
+          {pendingStatus === 5 
+            ? 'Are you sure you want to cancel this order? This action cannot be undone.'
+            : `Are you sure you want to change the order status to ${statusSteps[pendingStatus!]?.label}?`
+          }
+        </p>
+        <div className="dialog-actions">
+          <button 
+            className="dialog-btn confirm"
+            onClick={handleConfirmAction}
+            disabled={isUpdating}
+          >
+            {isUpdating ? <FaSpinner className="spinning" /> : 'Confirm'}
+          </button>
+          <button 
+            className="dialog-btn cancel"
+            onClick={() => {
+              setShowConfirmation(false);
+              setPendingStatus(null);
+            }}
+            disabled={isUpdating}
+          >
+            Cancel
+          </button>
         </div>
-      )}
+      </div>
+    </div>
+  )}
     </div>
   );
 };

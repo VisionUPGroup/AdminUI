@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, use, useEffect, useState } from "react";
 import {
   FaStore,
   FaSearch,
@@ -17,6 +17,7 @@ import KioskUpdateModal from "./UpdateModal";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import "./KioskStyle.scss";
+import Pagination from "./Pagination";
 interface KioskDataType {
   id: number;
   name: string;
@@ -28,19 +29,26 @@ interface KioskDataType {
 }
 const Kiosk: React.FC = () => {
   const { fetchAllKiosk, deleteKiosk } = useKioskService();
+  const {updateKiosk} = useKioskService();
   const [kioskData, setKioskData] = useState<KioskDataType[]>([]);
   const [filteredData, setFilteredData] = useState<KioskDataType[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [selectedKiosk, setSelectedKiosk] = useState<KioskDataType | null>(null);
+  const [selectedKiosk, setSelectedKiosk] = useState<KioskDataType | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [isLoading, setIsLoading] = useState(true);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5)
+  const [totalItems, setTotalItems] = useState(filteredData.length);
   // Stats calculations
   const totalKiosks = kioskData.length;
-  const activeKiosks = kioskData.filter(k => k.status).length;
-  const uniqueLocations = new Set(kioskData.map(k => k.address)).size;
+  const activeKiosks = kioskData.filter((k) => k.status).length;
+  const uniqueLocations = new Set(kioskData.map((k) => k.address)).size;
 
   useEffect(() => {
     fetchKioskData();
@@ -69,17 +77,18 @@ const Kiosk: React.FC = () => {
 
   useEffect(() => {
     let filtered = kioskData;
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(kiosk => 
-        kiosk.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        kiosk.address.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (kiosk) =>
+          kiosk.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          kiosk.address.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (filterStatus !== "all") {
-      filtered = filtered.filter(kiosk => 
-        kiosk.status === (filterStatus === "active")
+      filtered = filtered.filter(
+        (kiosk) => kiosk.status === (filterStatus === "active")
       );
     }
 
@@ -89,25 +98,36 @@ const Kiosk: React.FC = () => {
   const handleDelete = async (id: number) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
+        title: "Are you sure?",
         text: "This action cannot be undone",
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#c79816',
-        cancelButtonColor: '#000000',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonColor: "#c79816",
+        cancelButtonColor: "#000000",
+        confirmButtonText: "Yes, delete it!",
       });
-
+  
       if (result.isConfirmed) {
         await deleteKiosk(id);
-        setKioskData(prev => prev.filter(kiosk => kiosk.id !== id));
+        setKioskData((prev) => prev.filter((kiosk) => kiosk.id !== id));
+        setFilteredData((prev) => prev.filter((kiosk) => kiosk.id !== id));
         toast.success("Kiosk deleted successfully");
       }
     } catch (error) {
       toast.error("Failed to delete kiosk");
+      console.error("Error deleting kiosk:", error);
+      // Xử lý lỗi, ví dụ: hiển thị thông báo lỗi chi tiết hơn, hoặc thực hiện các hành động khác
     }
   };
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
+  // Tính tổng số trang
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   return (
     <div className="kiosk-dashboard">
       <div className="dashboard-container">
@@ -120,7 +140,10 @@ const Kiosk: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <button className="create-btn" onClick={() => setCreateModalOpen(true)}>
+            <button
+              className="create-btn"
+              onClick={() => setCreateModalOpen(true)}
+            >
               <FaPlus className="btn-icon" />
               Add New Kiosk
             </button>
@@ -180,20 +203,26 @@ const Kiosk: React.FC = () => {
             </div>
             <div className="filters">
               <button
-                className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
-                onClick={() => handleFilter('all')}
+                className={`filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("all")}
               >
                 All Kiosks
               </button>
               <button
-                className={`filter-btn ${filterStatus === 'active' ? 'active' : ''}`}
-                onClick={() => handleFilter('active')}
+                className={`filter-btn ${
+                  filterStatus === "active" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${filterStatus === 'inactive' ? 'active' : ''}`}
-                onClick={() => handleFilter('inactive')}
+                className={`filter-btn ${
+                  filterStatus === "inactive" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("inactive")}
               >
                 Inactive
               </button>
@@ -207,74 +236,92 @@ const Kiosk: React.FC = () => {
                 <p>Loading kiosks...</p>
               </div>
             ) : filteredData.length > 0 ? (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Kiosk Information</th>
-                    <th>Contact Details</th>
-                    <th>Opening Hours</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.map((kiosk) => (
-                    <tr key={kiosk.id}>
-                      <td>
-                        <div className="kiosk-info">
-                          <div className="kiosk-icon">
-                            <FaStore />
-                          </div>
-                          <div className="kiosk-details">
-                            <div className="name">{kiosk.name}</div>
-                            <div className="location">
-                              <FaMapMarkerAlt />
-                              {kiosk.address}
+              <>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Kiosk Information</th>
+                      <th>Contact Details</th>
+                      <th>Opening Hours</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentItems.map((kiosk) => (
+                      <tr key={kiosk.id}>
+                        <td>
+                          <div className="kiosk-info">
+                            <div className="kiosk-icon">
+                              <FaStore />
+                            </div>
+                            <div className="kiosk-details">
+                              <div className="name">{kiosk.name}</div>
+                              <div className="location">
+                                <FaMapMarkerAlt />
+                                {kiosk.address}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="contact-info">
-                          <div>{kiosk.email}</div>
-                          <div>{kiosk.phoneNumber}</div>
-                        </div>
-                      </td>
-                      <td>{kiosk.openingHours}</td>
-                      <td>
-                        <span className={`status-badge ${kiosk.status ? 'active' : 'inactive'}`}>
-                          {kiosk.status ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="actions">
-                          <button
-                            className="edit-btn"
-                            onClick={() => {
-                              setSelectedKiosk(kiosk);
-                              setUpdateModalOpen(true);
-                            }}
+                        </td>
+                        <td>
+                          <div className="contact-info">
+                            <div>{kiosk.email}</div>
+                            <div>{kiosk.phoneNumber}</div>
+                          </div>
+                        </td>
+                        <td>{kiosk.openingHours}</td>
+                        <td>
+                          <span
+                            className={`status-badge ${
+                              kiosk.status ? "active" : "inactive"
+                            }`}
                           >
-                            <FaPen />
-                          </button>
-                          <button
-                            className="delete-btn"
-                            onClick={() => handleDelete(kiosk.id)}
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                            {kiosk.status ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="actions">
+                            <button
+                              className="edit-btn"
+                              onClick={() => {
+                                setSelectedKiosk(kiosk);
+                                setUpdateModalOpen(true);
+                              }}
+                            >
+                              <FaPen />
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => handleDelete(kiosk.id)}
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
             ) : (
               <div className="empty-state">
                 <FaStore className="empty-icon" />
                 <h3>No Kiosks Found</h3>
-                <p>{searchTerm ? "No kiosks match your search criteria" : "Start by adding your first kiosk"}</p>
-                <button className="create-btn" onClick={() => setCreateModalOpen(true)}>
+                <p>
+                  {searchTerm
+                    ? "No kiosks match your search criteria"
+                    : "Start by adding your first kiosk"}
+                </p>
+                <button
+                  className="create-btn"
+                  onClick={() => setCreateModalOpen(true)}
+                >
                   <FaPlus className="btn-icon" />
                   Create First Kiosk
                 </button>
@@ -300,9 +347,14 @@ const Kiosk: React.FC = () => {
         toggle={() => setUpdateModalOpen(false)}
         kioskData={selectedKiosk}
         onSave={async (data) => {
-          await fetchKioskData();
-          setUpdateModalOpen(false);
-          toast.success("Kiosk updated successfully");
+          try {
+            await updateKiosk(data);
+            await fetchKioskData();
+            setUpdateModalOpen(false);
+            toast.success("Kiosk updated successfully");
+          } catch (error) {
+            toast.error("Failed to update kiosk");
+          }
         }}
       />
     </div>

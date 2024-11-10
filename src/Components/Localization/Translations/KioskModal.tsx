@@ -140,135 +140,144 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
     });
     toggle();
   };
+  
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      toggle={handleClose} 
-      className="kiosk-modal"
-      size="lg"
-    >
-      <ModalHeader toggle={handleClose} className="border-bottom-0">
-        <div className="modal-title-with-icon">
-          <FaStore className="modal-title-icon" />
-          <h5>Create New Kiosk</h5>
+    <Modal
+    isOpen={isOpen}
+    toggle={handleClose}
+    className="upgraded-kiosk-modal-v4"
+    size="lg"
+  >
+     <ModalHeader toggle={toggle} className="border-bottom-0">
+        <div className="modal-header-content">
+          <div className="modal-title-with-icon">
+            <FaStore className="modal-title-icon" />
+            <h4>Create New Kiosk</h4>
+          </div>
+          {/* <div className="close-btn-container">
+            <button className="close-btn" onClick={handleClose}>
+              <FaTimes />
+            </button>
+          </div> */}
         </div>
+        <div className="modal-header-background"></div>
       </ModalHeader>
-      
-      <ModalBody>
-        <div className="modal-form">
-          <div className="form-group">
+
+    <ModalBody>
+      <div className="modal-form">
+        <div className="form-group">
+          <label>
+            <FaStore className="field-icon" />
+            Kiosk Name <span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            name="name"
+            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+            placeholder="Enter kiosk name"
+            value={formData.name}
+            onChange={handleInputChange}
+          />
+          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+        </div>
+
+        <div className="form-group">
+          <label>
+            <FaMapMarkerAlt className="field-icon" />
+            Address <span className="required">*</span>
+          </label>
+          <textarea
+            name="address"
+            className={`form-control ${errors.address ? 'is-invalid' : ''}`}
+            placeholder="Enter kiosk address"
+            value={formData.address}
+            onChange={handleInputChange}
+            rows={3}
+          />
+          {errors.address && <div className="invalid-feedback">{errors.address}</div>}
+        </div>
+
+        <div className="form-row">
+          <div className="form-group col-md-6">
             <label>
-              <FaStore className="field-icon" />
-              Kiosk Name <span className="required">*</span>
+              <FaPhone className="field-icon" />
+              Phone Number <span className="required">*</span>
             </label>
             <input
-              type="text"
-              name="name"
-              className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-              placeholder="Enter kiosk name"
-              value={formData.name}
+              type="tel"
+              name="phoneNumber"
+              className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
+              placeholder="Enter phone number"
+              value={formData.phoneNumber}
               onChange={handleInputChange}
             />
-            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+            {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
           </div>
 
-          <div className="form-group">
+          <div className="form-group col-md-6">
             <label>
-              <FaMapMarkerAlt className="field-icon" />
-              Address <span className="required">*</span>
-            </label>
-            <textarea
-              name="address"
-              className={`form-control ${errors.address ? 'is-invalid' : ''}`}
-              placeholder="Enter kiosk address"
-              value={formData.address}
-              onChange={handleInputChange}
-              rows={3}
-            />
-            {errors.address && <div className="invalid-feedback">{errors.address}</div>}
-          </div>
-
-          <div className="form-row">
-            <div className="form-group col-md-6">
-              <label>
-                <FaPhone className="field-icon" />
-                Phone Number <span className="required">*</span>
-              </label>
-              <input
-                type="tel"
-                name="phoneNumber"
-                className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
-                placeholder="Enter phone number"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-              />
-              {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
-            </div>
-
-            <div className="form-group col-md-6">
-              <label>
-                <FaEnvelope className="field-icon" />
-                Email <span className="required">*</span>
-              </label>
-              <input
-                type="email"
-                name="email"
-                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                placeholder="Enter email address"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>
-              <FaClock className="field-icon" />
-              Opening Hours <span className="required">*</span>
+              <FaEnvelope className="field-icon" />
+              Email <span className="required">*</span>
             </label>
             <input
-              type="text"
-              name="openingHours"
-              className={`form-control ${errors.openingHours ? 'is-invalid' : ''}`}
-              placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
-              value={formData.openingHours}
+              type="email"
+              name="email"
+              className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+              placeholder="Enter email address"
+              value={formData.email}
               onChange={handleInputChange}
             />
-            {errors.openingHours && <div className="invalid-feedback">{errors.openingHours}</div>}
+            {errors.email && <div className="invalid-feedback">{errors.email}</div>}
           </div>
         </div>
-      </ModalBody>
 
-      <ModalFooter className="border-top-0">
-        <button
-          className="btn btn-secondary"
-          onClick={handleClose}
-          disabled={isSubmitting}
-        >
-          <FaTimes className="button-icon" />
-          Cancel
-        </button>
-        <button
-          className="btn btn-primary"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <span className="spinner-border spinner-border-sm me-2" />
-              Creating...
-            </>
-          ) : (
-            <>
-              <FaStore className="button-icon" />
-              Create Kiosk
-            </>
-          )}
-        </button>
-      </ModalFooter>
-    </Modal>
+        <div className="form-group">
+          <label>
+            <FaClock className="field-icon" />
+            Opening Hours <span className="required">*</span>
+          </label>
+          <input
+            type="text"
+            name="openingHours"
+            className={`form-control ${errors.openingHours ? 'is-invalid' : ''}`}
+            placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
+            value={formData.openingHours}
+            onChange={handleInputChange}
+          />
+          {errors.openingHours && <div className="invalid-feedback">{errors.openingHours}</div>}
+        </div>
+      </div>
+    </ModalBody>
+
+    <ModalFooter className="border-top-0">
+      <button
+        className="btn btn-outline-secondary"
+        onClick={handleClose}
+        disabled={isSubmitting}
+      >
+        <FaTimes className="button-icon" />
+        Cancel
+      </button>
+      <button
+        className="btn btn-primary"
+        onClick={handleSubmit}
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <>
+            <span className="spinner-border spinner-border-sm me-2" />
+            Creating...
+          </>
+        ) : (
+          <>
+            <FaStore className="button-icon" />
+            Create Kiosk
+          </>
+        )}
+      </button>
+    </ModalFooter>
+  </Modal>
   );
 };
 

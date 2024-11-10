@@ -1,9 +1,8 @@
-// UpdateModal.tsx
-import React, { useState, useEffect } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
-import { FaStore, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaTimes, FaSave } from "react-icons/fa";
-import { toast } from "react-toastify";
-import "./ModalStyle.scss"
+import React, { useState, useEffect } from 'react';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { FaStore, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaTimes, FaSave } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import './UpdateModalStyle.scss';
 
 interface KioskUpdateModalProps {
   isOpen: boolean;
@@ -28,28 +27,23 @@ interface KioskUpdateModalProps {
   } | null;
 }
 
-const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
-  isOpen,
-  toggle,
-  onSave,
-  kioskData
-}) => {
+const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onSave, kioskData }) => {
   const [formData, setFormData] = useState({
     id: 0,
-    name: "",
-    address: "",
-    phoneNumber: "",
-    email: "",
-    openingHours: "",
+    name: '',
+    address: '',
+    phoneNumber: '',
+    email: '',
+    openingHours: '',
     status: true
   });
 
   const [errors, setErrors] = useState({
-    name: "",
-    address: "",
-    phoneNumber: "",
-    email: "",
-    openingHours: ""
+    name: '',
+    address: '',
+    phoneNumber: '',
+    email: '',
+    openingHours: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,58 +67,56 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    const newValue = name === "status" ? value === "true" : value;
-    
+    const newValue = name === 'status' ? value === 'true' : value;
     setFormData(prev => ({
       ...prev,
       [name]: newValue
     }));
-    
     setHasChanges(true);
     setErrors(prev => ({
       ...prev,
-      [name]: ""
+      [name]: ''
     }));
   };
 
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      name: "",
-      address: "",
-      phoneNumber: "",
-      email: "",
-      openingHours: ""
+      name: '',
+      address: '',
+      phoneNumber: '',
+      email: '',
+      openingHours: ''
     };
 
     if (!formData.name.trim()) {
-      newErrors.name = "Kiosk name is required";
+      newErrors.name = 'Kiosk name is required';
       isValid = false;
     }
 
     if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
+      newErrors.address = 'Address is required';
       isValid = false;
     }
 
     if (!formData.phoneNumber) {
-      newErrors.phoneNumber = "Phone number is required";
+      newErrors.phoneNumber = 'Phone number is required';
       isValid = false;
     } else if (!validatePhone(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Please enter a valid phone number";
+      newErrors.phoneNumber = 'Please enter a valid phone number';
       isValid = false;
     }
 
     if (!formData.email) {
-      newErrors.email = "Email is required";
+      newErrors.email = 'Email is required';
       isValid = false;
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = 'Please enter a valid email address';
       isValid = false;
     }
 
     if (!formData.openingHours.trim()) {
-      newErrors.openingHours = "Opening hours is required";
+      newErrors.openingHours = 'Opening hours is required';
       isValid = false;
     }
 
@@ -134,31 +126,26 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      toast.error("Please check all required fields");
+      toast.error('Please check all required fields');
       return;
     }
 
     try {
       setIsSubmitting(true);
       await onSave(formData);
-      toast.success("Kiosk updated successfully!");
+      toast.success('Kiosk updated successfully!');
       setHasChanges(false);
       toggle();
     } catch (error) {
-      toast.error("Failed to update kiosk. Please try again.");
-      console.error("Error updating kiosk:", error);
+      toast.error('Failed to update kiosk. Please try again.');
+      console.error('Error updating kiosk:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      toggle={toggle} 
-      className="kiosk-modal"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} toggle={toggle} className="upgraded-kiosk-modal" size="lg">
       <ModalHeader toggle={toggle} className="border-bottom-0">
         <div className="modal-title-with-icon">
           <FaStore className="modal-title-icon" />
@@ -177,6 +164,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
               type="text"
               name="name"
               className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+              placeholder="Enter kiosk name"
               value={formData.name}
               onChange={handleInputChange}
             />
@@ -191,6 +179,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
             <textarea
               name="address"
               className={`form-control ${errors.address ? 'is-invalid' : ''}`}
+              placeholder="Enter kiosk address"
               value={formData.address}
               onChange={handleInputChange}
               rows={3}
@@ -208,6 +197,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
                 type="tel"
                 name="phoneNumber"
                 className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
+                placeholder="Enter phone number"
                 value={formData.phoneNumber}
                 onChange={handleInputChange}
               />
@@ -223,10 +213,10 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
                 type="email"
                 name="email"
                 className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                placeholder="Enter email address"
                 value={formData.email}
                 onChange={handleInputChange}
               />
-   
               {errors.email && <div className="invalid-feedback">{errors.email}</div>}
             </div>
           </div>
@@ -240,6 +230,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
               type="text"
               name="openingHours"
               className={`form-control ${errors.openingHours ? 'is-invalid' : ''}`}
+              placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
               value={formData.openingHours}
               onChange={handleInputChange}
             />
@@ -283,7 +274,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({
       <ModalFooter className="border-top-0">
         <div className="modal-actions">
           <button
-            className="btn btn-secondary"
+            className="btn btn-outline-secondary"
             onClick={toggle}
             disabled={isSubmitting}
           >

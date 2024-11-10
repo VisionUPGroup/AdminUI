@@ -4,19 +4,44 @@ import { getToken } from "./tokenHelper";
 export const useOrderService = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // Fetch all orders
-    const fetchAllOrder = async () => {
+    // Fetch all orders with optional query parameters
+    const fetchAllOrder = async (username = '', process, pageIndex) => {
         try {
             const token = getToken();
             const response = await axios.get(`${baseUrl}/api/admin/orders`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
+                params: {
+                    Username: username,
+                    Process: process,
+                    PageIndex: pageIndex,
+                    PageSize: 20, // Set to 20 as requested
+                },
             });
-            console.log("Orders Data:", response.data.data); // Log data received from API
-            return response.data.data;
+            return {
+                items: response.data.data,
+                totalItems: response.data.totalCount,
+                revenueCompleted: response.data.totalRevenue,
+                currentPage: pageIndex
+            };
         } catch (error) {
             console.error("Error fetching orders:", error);
+            throw error;
+        }
+    };
+
+    const countOrder = async () => {
+        try {
+            const token = getToken();
+            const response = await axios.get(`${baseUrl}/api/orders/count?valueCount=true`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error counting orders:", error);
             throw error;
         }
     };
@@ -25,7 +50,7 @@ export const useOrderService = () => {
     const deleteOrder = async (orderId) => {
         try {
             const token = getToken();
-            const response = await axios.delete(`${baseUrl}/api/admin/orders/${orderId}`, {
+            const response = await axios.delete(`${baseUrl}/api/orders/${orderId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -62,9 +87,59 @@ export const useOrderService = () => {
         }
     };
 
+    // Fetch order statistics with dynamic startDate and endDate
+// Trong orderService.js
+const fetchStatisticOrder = async (date, endDate) => {
+    try {
+        const token = getToken();
+        const params = endDate 
+          ? { startDate: date, endDate: endDate }
+          : { dateOnly: date };
+          
+        const response = await axios.get(
+            `${baseUrl}/api/orders/statistic`,
+            {
+                params,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching statistics:", error);
+        throw error;
+    }
+};
+const fetchStatisticOrderDateToDate = async (startDate, endDate) => {
+    try {
+        const token = getToken();
+        const params =  { startDate: startDate, endDate: endDate }
+       
+          
+        const response = await axios.get(
+            `${baseUrl}/api/orders/statistic-date-to-date`,
+            {
+                params,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching statistics:", error);
+        throw error;
+    }
+};
+
+    
     return {
         fetchAllOrder,
+        fetchStatisticOrder,
+        fetchStatisticOrderDateToDate,
         deleteOrder,
         updateOrderProcess,
+        countOrder
     };
 };

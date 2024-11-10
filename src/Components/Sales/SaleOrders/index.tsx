@@ -15,16 +15,24 @@ import {
   FaBox,
   FaExclamationCircle,
   FaSync,
+  FaFirstOrder,
+  FaMoneyBill,
+  FaTiktok,
+  FaExclamationTriangle,
+  FaBan,
+  FaUser,
 } from "react-icons/fa";
 import { useOrderService } from "../../../../Api/orderService";
 import { useVoucherService } from "../../../../Api/voucherService";
 import { useKioskService } from "../../../../Api/kioskService";
 import { useLensService } from "../../../../Api/lensService";
 import { usePaymentService } from "../../../../Api/paymentService";
+import { useAccountService } from "../../../../Api/accountService";
 import OrderStatusTracker from "./OderTracker";
 import LensInformation from "./LensInformation";
 import PaymentInfo from "./PaymentInfomation";
 import "./OrderStyle.scss";
+import Pagination from "./Pagination";
 
 const SalesOrders: React.FC = () => {
   // States
@@ -64,6 +72,7 @@ const SalesOrders: React.FC = () => {
   interface Order {
     id: number;
     accountID: number;
+    username?: string; // Thêm trường này
     orderTime: string;
     status: boolean;
     receiverAddress: string;
@@ -103,33 +112,64 @@ const SalesOrders: React.FC = () => {
     totalPaid: number;
     remainingAmount: number;
   } | null>(null);
+  // Thêm các state mới
+
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalItemsCompleted, setTotalItemsCompleted] = useState(0);
+  const [revenueCompleted, setRevenueCompleted] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
 
   // Services
-  const { fetchAllOrder } = useOrderService();
+  const { fetchAllOrder, countOrder, deleteOrder, updateOrderProcess } =
+    useOrderService();
   const { fetchVoucherById } = useVoucherService();
   const { fetchKioskById } = useKioskService();
   const { fetchLensById } = useLensService();
   const { fetchPaymentByOrderId } = usePaymentService();
+  const { fetchAccountById } = useAccountService();
 
   // Fetch Initial Data
   useEffect(() => {
     fetchData();
-  }, []);
-
+    fetchRevenueCompleted();
+    totalOrderCounting();
+  }, [searchTerm, statusFilter, currentPage]);
+  const totalOrderCounting = async () => {
+    const data = await countOrder();
+    try {
+      setTotalItems(data);
+    } catch (error) {
+      console.error("Error counting order:", error);
+    }
+  };
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const data = await fetchAllOrder();
+  
+      const data = await fetchAllOrder("", statusFilter, currentPage);
+  
       const formattedData = await Promise.all(
-        data.map(async (order: any) => {
+        data.items.map(async (order: any) => {
+          // Fetch voucher information
           const voucherResponse = order.voucherID
             ? await fetchVoucherById(order.voucherID)
             : null;
           const voucherName = voucherResponse ? voucherResponse.name : null;
-
+  
+          // Fetch account information
+          let username = "Unknown"; // Giá trị mặc định
+          try {
+            const accountResponse = await fetchAccountById(order.accountID);
+            // Kiểm tra và lấy username từ response
+            username = accountResponse?.username || "Unknown";
+          } catch (error) {
+            console.error(`Error fetching username for account ${order.accountID}:`, error);
+          }
+  
           return {
             id: order.id,
             accountID: order.accountID,
+            username, // Luôn có giá trị vì đã set mặc định là "Unknown"
             orderTime: new Date(order.orderTime).toLocaleString(),
             status: order.status,
             receiverAddress: order.receiverAddress,
@@ -149,6 +189,7 @@ const SalesOrders: React.FC = () => {
           };
         })
       );
+  
       setOrderData(formattedData);
       setFilteredOrders(formattedData);
     } catch (error) {
@@ -158,7 +199,23 @@ const SalesOrders: React.FC = () => {
       setIsLoading(false);
     }
   };
+  const fetchRevenueCompleted = async () => {
+    try {
+      setIsLoading(true);
 
+      const data = await fetchAllOrder("", "4", "");
+      setRevenueCompleted(data.revenueCompleted);
+      setTotalItemsCompleted(data.totalItems);
+    } catch (error) {
+      toast.error("Failed to fetch orders");
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
   // Handlers
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchValue = event.target.value;
@@ -170,6 +227,41 @@ const SalesOrders: React.FC = () => {
   ) => {
     setStatusFilter(event.target.value);
   };
+  const handleDeleteOrder = async (orderId: number) => {
+    try {
+      await deleteOrder(orderId);
+
+      // Cập nhật lại danh sách orders sau khi xóa
+      setOrderData((prevOrders) =>
+        prevOrders.filter((order) => order.id !== orderId)
+      );
+
+      // Cập nhật filtered orders
+      setFilteredOrders((prevOrders) =>
+        prevOrders.filter((order) => order.id !== orderId)
+      );
+
+      // Giảm tổng số order
+      setTotalItems((prev) => prev - 1);
+
+      // Clear selected order nếu đang xem order bị xóa
+      if (selectedOrderInfo?.orderId === orderId) {
+        setSelectedOrderInfo(null);
+        setSelectedOrderDetails([]);
+        setLensInfo({});
+        setPaymentInfo(null);
+      }
+
+      toast.success("Order deleted successfully", {
+        icon: <FaBan />,
+      });
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error("Failed to delete order", {
+        icon: <FaExclamationTriangle />,
+      });
+    }
+  };
 
   // Filter orders based on search and status
   useEffect(() => {
@@ -180,8 +272,9 @@ const SalesOrders: React.FC = () => {
       filtered = filtered.filter(
         (order) =>
           order.code.toLowerCase().includes(searchLower) ||
+        order.username?.toLowerCase().includes(searchLower) ||
           order.id.toString().includes(searchLower) ||
-          order.receiverAddress.toLowerCase().includes(searchLower)
+          order.receiverAddress?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -203,6 +296,7 @@ const SalesOrders: React.FC = () => {
     }
 
     setFilteredOrders(filtered);
+    // Khi filter thay đổi, reset về trang 1
   }, [searchTerm, statusFilter, orderData]);
 
   const handleOrderSelect = async (
@@ -311,7 +405,7 @@ const SalesOrders: React.FC = () => {
               <FaSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search by order code, address..."
+                placeholder="Search by order code, address, customer..."
                 value={searchTerm}
                 onChange={handleSearch}
               />
@@ -323,11 +417,11 @@ const SalesOrders: React.FC = () => {
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-content">
-              <div className="stat-value">{orderData.length}</div>
+              <div className="stat-value">{totalItems}</div>
               <div className="stat-label">Total Orders</div>
               <div className="stat-change">
-                <FaArrowUp />
-                12% from last month
+                <FaFirstOrder />
+                All order
               </div>
             </div>
             <FaShoppingCart className="stat-icon" />
@@ -336,14 +430,12 @@ const SalesOrders: React.FC = () => {
           <div className="stat-card">
             <div className="stat-content">
               <div className="stat-value">
-                {formatCurrency(
-                  orderData.reduce((sum, order) => sum + order.total, 0)
-                )}
+                {formatCurrency(revenueCompleted)}
               </div>
               <div className="stat-label">Total Revenue</div>
               <div className="stat-change">
-                <FaArrowUp />
-                8% from last month
+                <FaMoneyBill />
+                Revenue of order completed
               </div>
             </div>
             <FaMoneyBillWave className="stat-icon" />
@@ -351,13 +443,11 @@ const SalesOrders: React.FC = () => {
 
           <div className="stat-card">
             <div className="stat-content">
-              <div className="stat-value">
-                {orderData.filter((order) => order.process === 4).length}
-              </div>
+              <div className="stat-value">{totalItemsCompleted}</div>
               <div className="stat-label">Completed Orders</div>
               <div className="stat-change">
-                <FaArrowUp />
-                5% from last month
+                <FaCheckCircle />
+                Order completed
               </div>
             </div>
             <FaCheckCircle className="stat-icon" />
@@ -370,108 +460,139 @@ const SalesOrders: React.FC = () => {
           <div className="content-section orders-table">
             <div className="content-header">
               <h2>Recent Orders</h2>
-              <div className="filters">
-                <select
-                  className="filter-select"
-                  value={statusFilter}
-                  onChange={handleStatusFilterChange}
-                >
-                  <option value="all">All Orders</option>
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+              <div className="order-stats">
+                <span className="total-orders">
+                  Showing {orderData.length} of {totalItems} orders
+                </span>
+                <div className="filters">
+                  <select
+                    className="filter-select"
+                    value={statusFilter}
+                    onChange={handleStatusFilterChange}
+                  >
+                    <option value="">All Orders</option>
+                    <option value="0">Pending</option>
+                    <option value="1">Processing</option>
+                    <option value="2">Shipping</option>
+                    <option value="3">Delivered</option>
+                    <option value="4">Completed</option>
+                    <option value="5">Cancelled</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             <div className="table-container">
               {isLoading ? (
+                // Loading state
                 <div className="loading-state">
                   <div className="spinner"></div>
                   <p>Loading orders...</p>
                 </div>
               ) : filteredOrders.length > 0 ? (
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Order Info</th>
-                      <th>Customer</th>
-                      <th>Status</th>
-                      <th>Amount</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredOrders.map((order) => (
-                      <tr key={order.id}>
-                        <td>
-                          <div className="order-id">
-                            <span className="code">{order.code}</span>
-                            <span className="time">
-                              {new Date(order.orderTime).toLocaleString()}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="customer-info">
-                            <span className="address">
-                              <FaMapMarkerAlt />
-                              {order.receiverAddress}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          <span
-                            className="status-badge"
-                            style={{
-                              background: `${getOrderStatusColor(
-                                order.process
-                              )}15`,
-                              color: getOrderStatusColor(order.process),
-                            }}
-                          >
-                            {getOrderStatusLabel(order.process)}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="order-amount">
-                            <span className="amount">
-                              {formatCurrency(order.total)}
-                            </span>
-                            {order.isDeposit && (
-                              <span className="deposit-badge">
-                                <FaCheckCircle /> Deposited
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <div className="actions">
-                            <button
-                              className="view-btn"
-                              onClick={() =>
-                                handleOrderSelect(
-                                  order.id,
-                                  order.orderDetails,
-                                  order.voucherName,
-                                  order.process,
-                                  order.isDeposit,
-                                  order.kiosks,
-                                  order.total,
-                                  order.receiverAddress
-                                )
-                              }
-                            >
-                              View Details
-                            </button>
-                          </div>
-                        </td>
+                // Table hiển thị data
+                <>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Order Info</th>
+                        <th>Address</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {orderData.map((order) => (
+                        <tr key={order.id}>
+                          <td>
+                            <div className="order-id">
+                              <span className="code">{order.code}</span>
+                              <span className="username">
+            <FaUser /> {order.username}
+          </span>
+                              <span className="time">
+                                {new Date(order.orderTime).toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="customer-info">
+                              <span className="address">
+                                <FaMapMarkerAlt />
+                                {order.receiverAddress}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <span
+                              className={`status-badge ${
+                                order.status ? "active" : "inactive"
+                              }`}
+                            >
+                              {order.status ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <span
+                              className="status-badge"
+                              style={{
+                                background: `${getOrderStatusColor(
+                                  order.process
+                                )}15`,
+                                color: getOrderStatusColor(order.process),
+                              }}
+                            >
+                              {getOrderStatusLabel(order.process)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <div className="order-amount">
+                              <span className="amount">
+                                {formatCurrency(order.total)}
+                              </span>
+                              {order.isDeposit && (
+                                <span className="deposit-badge">
+                                  <FaCheckCircle /> Deposited
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="actions">
+                              <button
+                                className="view-btn"
+                                onClick={() =>
+                                  handleOrderSelect(
+                                    order.id,
+                                    order.orderDetails,
+                                    order.voucherName,
+                                    order.process,
+                                    order.isDeposit,
+                                    order.kiosks,
+                                    order.total,
+                                    order.receiverAddress
+                                  )
+                                }
+                              >
+                                View Details
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalItems / 20)}
+                    onPageChange={handlePageChange}
+                  />
+                </>
               ) : (
+                // Empty state khi không có data
                 <div className="empty-state">
                   <FaExclamationCircle className="empty-icon" />
                   <h3>No Orders Found</h3>
@@ -480,6 +601,11 @@ const SalesOrders: React.FC = () => {
                       ? "No orders match your search criteria"
                       : "There are no orders to display"}
                   </p>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={Math.ceil(totalItems / 20)}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               )}
             </div>
@@ -532,7 +658,6 @@ const SalesOrders: React.FC = () => {
                       status={selectedOrderInfo.process}
                       orderId={selectedOrderInfo.orderId}
                       onStatusUpdate={(newStatus) => {
-                        // Update local state after status change
                         setSelectedOrderInfo((prev) =>
                           prev
                             ? {
@@ -541,8 +666,6 @@ const SalesOrders: React.FC = () => {
                               }
                             : null
                         );
-
-                        // Update main orders list
                         setOrderData((prevOrders) =>
                           prevOrders.map((order) =>
                             order.id === selectedOrderInfo.orderId
@@ -551,6 +674,7 @@ const SalesOrders: React.FC = () => {
                           )
                         );
                       }}
+                      onDeleteOrder={handleDeleteOrder}
                     />
                   </div>
 
@@ -634,7 +758,7 @@ const SalesOrders: React.FC = () => {
                               </div>
                               <div className="product-meta">
                                 <span className="quantity">
-                                  Qty: {detail.quantity}
+                                  Qantity: {detail.quantity}
                                 </span>
                                 <span
                                   className={`stock-status ${
@@ -673,29 +797,29 @@ const SalesOrders: React.FC = () => {
 
       {/* Additional Features */}
       <div className="floating-actions">
-  <button 
-    className="refresh-btn"
-    onClick={() => {
-      fetchData();
-      // Thêm hiệu ứng toast khi refresh
-      toast.success('Data refreshed successfully!', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        icon: <FaSync />
-      });
-    }}
-    disabled={isLoading}
-  >
-    <FaSync className={`icon ${isLoading ? 'spinning' : ''}`} />
-    {isLoading ? 'Refreshing...' : 'Refresh Data'}
-  </button>
-</div>
+        <button
+          className="refresh-btn"
+          onClick={() => {
+            fetchData();
+            // Thêm hiệu ứng toast khi refresh
+            toast.success("Data refreshed successfully!", {
+              position: "top-right",
+              autoClose: 2000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+              theme: "light",
+              icon: <FaSync />,
+            });
+          }}
+          disabled={isLoading}
+        >
+          <FaSync className={`icon ${isLoading ? "spinning" : ""}`} />
+          {isLoading ? "Refreshing..." : "Refresh Data"}
+        </button>
+      </div>
 
       {/* Toast Container for Notifications */}
       <ToastContainer

@@ -1,15 +1,20 @@
-// UsersList.tsx
 import React, { Fragment, useEffect, useState } from "react";
-import CommonBreadcrumb from "@/CommonComponents/CommonBreadcrumb";
-import CommonCardHeader from "@/CommonComponents/CommonCardHeader";
-import Datatable from "@/CommonComponents/DataTable";
-import { Card, CardBody, CardHeader, Container, Button } from "reactstrap";
+import { 
+  FaPlus, 
+  FaSearch, 
+  FaArrowUp, 
+  FaUsers, 
+  FaRegUserCircle, 
+  FaPen, 
+  FaTrash 
+} from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
-import { useAuthService } from "../../../../Api/authService"; // Import the authentication service
+import { useAuthService } from "../../../../Api/authService";
 import UserModal from "./UserModal";
-import Swal from "sweetalert2"; // Import SweetAlert2
+import Pagination from "./Pagination";
+import Swal from "sweetalert2";
+import "./UserStyle.scss";
 
-// Define the interface for the role structure
 interface Role {
   id: number;
   name: string;
@@ -17,7 +22,6 @@ interface Role {
   status: boolean;
 }
 
-// Define the interface for the user data structure
 interface UserData {
   id: number;
   username: string;
@@ -28,104 +32,302 @@ interface UserData {
   role: Role;
 }
 
+interface ApiResponse {
+  items: UserData[];
+  totalItems: number;
+  currentPage: number;
+}
+
 const UsersList: React.FC = () => {
   const { fetchAccountByRole } = useAccountService();
-  const { register } = useAuthService(); // Get the register function
+  const { register } = useAuthService();
   const [userData, setUserData] = useState<UserData[]>([]);
-  const [modalOpen, setModalOpen] = useState(false); // State for modal visibility
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const itemsPerPage = 10;
+
+  const getUserData = async (page: number, search: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetchAccountByRole(1, search, page);
+      setUserData(response.items);
+      setTotalItems(response.totalItems);
+      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to load user data. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const data = await fetchAccountByRole(1);
-        setUserData(data);
-        console.log(data);
-      } catch (error) {
-        console.error("Failed to load user data:", error);
-      }
-    };
-    getUserData();
-  }, [fetchAccountByRole]);
+    getUserData(currentPage, searchTerm);
+  }, [currentPage, searchTerm]); // Reload when page or search changes
 
   const handleCreateUser = () => {
+    setEditingUser(null);
     setModalOpen(true);
   };
 
-  // Function to close modal
   const toggleModal = () => {
     setModalOpen(!modalOpen);
   };
 
-  // Function to handle saving the new user
-  const handleSaveUser = async (userData: { username: string; email: string; phoneNumber: string; password: string }) => {
+  const handleEdit = (user: UserData) => {
+    setEditingUser(user);
+    setModalOpen(true);
+  };
+
+  const handleSaveUser = async (userData: { 
+    username: string; 
+    email: string; 
+    phoneNumber: string; 
+    password: string 
+  }) => {
     try {
-      // Call the register function with the necessary user data
-      const response = await register(userData.username, userData.password, userData.email, userData.phoneNumber);
+      const response = await register(
+        userData.username, 
+        userData.password, 
+        userData.email, 
+        userData.phoneNumber
+      );
+      
       if (response) {
-        console.log("User registered successfully:", response);
-        
-        // Display a success alert using SweetAlert
         await Swal.fire({
           icon: 'success',
-          title: 'User Registered',
-          text: 'The user has been registered successfully!',
-          confirmButtonText: 'Okay'
+          title: 'Success',
+          text: 'User has been registered successfully!',
+          confirmButtonText: 'OK'
         });
-        
-        // Optionally fetch updated user data after saving
-        const updatedData = await fetchAccountByRole(1); // Re-fetch user data
-        setUserData(updatedData); // Update user data state
-      } else {
-        console.error("Failed to register user.");
+        getUserData(currentPage, searchTerm);
       }
     } catch (error) {
       console.error("Error registering user:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to register user. Please try again.',
+      });
     }
-    toggleModal(); // Close the modal after saving
+    toggleModal();
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handleFilter = (status: "all" | "active" | "inactive") => {
+    setFilterStatus(status);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleDelete = async (userId: number) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        // Add your delete API call here
+        // await deleteAccount(userId);
+        
+        await Swal.fire(
+          'Deleted!',
+          'User has been deleted.',
+          'success'
+        );
+        getUserData(currentPage, searchTerm);
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to delete user. Please try again.',
+      });
+    }
   };
 
   return (
-    <Fragment>
-      <CommonBreadcrumb title="Account" parent="Vendors" />
-      <Container fluid>
-        <Card>
-          <CardHeader>
-            <h5>User</h5>
-            <div className="btn-popup pull-right">
-              <Button color="primary" onClick={handleCreateUser}>
-                Create User
-              </Button>
+    <div className="user-management">
+      <div className="management-container">
+        {/* Header Section */}
+        <div className="management-header">
+          <div className="header-content">
+            <div className="title-wrapper">
+              <h1>User Management</h1>
+              <p>Manage and monitor your user accounts</p>
             </div>
-          </CardHeader>
-          <CardBody>
-            <div className="clearfix"></div>
-            <div id="batchDelete" className="category-table user-list order-table coupon-list-delete list-vendor-table">
-              {userData.length > 0 ? (
-                <Datatable
-                  multiSelectOption={false}
-                  myData={userData.map((user) => ({
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    status: user.status ? "Active" : "Inactive",
-                    roleName: user.role.name,
-                    roleDescription: user.role.description,
-                  }))}
-                  pageSize={30}
-                  pagination={true}
-                  className="-striped -highlight"
+          </div>
+          <div className="header-actions">
+            <button className="create-btn" onClick={handleCreateUser}>
+              <FaPlus className="btn-icon" />
+              Create User
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{totalItems}</div>
+              <div className="stat-label">Total Users</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                12% from last month
+              </div>
+            </div>
+            <FaUsers className="stat-icon" />
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">
+                {userData.filter(user => user.status).length}
+              </div>
+              <div className="stat-label">Active Users</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                8% from last month
+              </div>
+            </div>
+            <FaRegUserCircle className="stat-icon" />
+          </div>
+        </div>
+
+        {/* Main Content Section */}
+        <div className="content-section">
+          <div className="content-header">
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+            <div className="filters">
+              <button
+                className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
+                onClick={() => handleFilter('all')}
+              >
+                All Users
+              </button>
+              <button
+                className={`filter-btn ${filterStatus === 'active' ? 'active' : ''}`}
+                onClick={() => handleFilter('active')}
+              >
+                Active
+              </button>
+              <button
+                className={`filter-btn ${filterStatus === 'inactive' ? 'active' : ''}`}
+                onClick={() => handleFilter('inactive')}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="loading-spinner">Loading...</div>
+          ) : (
+            <>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User Information</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userData.map((user) => (
+                      <tr key={user.id}>
+                        <td>
+                          <div className="user-info">
+                            <div className="user-icon">
+                              <FaRegUserCircle />
+                            </div>
+                            <div className="user-details">
+                              <div className="name">{user.username}</div>
+                              <div className="email">{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{user.role.name}</td>
+                        <td>
+                          <span className={`status-badge ${user.status ? 'active' : 'inactive'}`}>
+                            {user.status ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="actions">
+                            <button 
+                              className="edit-btn"
+                              onClick={() => handleEdit(user)}
+                            >
+                              <FaPen />
+                            </button>
+                            <button 
+                              className="delete-btn"
+                              onClick={() => handleDelete(user.id)}
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="pagination-wrapper">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
                 />
-              ) : (
-                <p>No data available</p>
-              )}
-            </div>
-          </CardBody>
-        </Card>
-      </Container>
-      
-      {/* User Modal for creating new users */}
-      <UserModal isOpen={modalOpen} toggle={toggleModal} onSave={handleSaveUser} />
-    </Fragment>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <UserModal 
+        isOpen={modalOpen} 
+        toggle={toggleModal} 
+        onSave={handleSaveUser}
+        // editingUser={editingUser}
+      />
+    </div>
   );
 };
 

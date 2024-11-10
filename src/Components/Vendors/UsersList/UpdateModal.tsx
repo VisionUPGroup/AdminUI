@@ -10,7 +10,6 @@ import {
   Label,
   Input,
 } from "reactstrap";
-
 interface UpdateModalProps {
   isOpen: boolean;
   toggle: () => void;
@@ -21,7 +20,8 @@ interface UpdateModalProps {
     phoneNumber: string;
     password: string;
   }) => void;
-  initialData?: { // Add initial data prop
+  initialData?: {
+    id:number,
     username: string;
     email: string;
     roleID: number;
@@ -53,7 +53,7 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ isOpen, toggle, onSave, initi
       setRoleID(initialData.roleID);
       setPhoneNumber(initialData.phoneNumber);
       setPassword(initialData.password);
-      setConfirmPassword(initialData.password); // Set confirm password initially to avoid validation error
+      setConfirmPassword(initialData.password);
     }
   }, [initialData, isOpen]);
 

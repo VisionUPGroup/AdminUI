@@ -1,23 +1,9 @@
-import CommonBreadcrumb from "@/CommonComponents/CommonBreadcrumb";
-import CommonCardHeader from "@/CommonComponents/CommonCardHeader";
-import Datatable from "@/CommonComponents/DataTable";
 import { Fragment, useEffect, useState } from "react";
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Col,
-  Container,
-  Row,
-  Button,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "reactstrap";
-import { useAccountService } from "../../../../Api/accountService"; // Adjust the path as needed
+import { FaPlus, FaSearch, FaArrowUp, FaUsers, FaRegUserCircle, FaPen, FaTrash } from "react-icons/fa";
+import { useAccountService } from "../../../../Api/accountService";
+import Pagination from "./Pagination"; // Import Pagination component
+import "./StaffStyle.scss";
 
-// Define the interface for the role structure
 interface Role {
   id: number;
   name: string;
@@ -25,11 +11,9 @@ interface Role {
   status: boolean;
 }
 
-// Define the interface for the user data structure
 interface StaffData {
   id: number;
   username: string;
-  password: string; // Consider removing this if you don't need it on the frontend
   email: string;
   status: boolean;
   roleID: number;
@@ -37,63 +21,200 @@ interface StaffData {
   role: Role;
 }
 
-const UsersList: React.FC = () => {
+interface ApiResponse {
+  items: StaffData[];
+  totalItems: number;
+  currentPage: number;
+}
+
+const StaffsList: React.FC = () => {
   const { fetchAccountByRole } = useAccountService();
   const [staffData, setStaffData] = useState<StaffData[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 10;
 
+  const fetchStaffData = async (page: number, search: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetchAccountByRole(2, search, page);
+      setStaffData(response.items);
+      setTotalItems(response.totalItems);
+      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
+    } catch (error) {
+      console.error("Failed to load staff data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const data = await fetchAccountByRole(2);
-        setStaffData(data);
-        console.log(data);
-      } catch (error) {
-        console.error("Failed to load vendor data:", error);
-      }
-    };
-    getUserData();
-  }, [fetchAccountByRole]);
- 
+    fetchStaffData(currentPage, searchTerm);
+  }, [currentPage, searchTerm]);
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1); // Reset về trang 1 khi search
+  };
+
+  const handleFilter = (status: "all" | "active" | "inactive") => {
+    setFilterStatus(status);
+    setCurrentPage(1); // Reset về trang 1 khi filter
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   return (
-    <Fragment>
-      <CommonBreadcrumb title="Account" parent="Vendors" />
-      <Container fluid>
-        <Card>
-          <CardHeader>
-            <h5>Staff</h5>
-          
-          </CardHeader>
-          <CardBody>
-            <div className="clearfix"></div>
-            <div
-              id="batchDelete"
-              className="category-table user-list order-table coupon-list-delete list-vendor-table"
-            >
-              {staffData.length > 0 ? (
-                <Datatable
-                  multiSelectOption={false}
-                  myData={staffData.map((staff) => ({
-                    id: staff.id,
-                    username: staff.username,
-                    email: staff.email,
-                    status: staff.status ? "Active" : "Inactive", // Optional formatting
-                    roleName: staff.role.name, // Flattening role name for easier access
-                    roleDescription: staff.role.description,
-                  }))}
-                  pageSize={10}
-                  pagination={true}
-                  class="-striped -highlight"
-                />
-              ) : (
-                <p>No data available</p>
-              )}
+    <div className="staff-management">
+      <div className="management-container">
+        {/* Header Section */}
+        <div className="management-header">
+          <div className="header-content">
+            <div className="title-wrapper">
+              <h1>Staff Management</h1>
+              <p>Manage and monitor your staff accounts</p>
             </div>
-          </CardBody>
-        </Card>
-      </Container>
-    </Fragment>
+          </div>
+          <div className="header-actions">
+            <button className="create-btn">
+              <FaPlus className="btn-icon" />
+              Add New Staff
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{totalItems}</div>
+              <div className="stat-label">Total Staff</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                10% from last month
+              </div>
+            </div>
+            <FaUsers className="stat-icon" />
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">
+                {staffData.filter(staff => staff.status).length}
+              </div>
+              <div className="stat-label">Active Staff</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                5% from last month
+              </div>
+            </div>
+            <FaRegUserCircle className="stat-icon" />
+          </div>
+        </div>
+
+        {/* Main Content Section */}
+        <div className="content-section">
+          <div className="content-header">
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search staff..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+            <div className="filters">
+              <button
+                className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
+                onClick={() => handleFilter('all')}
+              >
+                All Staff
+              </button>
+              <button
+                className={`filter-btn ${filterStatus === 'active' ? 'active' : ''}`}
+                onClick={() => handleFilter('active')}
+              >
+                Active
+              </button>
+              <button
+                className={`filter-btn ${filterStatus === 'inactive' ? 'active' : ''}`}
+                onClick={() => handleFilter('inactive')}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="loading-spinner">Loading...</div>
+          ) : (
+            <>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Staff Information</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {staffData.map((staff) => (
+                      <tr key={staff.id}>
+                        <td>
+                          <div className="staff-info">
+                            <div className="staff-icon">
+                              <FaRegUserCircle />
+                            </div>
+                            <div className="staff-details">
+                              <div className="name">{staff.username}</div>
+                              <div className="email">{staff.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{staff.role.name}</td>
+                        <td>
+                          <span className={`status-badge ${staff.status ? 'active' : 'inactive'}`}>
+                            {staff.status ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="actions">
+                            <button className="edit-btn">
+                              <FaPen />
+                            </button>
+                            <button className="delete-btn">
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="pagination-wrapper">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default UsersList;
+export default StaffsList;
