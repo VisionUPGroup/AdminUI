@@ -17,28 +17,44 @@ export const MENUITEMS: any = [
     active: false,
     children: [
       {
-        title: "Physical",
+        title: "EyeGlass",
         type: "sub",
         active: false,
         children: [
-          { path: "/products/physical/category", title: "Category", type: "link" },
-          { path: "/products/physical/sub-category", title: "Sub Category", type: "link" },
-          { path: "/products/physical/product-list", title: "Product List", type: "link" },
-          { path: "/products/physical/product-detail", title: "Product Detail", type: "link" },
-          { path: "/products/physical/add-product", title: "Add Product", type: "link" },
+          { path: "/products/eyeglass", title: "List", type: "link" }
         ],
       },
       {
-        title: "digital",
+        title: "Lens",
         type: "sub",
         active: false,
         children: [
-          { path: "/products/digital/digital-category", title: "Category", type: "link" },
-          { path: "/products/digital/digital-sub-category", title: "Sub Category", type: "link" },
-          { path: "/products/digital/digital-product-list", title: "Product List", type: "link" },
-          { path: "/products/digital/digital-add-product", title: "Add Product", type: "link" },
+          { path: "/products/lens", title: "List", type: "link" }
         ],
       },
+      // {
+      //   title: "Physical",
+      //   type: "sub",
+      //   active: false,
+      //   children: [
+      //     { path: "/products/physical/category", title: "Category", type: "link" },
+      //     { path: "/products/physical/sub-category", title: "Sub Category", type: "link" },
+      //     { path: "/products/physical/product-list", title: "Product List", type: "link" },
+      //     { path: "/products/physical/product-detail", title: "Product Detail", type: "link" },
+      //     { path: "/products/physical/add-product", title: "Add Product", type: "link" },
+      //   ],
+      // },
+      // {
+      //   title: "digital",
+      //   type: "sub",
+      //   active: false,
+      //   children: [
+      //     { path: "/products/digital/digital-category", title: "Category", type: "link" },
+      //     { path: "/products/digital/digital-sub-category", title: "Sub Category", type: "link" },
+      //     { path: "/products/digital/digital-product-list", title: "Product List", type: "link" },
+      //     { path: "/products/digital/digital-add-product", title: "Add Product", type: "link" },
+      //   ],
+      // },
     ],
   },
   {

@@ -8,7 +8,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <title>Multikart - Premium Admin Template</title>
+        <title>VisionUp</title>
         <link rel="icon" href={`../../assets/images/logo/favicon.png`} type="image/x-icon" />
         <link rel="shortcut icon" href={`../../assets/images/dashboard/favicon.png`} type="image/x-icon" />
 
