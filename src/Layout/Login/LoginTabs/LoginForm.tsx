@@ -5,7 +5,6 @@ import { Eye, EyeOff } from "react-feather";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import { Button, Form, FormGroup, Input, InputGroup, InputGroupText, Label } from "reactstrap";
-import SocialMediaIcons from "./SocialMediaIcons";
 import { useAuthService } from "../../../../Api/authService";
 
 const LoginForm = () => {
@@ -17,7 +16,7 @@ const LoginForm = () => {
   });
   const { username, password } = formValues;
   const router = useRouter();
-  const { login } = useAuthService(); // Use the login function from the auth service
+  const { login } = useAuthService();
 
   const handleUserValue = (event: ChangeEvent<HTMLInputElement>) => {
     setFormValues({ ...formValues, [event.target.name]: event.target.value });
@@ -25,13 +24,28 @@ const LoginForm = () => {
 
   const formSubmitHandle = async (event: FormEvent) => {
     event.preventDefault();
-    const response = await login(username, password); // Call the login API
-
+    const response = await login(username, password);
+  
     if (response && response.accessToken) {
-      Cookies.set("token", response.accessToken); // Store the token in local storage
-      router.push(`${process.env.PUBLIC_URL}/en/dashboard`); // Redirect to the dashboard
+      // Lưu token và role vào cookies
+      Cookies.set("token", response.accessToken);
+      Cookies.set("roleId", response.user.roleID);
+      Cookies.set("userData", JSON.stringify({
+        username: response.user.username,
+        roleId: response.user.roleID,
+        // Thêm các thông tin user khác nếu cần
+      }));
       
       toast.success("Login successful");
+      
+      // Redirect dựa vào role
+      if (response.user.roleID === "2") {
+        router.push(`${process.env.PUBLIC_URL}/staff/dashboard`);
+      } else if (response.user.roleID === "3") {
+        router.push(`${process.env.PUBLIC_URL}/admin/dashboard`);
+      } else {
+        router.push(`${process.env.PUBLIC_URL}/dashboard`);
+      }
     } else {
       toast.error("Please Enter Valid Username Or Password");
     }
@@ -68,11 +82,6 @@ const LoginForm = () => {
           <Label className="d-block">
             <Input className="checkbox_animated" id="chk-ani2" type="checkbox" />
             Remember Me
-            <span className="pull-right">
-              <Button color="transparent" className="forgot-pass p-0">
-                Lost your password
-              </Button>
-            </span>
           </Label>
         </div>
       </div>
@@ -80,10 +89,6 @@ const LoginForm = () => {
         <Button color="primary" type="submit">
           Login
         </Button>
-      </div>
-      <div className="form-footer">
-        <span>Or login with social platforms</span>
-        <SocialMediaIcons />
       </div>
     </Form>
   );

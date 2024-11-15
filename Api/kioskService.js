@@ -32,7 +32,22 @@ export const useKioskService = () => {
 
     // Tạo mới một ki-ốt
     const createKiosk = async (kioskData) => {
-        return axios.post(`${baseUrl}/api/kiosks`, kioskData, {
+        try {
+            const response = await axios.post(`${baseUrl}/api/kiosks`, kioskData, {
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            if (error.response?.data && Array.isArray(error.response.data)) {
+                error.message = error.response.data[0];
+            }
+            throw error;
+        }
+    };
+    const moveOrderKiosk = async (kioskData) => {
+        return axios.post(`${baseUrl}/api/kiosks/move-orders`, kioskData, {
             headers: {
                 'Authorization': `Bearer ${getToken()}`
             }
@@ -69,5 +84,6 @@ export const useKioskService = () => {
         createKiosk,
         updateKiosk,
         deleteKiosk,
+        moveOrderKiosk
     };
 };

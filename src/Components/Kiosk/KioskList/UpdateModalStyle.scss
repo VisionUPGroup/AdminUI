@@ -1,0 +1,249 @@
+// Giữ nguyên các biến màu từ style cũ
+$primary-color: #c79816;
+$secondary-color: #6c757d;
+$border-color: #dee2e6;
+$success-color: #28a745;
+$error-color: #dc3545;
+$text-color: #000000;
+$background-color: #f8f9fa;
+
+// Thêm các biến mới cho status
+$active-color: #28a745;
+$inactive-color: #dc3545;
+
+.upgraded-kiosk-modal {
+  // Kế thừa styles từ .upgraded-kiosk-modal-v4
+  .modal-header {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+    .modal-header-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title-with-icon {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .modal-title-icon {
+        font-size: 1.75rem;
+        color: $text-color;
+      }
+
+      h5 {
+        margin-bottom: 0;
+        font-weight: 600;
+        color: $text-color;
+      }
+    }
+
+    .close-btn {
+      background-color: transparent;
+      border: none;
+      color: $text-color;
+      font-size: 1.5rem;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+      align-self: flex-start;
+    }
+  }
+
+  .modal-body {
+    background-color: $background-color;
+    padding: 2rem;
+  }
+
+  // Kế thừa form styles
+  .modal-form {
+    .form-group {
+      margin-bottom: 1.5rem;
+
+      label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: $secondary-color;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &.d-block {
+          display: block;
+          margin-bottom: 0.5rem;
+        }
+
+        .field-icon {
+          font-size: 1.1rem;
+          color: $primary-color;
+        }
+
+        .required {
+          color: $error-color;
+          font-size: 1.2em;
+          line-height: 1;
+        }
+      }
+
+      .form-control {
+        border-color: $border-color;
+        border-radius: 0.375rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        color: $text-color;
+        background-color: white;
+
+        &.is-invalid {
+          border-color: $error-color;
+        }
+
+        &:focus {
+          border-color: $primary-color;
+          box-shadow: 0 0 0 0.2rem rgba($primary-color, 0.25);
+        }
+      }
+
+      .invalid-feedback {
+        font-size: 0.875rem;
+        color: $error-color;
+      }
+    }
+
+    // Style mới cho form-row
+    .form-row {
+      display: flex;
+      margin-right: -0.75rem;
+      margin-left: -0.75rem;
+      
+      .form-group {
+        padding-right: 0.75rem;
+        padding-left: 0.75rem;
+        flex: 1;
+        
+        &.col-md-6 {
+          flex: 0 0 50%;
+          max-width: 50%;
+        }
+      }
+    }
+
+    // Style mới cho status toggle
+    .status-toggle {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+
+      .status-option {
+        position: relative;
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        border: 1px solid $border-color;
+        transition: all 0.2s ease-in-out;
+        
+        input[type="radio"] {
+          position: absolute;
+          opacity: 0;
+        }
+
+        .status-label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: $secondary-color;
+
+          .status-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background-color: $secondary-color;
+          }
+        }
+
+        &.active {
+          border-color: $primary-color;
+          background-color: rgba($primary-color, 0.1);
+
+          .status-label {
+            color: $primary-color;
+
+            .status-dot {
+              background-color: $primary-color;
+            }
+          }
+        }
+
+        &:hover {
+          border-color: $primary-color;
+        }
+      }
+    }
+  }
+
+  .modal-footer {
+    background-color: $background-color;
+    padding: 1.5rem;
+    border-top: 1px solid $border-color;
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      width: 100%;
+
+      .btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+
+        &:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+
+        .button-icon {
+          font-size: 1.1rem;
+        }
+
+        .spinner-border {
+          width: 1rem;
+          height: 1rem;
+          border-width: 0.15em;
+        }
+      }
+
+      .btn-outline-secondary {
+        color: $secondary-color;
+        border-color: $border-color;
+
+        &:hover:not(:disabled) {
+          background-color: $secondary-color;
+          border-color: $secondary-color;
+          color: white;
+        }
+      }
+
+      .btn-primary {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        color: white;
+
+        &:hover:not(:disabled) {
+          background-color: darken($primary-color, 10%);
+          border-color: darken($primary-color, 10%);
+        }
+      }
+    }
+  }
+}

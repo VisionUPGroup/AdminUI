@@ -1,10 +1,11 @@
 import { Href, ImagePath } from "@/Constants";
-import { MENUITEMS } from "@/Data/Sidebar";
+import { getMenuItemsByRole } from "./RoleMenuItems";
 import { useAppSelector } from "@/Redux/Hooks";
 import { useTranslation } from "@/app/i18n/client";
 import Link from "next/link";
 import { Fragment, useEffect, useState } from "react";
 import UserPanel from "./UserPanel";
+import Cookies from "js-cookie";
 
 type MenuItem = {
   sidebartitle?: string;
@@ -16,17 +17,26 @@ type MenuItem = {
   active: boolean;
   children?: MenuItem[];
 };
+
 const Sidebar = () => {
   const { i18LangStatus } = useAppSelector((store) => store.LangReducer);
   const { sidebar } = useAppSelector((store) => store.LayoutReducer);
   const { t } = useTranslation(i18LangStatus);
-  const [mainmenu, setMainMenu] = useState<any>(MENUITEMS);
+  const [mainmenu, setMainMenu] = useState<MenuItem[]>([]);
   const [isChange, setIsChange] = useState(false);
+
+  useEffect(() => {
+    // Lấy roleId từ cookies
+    const roleId = Cookies.get("roleId");
+    // Set menu items dựa trên role
+    const menuItems = getMenuItemsByRole(roleId);
+    setMainMenu(menuItems);
+  }, []);
 
   useEffect(() => {
     const currentUrl = window.location.pathname;
     mainmenu.map((items: MenuItem) => {
-      mainMenu.filter((Items: MenuItem) => {
+      mainmenu.filter((Items: MenuItem) => {
         if (Items.path === currentUrl) setNavActive(Items);
         if (!Items.children) return false;
         Items.children.filter((subItems) => {
@@ -46,14 +56,11 @@ const Sidebar = () => {
       });
       return items;
     });
-    return () => {
-      setMainMenu(MENUITEMS);
-    };
   }, [isChange]);
 
   const setNavActive = (item: MenuItem) => {
     setIsChange(!isChange);
-    MENUITEMS.filter((menuItem: MenuItem) => {
+    mainmenu.filter((menuItem: MenuItem) => {
       if (menuItem !== item) menuItem.active = false;
       if (menuItem.children && menuItem.children.includes(item)) menuItem.active = true;
       if (menuItem.children) {
@@ -74,7 +81,7 @@ const Sidebar = () => {
       return false;
     });
     item.active = !item.active;
-    setMainMenu(MENUITEMS);
+    setMainMenu([...mainmenu]);
   };
 
   const mainMenu = mainmenu.map((menuItem: MenuItem, i: number) => (
@@ -158,6 +165,7 @@ const Sidebar = () => {
       )}
     </li>
   ));
+
   return (
     <Fragment>
       <div className={`page-sidebar ${sidebar && "open"}`}>
