@@ -30,32 +30,17 @@ export interface MenuItem {
 // Menu items cho Staff (Role 2)
 export const STAFF_MENU_ITEMS: MenuItem[] = [
   {
-    title: "Products",
-    icon: Box,
+    title: "Account",
+    icon: Users,
     type: "sub",
     active: false,
     children: [
       {
-        title: "Physical",
-        type: "sub",
-        icon: Box,
+        path: "/staffmanage/list-user",
+        title: "User",
+        type: "link",
+        icon: Circle,
         active: false,
-        children: [
-          {
-            path: "/products/physical/category",
-            title: "Category",
-            type: "link",
-            icon: Circle,
-            active: false,
-          },
-          {
-            path: "/products/physical/product-list",
-            title: "Product List",
-            type: "link",
-            icon: Circle,
-            active: false,
-          },
-        ],
       },
     ],
   },
@@ -66,7 +51,7 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
     active: false,
     children: [
       {
-        path: "/sales/orders",
+        path: "/sales/staff-orders",
         title: "Orders",
         type: "link",
         icon: Circle,
@@ -209,14 +194,14 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
     active: false,
     children: [
       {
-        path: "/vendors/list-user",
+        path: "/adminmanage/list-user",
         title: "User",
         type: "link",
         icon: Circle,
         active: false,
       },
       {
-        path: "/vendors/list-staff",
+        path: "/adminmanage/list-staff",
         title: "Staff",
         type: "link",
         icon: Circle,
@@ -252,14 +237,14 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
     type: "sub",
     children: [
       {
-        path: "/localization/translations",
+        path: "/kiosk/kiosk-list",
         title: "Kiosk list",
         type: "link",
         icon: Circle,
         active: false,
       },
       {
-        path: "/localization/kiosk-map",
+        path: "/kiosk/kiosk-map",
         title: "Kiosk map",
         type: "link",
         icon: Circle,

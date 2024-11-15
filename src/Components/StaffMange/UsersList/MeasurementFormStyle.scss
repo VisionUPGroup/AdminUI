@@ -1,0 +1,178 @@
+.measurement-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.measurement-form-modal {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 24px;
+  position: relative;
+
+  .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #666;
+      
+      &:hover {
+        color: #000;
+      }
+    }
+  }
+
+  .measurements-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .eye-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px;
+      color: #333;
+      font-size: 1.2rem;
+
+      svg {
+        color: #c79816;
+      }
+    }
+
+    .measurement-inputs {
+      display: grid;
+      gap: 16px;
+    }
+  }
+
+  .form-group {
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #444;
+    }
+
+    input[type="number"],
+    input[type="date"] {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+
+      &.error {
+        border-color: #dc3545;
+      }
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 0.85rem;
+      margin-top: 4px;
+      display: block;
+    }
+  }
+
+  .common-fields {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+
+    .dates-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+
+      @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+
+    button {
+      padding: 10px 24px;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &.cancel-btn {
+        background: white;
+        border: 1px solid #ddd;
+        color: #666;
+
+        &:hover {
+          background: #f8f9fa;
+        }
+      }
+
+      &.save-btn {
+        background: #c79816;
+        border: none;
+        color: white;
+
+        &:hover {
+          background: darken(#c79816, 5%);
+        }
+      }
+    }
+  }
+}

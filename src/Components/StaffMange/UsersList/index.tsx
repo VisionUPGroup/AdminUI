@@ -1,0 +1,688 @@
+import React, { Fragment, useEffect, useState } from "react";
+import ProfileManagementModal from "./ProfileManagementModal";
+import {
+  FaPlus,
+  FaSearch,
+  FaArrowUp,
+  FaUsers,
+  FaRegUserCircle,
+  FaPen,
+  FaTrash,
+  FaIdCard,
+  FaTimes,
+  FaPhone,
+  FaBirthdayCake,
+  FaMapMarkerAlt,
+  FaClinicMedical,
+} from "react-icons/fa";
+import { useAccountService } from "../../../../Api/accountService";
+import { useAuthService } from "../../../../Api/authService";
+import UserModal from "./UserModal";
+import Pagination from "./Pagination";
+import Swal from "sweetalert2";
+import "./UserStyle.scss";
+import "./SplitViewStyle.scss";
+import "./ProfileCardStyle.scss";
+import { useProfileService } from "../../../../Api/profileService";
+import ExpandableUserRow from "./ExpandableUserRow";
+import RefractionModal from "./RefractionRecordsModal";
+
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+  status: boolean;
+}
+
+interface UserData {
+  id: number;
+  username: string;
+  email: string;
+  status: boolean;
+  roleID: number;
+  phoneNumber: string;
+  role: Role;
+}
+
+interface ApiResponse {
+  items: UserData[];
+  totalItems: number;
+  currentPage: number;
+}
+interface Profile {
+  id: number;
+  accountID: number;
+  fullName: string;
+  phoneNumber: string;
+  address: string;
+  urlImage: string;
+  birthday: string;
+  status:boolean
+}
+
+const UsersList: React.FC = () => {
+  const { fetchAccountByRole } = useAccountService();
+  const { register } = useAuthService();
+  const {
+    fetchProfilesByAccountId,
+    createProfiles,
+    deleteProfile,
+    updateProfile,
+  } = useProfileService();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [userData, setUserData] = useState<UserData[]>([]);
+  const [userProfiles, setUserProfiles] = useState<Profile[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<number | null>(
+    null
+  );
+  const [isRefractionPanelOpen, setIsRefractionPanelOpen] = useState(false);
+  const [selectedProfileForRefraction, setSelectedProfileForRefraction] =
+    useState<{ id: number; name: string } | null>(null);
+  const itemsPerPage = 10;
+
+  const getUserData = async (page: number, search: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetchAccountByRole(1, search, page);
+      setUserData(response.items);
+      setTotalItems(response.totalItems);
+      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load user data. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleCreateProfile = () => {
+    setEditingProfile(null);
+    setIsProfileModalOpen(true);
+  };
+  const handleEditProfile = (profile: Profile) => {
+    setEditingProfile(profile);
+    setIsProfileModalOpen(true);
+  };
+  const handleProfileClick = (profileId: number) => {
+    setSelectedProfileId(profileId);
+    setIsRefractionPanelOpen(true);
+  };
+  const handleViewRefractionRecords = (
+    profile: Profile,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra profile card
+    setSelectedProfileForRefraction({
+      id: profile.id,
+      name: profile.fullName,
+    });
+  };
+  const handleDeleteProfile = async (profileId: number) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#c79816",
+        cancelButtonColor: "#000000",
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      if (result.isConfirmed) {
+        await deleteProfile(profileId);
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Profile has been deleted.",
+          confirmButtonColor: "#c79816",
+        });
+        // Refresh profiles
+        if (selectedUser) {
+          const profiles = await fetchProfilesByAccountId(selectedUser.id);
+          setUserProfiles(Array.isArray(profiles) ? profiles : [profiles]);
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting profile:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete profile. Please try again.",
+        confirmButtonColor: "#c79816",
+      });
+    }
+  };
+  const handleSaveProfile = async (profileData: any) => {
+    try {
+      if (editingProfile) {
+        console.log('UsersList: Updating existing profile:', editingProfile.id);
+        console.log('UsersList: Updating existing profile:', profileData);
+        await updateProfile({
+          ...profileData,
+       
+        });
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Profile has been updated successfully!",
+          confirmButtonColor: "#c79816",
+        });
+      } else {
+        await createProfiles(profileData);
+        console.log('UsersList: Create profile:', profileData);
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "Profile has been created successfully!",
+          confirmButtonColor: "#c79816",
+        });
+      }
+      // Refresh profiles
+      if (selectedUser) {
+        const profiles = await fetchProfilesByAccountId(selectedUser.id);
+        setUserProfiles(Array.isArray(profiles) ? profiles : [profiles]);
+      }
+      setIsProfileModalOpen(false);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to save profile. Please try again.",
+        confirmButtonColor: "#c79816",
+      });
+    }
+  };
+  const handleUserSelect = async (user: UserData) => {
+    setSelectedUser(user);
+    setSelectedUserId(user.id);
+    try {
+      setIsLoadingProfiles(true);
+      const profiles = await fetchProfilesByAccountId(user.id);
+      setUserProfiles(Array.isArray(profiles) ? profiles : [profiles]);
+    } catch (error) {
+      console.error("Error fetching profiles:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load user profiles. Please try again.",
+      });
+    } finally {
+      setIsLoadingProfiles(false);
+    }
+  };
+
+  const handleCloseProfiles = () => {
+    setSelectedUser(null);
+    setSelectedUserId(null);
+    setUserProfiles([]);
+  };
+
+  useEffect(() => {
+    getUserData(currentPage, searchTerm);
+  }, [currentPage, searchTerm]); // Reload when page or search changes
+
+  const handleCreateUser = () => {
+    setEditingUser(null);
+    setModalOpen(true);
+  };
+
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+  };
+
+  const handleEdit = (user: UserData) => {
+    setEditingUser(user);
+    setModalOpen(true);
+  };
+
+  const handleSaveUser = async (userData: {
+    username: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+  }) => {
+    try {
+      const response = await register(
+        userData.username,
+        userData.password,
+        userData.email,
+        userData.phoneNumber
+      );
+
+      if (response) {
+        await Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "User has been registered successfully!",
+          confirmButtonText: "OK",
+        });
+        getUserData(currentPage, searchTerm);
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to register user. Please try again.",
+      });
+    }
+    toggleModal();
+  };
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handleFilter = (status: "all" | "active" | "inactive") => {
+    setFilterStatus(status);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleUserDelete = async (userId: number) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "black",
+        confirmButtonText: "Yes, delete it!",
+      });
+
+      if (result.isConfirmed) {
+        // Add your delete API call here
+        // await deleteAccount(userId);
+
+        await Swal.fire("Deleted!", "User has been deleted.", "success");
+        getUserData(currentPage, searchTerm);
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete user. Please try again.",
+      });
+    }
+  };
+
+  return (
+    <div className="user-management split-view">
+      <div className="left-panel">
+        <div className="management-container">
+          {/* Header Section */}
+          <div className="management-header">
+            <div className="header-content">
+              <div className="title-wrapper">
+                <h1>User Management</h1>
+                <p>Manage and monitor your user accounts</p>
+              </div>
+            </div>
+            <div className="header-actions">
+              <button className="create-btn" onClick={handleCreateUser}>
+                <FaPlus className="btn-icon" />
+                Create User
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Stats Section */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{totalItems}</div>
+              <div className="stat-label">Total Users</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                12% from last month
+              </div>
+            </div>
+            <FaUsers className="stat-icon" />
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">
+                {userData.filter((user) => user.status).length}
+              </div>
+              <div className="stat-label">Active Users</div>
+              <div className="stat-change">
+                <FaArrowUp />
+                8% from last month
+              </div>
+            </div>
+            <FaRegUserCircle className="stat-icon" />
+          </div>
+        </div>
+
+        {/* Main Content Section */}
+        <div className="content-section">
+          <div className="content-header">
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+            <div className="filters">
+              <button
+                className={`filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("all")}
+              >
+                All Users
+              </button>
+              <button
+                className={`filter-btn ${
+                  filterStatus === "active" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("active")}
+              >
+                Active
+              </button>
+              <button
+                className={`filter-btn ${
+                  filterStatus === "inactive" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("inactive")}
+              >
+                Inactive
+              </button>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="loading-spinner">Loading...</div>
+          ) : (
+            <>
+              <div className="table-wrapper">
+                {" "}
+                <div className="table-container">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>User Information</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userData.map((user) => (
+                        <tr
+                          key={user.id}
+                          className={`user-row ${
+                            selectedUserId === user.id ? "selected" : ""
+                          }`}
+                          onClick={() => handleUserSelect(user)}
+                        >
+                          <td>
+                            <div className="user-info">
+                              <div className="user-icon">
+                                <FaRegUserCircle />
+                              </div>
+                              <div className="user-details">
+                                <div className="name">{user.username}</div>
+                                <div className="email">{user.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{user.role.name}</td>
+                          <td>
+                            <span
+                              className={`status-badge ${
+                                user.status ? "active" : "inactive"
+                              }`}
+                            >
+                              {user.status ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="actions">
+                              <button
+                                className="edit-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingUser(user);
+                                  setModalOpen(true);
+                                }}
+                              >
+                                <FaPen />
+                              </button>
+                              <button
+                                className="delete-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUserDelete(user.id);
+                                }}
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="pagination-wrapper">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      <div className={`right-panel ${selectedUser ? "active" : ""}`}>
+        {selectedUser ? (
+          <div className="profiles-container">
+            <div className="profiles-header">
+              <div className="header-content">
+                <h2>User Profiles</h2>
+                <p>{selectedUser.username}'s profiles</p>
+              </div>
+              <button className="close-btn" onClick={handleCloseProfiles}>
+                <FaTimes />
+              </button>
+            </div>
+
+            <div className="profiles-content">
+              <button className="add-profile-btn" onClick={handleCreateProfile}>
+                <FaPlus /> Add New Profile
+              </button>
+
+              {isLoadingProfiles ? (
+                <div className="loading-profiles">
+                  <div className="spinner"></div>
+                  <p>Loading profiles...</p>
+                </div>
+              ) : !userProfiles || userProfiles.length === 0 ? (
+                <div className="no-profiles">
+                  <div className="empty-state">
+                    <FaRegUserCircle className="empty-icon" />
+                    <h3>No profiles found</h3>
+                    <p>Create a new profile to get started</p>
+                    <button
+                      className="create-first-profile-btn"
+                      onClick={handleCreateProfile}
+                    >
+                      <FaPlus /> Create First Profile
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="profiles-grid">
+                  {userProfiles.map((profile) => (
+                    <div
+                      key={profile.id}
+                      className="profile-card"
+                      onClick={() => handleProfileClick(profile.id)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div className="profile-header">
+                        <div className="profile-avatar">
+                          {profile.urlImage ? (
+                            <img
+                              src={profile.urlImage}
+                              alt={profile.fullName}
+                              className="avatar-image"
+                            />
+                          ) : (
+                            <div className="avatar-placeholder">
+                              <FaRegUserCircle />
+                            </div>
+                          )}
+                        </div>
+                        <h4>{profile.fullName}</h4>
+                      </div>
+
+                      <div className="profile-info">
+                        <div className="info-item">
+                          <div className="info-icon">
+                            <FaPhone />
+                          </div>
+                          <div className="info-content">
+                            <label>Phone Number</label>
+                            <span>{profile.phoneNumber || "N/A"}</span>
+                          </div>
+                        </div>
+
+                        <div className="info-item">
+                          <div className="info-icon">
+                            <FaBirthdayCake />
+                          </div>
+                          <div className="info-content">
+                            <label>Birthday</label>
+                            <span>
+                              {profile.birthday
+                                ? new Date(profile.birthday).toLocaleDateString(
+                                    "en-GB",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                    }
+                                  )
+                                : "N/A"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="info-item">
+                          <div className="info-icon">
+                            <FaMapMarkerAlt />
+                          </div>
+                          <div className="info-content">
+                            <label>Address</label>
+                            <span >{profile.address || "N/A"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="profile-actions">
+                        <button
+                          className="view-records-btn"
+                          onClick={(e) =>
+                            handleViewRefractionRecords(profile, e)
+                          }
+                        >
+                          <FaClinicMedical />
+                          
+                        </button>
+                        <button
+                          className="edit-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditProfile(profile);
+                          }}
+                        >
+                          <FaPen />
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProfile(profile.id);
+                          }}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+
+            <ProfileManagementModal
+              isOpen={isProfileModalOpen}
+              onClose={() => setIsProfileModalOpen(false)}
+              onSave={handleSaveProfile}
+              editingProfile={editingProfile}
+              accountId={selectedUser?.id || 0}
+            />
+          </div>
+        ) : (
+          <div className="no-selection">
+            <FaRegUserCircle className="icon" />
+            <h3>Select a user to view profiles</h3>
+            <p>Click on any user from the list to view their profiles</p>
+          </div>
+        )}
+      </div>
+
+      <UserModal
+        isOpen={modalOpen}
+        toggle={toggleModal}
+        onSave={handleSaveUser}
+        // editingUser={editingUser}
+      />
+      {selectedProfileForRefraction && (
+  <RefractionModal
+    profileId={selectedProfileForRefraction.id}
+    profileName={selectedProfileForRefraction.name}
+    isOpen={!!selectedProfileForRefraction}
+    onClose={() => setSelectedProfileForRefraction(null)}
+  />
+)}
+    </div>
+  );
+};
+
+export default UsersList;
