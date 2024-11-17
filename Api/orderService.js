@@ -1,14 +1,41 @@
 import axios from "axios";
 import { getToken } from "./tokenHelper";
+import Kiosk from "@/Components/Kiosk/KioskList";
 
 export const useOrderService = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
     // Fetch all orders with optional query parameters
-    const fetchAllOrder = async (username = '', process, pageIndex) => {
+    const fetchAllOrder = async (username = '', process, pageIndex, kioskId) => {
         try {
             const token = getToken();
             const response = await axios.get(`${baseUrl}/api/admin/orders`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                params: {
+                    Username: username,
+                    KioskID:kioskId,
+                    Process: process,
+                    PageIndex: pageIndex,
+                    PageSize: 20, // Set to 20 as requested
+                },
+            });
+            return {
+                items: response.data.data,
+                totalItems: response.data.totalCount,
+                revenueCompleted: response.data.totalRevenue,
+                currentPage: pageIndex
+            };
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            throw error;
+        }
+    };
+    const fetchStaffOrder = async (username = '', process, pageIndex) => {
+        try {
+            const token = getToken();
+            const response = await axios.get(`${baseUrl}/api/orders/my-kiosk`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -136,6 +163,7 @@ const fetchStatisticOrderDateToDate = async (startDate, endDate) => {
     
     return {
         fetchAllOrder,
+        fetchStaffOrder,
         fetchStatisticOrder,
         fetchStatisticOrderDateToDate,
         deleteOrder,
