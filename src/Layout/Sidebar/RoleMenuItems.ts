@@ -57,6 +57,13 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
           },
         ],
       },
+      {
+        path: "/products/exchange-eyeglass",
+        title: "ExchangeEyeGlass",
+        type: "link",
+        icon: Circle,
+        active: false,
+      },
     ],
   },
   {
@@ -199,6 +206,13 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
             active: false,
           },
         ],
+      },
+      {
+        path: "/products/exchange-eyeglass",
+        title: "ExchangeEyeGlass",
+        type: "link",
+        icon: Circle,
+        active: false,
       },
     ],
   },
