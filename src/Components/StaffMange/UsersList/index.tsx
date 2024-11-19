@@ -57,11 +57,11 @@ interface Profile {
   address: string;
   urlImage: string;
   birthday: string;
-  status:boolean
+  status: boolean;
 }
 
 const UsersList: React.FC = () => {
-  const { fetchAccountByRole } = useAccountService();
+  const { fetchAccountByRole,deleteAccount } = useAccountService();
   const { register } = useAuthService();
   const {
     fetchProfilesByAccountId,
@@ -94,13 +94,26 @@ const UsersList: React.FC = () => {
     useState<{ id: number; name: string } | null>(null);
   const itemsPerPage = 10;
 
-  const getUserData = async (page: number, search: string) => {
+  const getUserData = async (page: number, search: string, status?: string) => {
     setIsLoading(true);
     try {
       const response = await fetchAccountByRole(1, search, page);
-      setUserData(response.items);
-      setTotalItems(response.totalItems);
-      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
+      let filteredData = response.items;
+
+      // Filter by status
+      if (status === "active") {
+        filteredData = response.items.filter(
+          (user: { status: any }) => user.status
+        );
+      } else if (status === "inactive") {
+        filteredData = response.items.filter(
+          (user: { status: any }) => !user.status
+        );
+      }
+
+      setUserData(filteredData);
+      setTotalItems(filteredData.length);
+      setTotalPages(Math.ceil(filteredData.length / itemsPerPage));
     } catch (error) {
       console.error("Failed to load user data:", error);
       Swal.fire({
@@ -134,6 +147,7 @@ const UsersList: React.FC = () => {
       name: profile.fullName,
     });
   };
+  
   const handleDeleteProfile = async (profileId: number) => {
     try {
       const result = await Swal.fire({
@@ -173,11 +187,10 @@ const UsersList: React.FC = () => {
   const handleSaveProfile = async (profileData: any) => {
     try {
       if (editingProfile) {
-        console.log('UsersList: Updating existing profile:', editingProfile.id);
-        console.log('UsersList: Updating existing profile:', profileData);
+        console.log("UsersList: Updating existing profile:", editingProfile.id);
+        console.log("UsersList: Updating existing profile:", profileData);
         await updateProfile({
           ...profileData,
-       
         });
         await Swal.fire({
           icon: "success",
@@ -187,7 +200,7 @@ const UsersList: React.FC = () => {
         });
       } else {
         await createProfiles(profileData);
-        console.log('UsersList: Create profile:', profileData);
+        console.log("UsersList: Create profile:", profileData);
         await Swal.fire({
           icon: "success",
           title: "Success",
@@ -296,7 +309,8 @@ const UsersList: React.FC = () => {
 
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
+    getUserData(1, searchTerm, status);
   };
 
   const handlePageChange = (page: number) => {
@@ -310,17 +324,20 @@ const UsersList: React.FC = () => {
         text: "You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "black",
-        confirmButtonText: "Yes, delete it!",
+        confirmButtonColor: "#c79816",
+        cancelButtonColor: "#000000",
+        confirmButtonText: "Yes, delete it!"
       });
 
       if (result.isConfirmed) {
-        // Add your delete API call here
-        // await deleteAccount(userId);
-
-        await Swal.fire("Deleted!", "User has been deleted.", "success");
-        getUserData(currentPage, searchTerm);
+        await deleteAccount(userId);
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "User has been deleted successfully.",
+          confirmButtonColor: "#c79816"
+        });
+        getUserData(currentPage, searchTerm, filterStatus);
       }
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -328,6 +345,7 @@ const UsersList: React.FC = () => {
         icon: "error",
         title: "Error",
         text: "Failed to delete user. Please try again.",
+        confirmButtonColor: "#c79816"
       });
     }
   };
@@ -438,61 +456,54 @@ const UsersList: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {userData.map((user) => (
-                        <tr
-                          key={user.id}
-                          className={`user-row ${
-                            selectedUserId === user.id ? "selected" : ""
-                          }`}
-                          onClick={() => handleUserSelect(user)}
-                        >
-                          <td>
-                            <div className="user-info">
-                              <div className="user-icon">
-                                <FaRegUserCircle />
-                              </div>
-                              <div className="user-details">
-                                <div className="name">{user.username}</div>
-                                <div className="email">{user.email}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>{user.role.name}</td>
-                          <td>
-                            <span
-                              className={`status-badge ${
-                                user.status ? "active" : "inactive"
-                              }`}
-                            >
-                              {user.status ? "Active" : "Inactive"}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="actions">
-                              <button
-                                className="edit-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingUser(user);
-                                  setModalOpen(true);
-                                }}
-                              >
-                                <FaPen />
-                              </button>
-                              <button
-                                className="delete-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleUserDelete(user.id);
-                                }}
-                              >
-                                <FaTrash />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+      {userData.map((user) => (
+        <tr key={user.id} className={`user-row ${selectedUserId === user.id ? "selected" : ""}`}>
+          <td>
+            <div className="user-info">
+              <div className="user-icon">
+                <FaRegUserCircle />
+              </div>
+              <div className="user-details">
+                <div className="name">{user.username}</div>
+                <div className="email">{user.email}</div>
+              </div>
+            </div>
+          </td>
+          <td>{user.role.name}</td>
+          <td>
+            <span className={`status-badge ${user.status ? "active" : "inactive"}`}>
+              {user.status ? "Active" : "Inactive"}
+            </span>
+          </td>
+          <td>
+            <div className="actions">
+              <button 
+                className="view-btn"
+                onClick={() => handleUserSelect(user)}
+              >
+                <FaIdCard /> 
+              </button>
+              <button
+                className="edit-btn"
+                onClick={() => {
+                  setEditingUser(user);
+                  setModalOpen(true);
+                }}
+              >
+                <FaPen />
+              </button>
+              <button
+                className="delete-btn"
+                onClick={() => handleUserDelete(user.id)}
+                disabled={!user.status}
+              >
+                <FaTrash />
+              </button>
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
                   </table>
                 </div>
               </div>
@@ -609,7 +620,7 @@ const UsersList: React.FC = () => {
                           </div>
                           <div className="info-content">
                             <label>Address</label>
-                            <span >{profile.address || "N/A"}</span>
+                            <span>{profile.address || "N/A"}</span>
                           </div>
                         </div>
                       </div>
@@ -622,7 +633,6 @@ const UsersList: React.FC = () => {
                           }
                         >
                           <FaClinicMedical />
-                          
                         </button>
                         <button
                           className="edit-btn"
@@ -649,7 +659,6 @@ const UsersList: React.FC = () => {
               )}
             </div>
 
-
             <ProfileManagementModal
               isOpen={isProfileModalOpen}
               onClose={() => setIsProfileModalOpen(false)}
@@ -674,13 +683,13 @@ const UsersList: React.FC = () => {
         // editingUser={editingUser}
       />
       {selectedProfileForRefraction && (
-  <RefractionModal
-    profileId={selectedProfileForRefraction.id}
-    profileName={selectedProfileForRefraction.name}
-    isOpen={!!selectedProfileForRefraction}
-    onClose={() => setSelectedProfileForRefraction(null)}
-  />
-)}
+        <RefractionModal
+          profileId={selectedProfileForRefraction.id}
+          profileName={selectedProfileForRefraction.name}
+          isOpen={!!selectedProfileForRefraction}
+          onClose={() => setSelectedProfileForRefraction(null)}
+        />
+      )}
     </div>
   );
 };
