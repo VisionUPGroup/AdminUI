@@ -61,7 +61,11 @@ interface DateSelectorProps {
   dateRange: DateRangeState;
   onDateRangeChange: (range: DateRangeState) => void;
 }
-
+interface AxisDomains {
+  orderDomain: [number, number];
+  revenueDomain: [number, number];
+  revenueTickCount: number;
+}
 interface OrderStatistic {
   process: number;
   totalCount: number;
@@ -179,7 +183,9 @@ const YearSelector: React.FC<{
             <button
               key={date.toISOString()}
               className={`month-option ${
-                date.getFullYear() === selectedDate.getFullYear() ? "active" : ""
+                date.getFullYear() === selectedDate.getFullYear()
+                  ? "active"
+                  : ""
               }`}
               onClick={() => {
                 onChange(date);
@@ -194,30 +200,30 @@ const YearSelector: React.FC<{
     </div>
   );
 };
-type ViewMode = 'year' | 'quarter' | 'month'|'range';
+type ViewMode = "year" | "quarter" | "month" | "range";
 const DateSelector: React.FC<DateSelectorProps> = ({
   selectedDate,
   viewMode,
   onChange,
   onViewModeChange,
   dateRange,
-  onDateRangeChange
+  onDateRangeChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handlePrev = () => {
-    if (viewMode === 'range') return;
-    
-    switch(viewMode) {
-      case 'year':
+    if (viewMode === "range") return;
+
+    switch (viewMode) {
+      case "year":
         onChange(subYears(selectedDate, 1));
         break;
-      case 'quarter':
+      case "quarter":
         const prevQuarter = new Date(selectedDate);
         prevQuarter.setMonth(selectedDate.getMonth() - 3);
         onChange(prevQuarter);
         break;
-      case 'month':
+      case "month":
         const prevMonth = new Date(selectedDate);
         prevMonth.setMonth(selectedDate.getMonth() - 1);
         onChange(prevMonth);
@@ -226,20 +232,20 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   };
 
   const handleNext = () => {
-    if (viewMode === 'range') return;
+    if (viewMode === "range") return;
 
     const now = new Date();
-    switch(viewMode) {
-      case 'year':
+    switch (viewMode) {
+      case "year":
         const nextYear = addYears(selectedDate, 1);
         if (nextYear <= now) onChange(nextYear);
         break;
-      case 'quarter':
+      case "quarter":
         const nextQuarter = new Date(selectedDate);
         nextQuarter.setMonth(selectedDate.getMonth() + 3);
         if (nextQuarter <= now) onChange(nextQuarter);
         break;
-      case 'month':
+      case "month":
         const nextMonth = new Date(selectedDate);
         nextMonth.setMonth(selectedDate.getMonth() + 1);
         if (nextMonth <= now) onChange(nextMonth);
@@ -248,24 +254,27 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   };
 
   const getDateDisplay = () => {
-    switch(viewMode) {
-      case 'range':
-        return `${format(dateRange.startDate, 'dd/MM/yyyy')} - ${format(dateRange.endDate, 'dd/MM/yyyy')}`;
-      case 'year':
+    switch (viewMode) {
+      case "range":
+        return `${format(dateRange.startDate, "dd/MM/yyyy")} - ${format(
+          dateRange.endDate,
+          "dd/MM/yyyy"
+        )}`;
+      case "year":
         return format(selectedDate, "yyyy");
-      case 'quarter':
+      case "quarter":
         const quarter = Math.floor(selectedDate.getMonth() / 3) + 1;
         return `Q${quarter} ${format(selectedDate, "yyyy")}`;
-      case 'month':
+      case "month":
         return format(selectedDate, "MM/yyyy");
     }
   };
 
   const getDropdownOptions = () => {
-    if (viewMode === 'range') return [];
+    if (viewMode === "range") return [];
 
-    switch(viewMode) {
-      case 'year':
+    switch (viewMode) {
+      case "year":
         return Array(3)
           .fill(null)
           .map((_, index) => {
@@ -273,12 +282,12 @@ const DateSelector: React.FC<DateSelectorProps> = ({
             return {
               date: year,
               label: format(year, "yyyy"),
-              isActive: year.getFullYear() === selectedDate.getFullYear()
+              isActive: year.getFullYear() === selectedDate.getFullYear(),
             };
           })
           .reverse();
-      
-      case 'quarter':
+
+      case "quarter":
         return Array(4)
           .fill(null)
           .map((_, index) => {
@@ -286,11 +295,13 @@ const DateSelector: React.FC<DateSelectorProps> = ({
             return {
               date,
               label: `Q${index + 1} ${format(date, "yyyy")}`,
-              isActive: Math.floor(date.getMonth() / 3) === Math.floor(selectedDate.getMonth() / 3)
+              isActive:
+                Math.floor(date.getMonth() / 3) ===
+                Math.floor(selectedDate.getMonth() / 3),
             };
           });
-      
-      case 'month':
+
+      case "month":
         return Array(12)
           .fill(null)
           .map((_, index) => {
@@ -298,7 +309,7 @@ const DateSelector: React.FC<DateSelectorProps> = ({
             return {
               date,
               label: format(date, "MMMM yyyy"),
-              isActive: date.getMonth() === selectedDate.getMonth()
+              isActive: date.getMonth() === selectedDate.getMonth(),
             };
           });
     }
@@ -306,11 +317,11 @@ const DateSelector: React.FC<DateSelectorProps> = ({
 
   const handleDateRangeChange = (start: Date, end: Date) => {
     if (!start || !end) return;
-    
+
     // Validate date range
     if (start > end) return;
     if (start > new Date() || end > new Date()) return;
-    
+
     // Maximum range of 1 year
     const daysDiff = differenceInDays(end, start);
     if (daysDiff > 365) {
@@ -323,21 +334,31 @@ const DateSelector: React.FC<DateSelectorProps> = ({
   return (
     <div className="month-selector">
       <div className="date-navigation">
-        {viewMode === 'range' ? (
+        {viewMode === "range" ? (
           <div className="date-range-picker">
             <input
               type="date"
-              value={format(dateRange.startDate, 'yyyy-MM-dd')}
-              max={format(dateRange.endDate, 'yyyy-MM-dd')}
-              onChange={(e) => handleDateRangeChange(new Date(e.target.value), dateRange.endDate)}
+              value={format(dateRange.startDate, "yyyy-MM-dd")}
+              max={format(dateRange.endDate, "yyyy-MM-dd")}
+              onChange={(e) =>
+                handleDateRangeChange(
+                  new Date(e.target.value),
+                  dateRange.endDate
+                )
+              }
             />
             <span>-</span>
             <input
               type="date"
-              value={format(dateRange.endDate, 'yyyy-MM-dd')}
-              min={format(dateRange.startDate, 'yyyy-MM-dd')}
-              max={format(new Date(), 'yyyy-MM-dd')}
-              onChange={(e) => handleDateRangeChange(dateRange.startDate, new Date(e.target.value))}
+              value={format(dateRange.endDate, "yyyy-MM-dd")}
+              min={format(dateRange.startDate, "yyyy-MM-dd")}
+              max={format(new Date(), "yyyy-MM-dd")}
+              onChange={(e) =>
+                handleDateRangeChange(
+                  dateRange.startDate,
+                  new Date(e.target.value)
+                )
+              }
             />
           </div>
         ) : (
@@ -345,12 +366,17 @@ const DateSelector: React.FC<DateSelectorProps> = ({
             <button
               className="nav-btn prev"
               onClick={handlePrev}
-              disabled={viewMode === 'year' && selectedDate <= subYears(new Date(), 2)}
+              disabled={
+                viewMode === "year" && selectedDate <= subYears(new Date(), 2)
+              }
             >
               <ChevronLeft size={20} />
             </button>
 
-            <button className="current-month" onClick={() => setIsOpen(!isOpen)}>
+            <button
+              className="current-month"
+              onClick={() => setIsOpen(!isOpen)}
+            >
               <Calendar size={20} />
               <span>{getDateDisplay()}</span>
               <ChevronDown size={16} />
@@ -360,10 +386,10 @@ const DateSelector: React.FC<DateSelectorProps> = ({
               className="nav-btn next"
               onClick={handleNext}
               disabled={
-                viewMode === 'year' 
+                viewMode === "year"
                   ? selectedDate >= new Date()
-                  : viewMode === 'quarter'
-                  ? startOfQuarter(addYears(selectedDate, 1/4)) > new Date()
+                  : viewMode === "quarter"
+                  ? startOfQuarter(addYears(selectedDate, 1 / 4)) > new Date()
                   : startOfMonth(addMonths(selectedDate, 1)) > new Date()
               }
             >
@@ -373,34 +399,34 @@ const DateSelector: React.FC<DateSelectorProps> = ({
         )}
 
         <div className="view-mode-toggle">
-          <button 
-            className={`mode-btn ${viewMode === 'year' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('year')}
+          <button
+            className={`mode-btn ${viewMode === "year" ? "active" : ""}`}
+            onClick={() => onViewModeChange("year")}
           >
             Year
           </button>
-          <button 
-            className={`mode-btn ${viewMode === 'quarter' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('quarter')}
+          <button
+            className={`mode-btn ${viewMode === "quarter" ? "active" : ""}`}
+            onClick={() => onViewModeChange("quarter")}
           >
             Quarter
           </button>
-          <button 
-            className={`mode-btn ${viewMode === 'month' ? 'active' : ''}`}
-            onClick={() => onViewModeChange('month')}
+          <button
+            className={`mode-btn ${viewMode === "month" ? "active" : ""}`}
+            onClick={() => onViewModeChange("month")}
           >
             Month
           </button>
-          <button 
+          {/* <button 
             className={`mode-btn ${viewMode === 'range' ? 'active' : ''}`}
             onClick={() => onViewModeChange('range')}
           >
             Custom
-          </button>
+          </button> */}
         </div>
       </div>
 
-      {isOpen && viewMode !== 'range' && (
+      {isOpen && viewMode !== "range" && (
         <div className="month-dropdown">
           {getDropdownOptions().map((option) => (
             <button
@@ -419,32 +445,55 @@ const DateSelector: React.FC<DateSelectorProps> = ({
     </div>
   );
 };
+const formatYAxisRevenue = (value: number) => {
+  if (value >= 1000000000) {
+    return `${(value / 1000000000).toLocaleString("vi-VN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1,
+    })}B`;
+  }
+  if (value >= 1000000) {
+    return `${(value / 1000000).toLocaleString("vi-VN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })}M`;
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toLocaleString("vi-VN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1,
+    })}K`;
+  }
+  return value.toString();
+};
+
 const OrderStatisticsChart: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [yearlyData, setYearlyData] = useState<ProcessedData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { fetchStatisticOrderDateToDate } = useOrderService();
-  const [viewMode, setViewMode] = useState<ViewMode>('year');
+  const [viewMode, setViewMode] = useState<ViewMode>("year");
   const [chartData, setChartData] = useState<ProcessedData[]>([]);
   const [dateRange, setDateRange] = useState<DateRangeState>({
     startDate: new Date(new Date().setDate(1)), // First day of current month
-    endDate: new Date() // Today
+    endDate: new Date(), // Today
   });
+
   const getViewModeTitle = (mode: ViewMode): string => {
-    switch(mode) {
-      case 'year':
-        return 'Yearly';
-      case 'quarter':
-        return 'Quarterly';
-      case 'month':
-        return 'Monthly';
+    switch (mode) {
+      case "year":
+        return "Yearly";
+      case "quarter":
+        return "Quarterly";
+      case "month":
+        return "Monthly";
       default:
-        return 'Yearly'; // fallback
+        return "Yearly"; // fallback
     }
   };
 
-  const calculateAxisDomain = (data: ProcessedData[]) => {
+  const calculateAxisDomain = (data: ProcessedData[]): AxisDomains => {
     const maxOrders = Math.max(
       ...data.map((d) => Math.max(d.process4Count, d.process5Count))
     );
@@ -453,11 +502,14 @@ const OrderStatisticsChart: React.FC = () => {
     const maxRevenue = Math.max(
       ...data.map((d) => Math.max(d.totalAmount, d.cancelledAmount))
     );
-    const revenueDomain = Math.ceil(maxRevenue / 500) * 500;
+    const step = Math.pow(10, Math.floor(Math.log10(maxRevenue)));
+    const roundedMaxRevenue = Math.ceil(maxRevenue / step) * step;
+    const tickCount = 5;
 
     return {
       orderDomain: [0, orderDomain],
-      revenueDomain: [0, revenueDomain],
+      revenueDomain: [0, roundedMaxRevenue],
+      revenueTickCount: tickCount,
     };
   };
 
@@ -468,11 +520,11 @@ const OrderStatisticsChart: React.FC = () => {
         setError(null);
 
         let interval;
-        if (viewMode === 'year') {
+        if (viewMode === "year") {
           const firstDay = startOfYear(selectedDate);
           const lastDay = endOfYear(selectedDate);
           interval = eachMonthOfInterval({ start: firstDay, end: lastDay });
-        } else if (viewMode === 'quarter') {
+        } else if (viewMode === "quarter") {
           const firstDay = startOfQuarter(selectedDate);
           const lastDay = endOfQuarter(selectedDate);
           interval = eachMonthOfInterval({ start: firstDay, end: lastDay });
@@ -483,10 +535,11 @@ const OrderStatisticsChart: React.FC = () => {
         }
 
         const dataPromises = interval.map(async (date) => {
-          const startDate = format(date, 'yyyy-MM-dd');
-          const endDate = viewMode === 'month'
-            ? startDate
-            : format(endOfMonth(date), 'yyyy-MM-dd');
+          const startDate = format(date, "yyyy-MM-dd");
+          const endDate =
+            viewMode === "month"
+              ? startDate
+              : format(endOfMonth(date), "yyyy-MM-dd");
           return fetchStatisticOrderDateToDate(startDate, endDate);
         });
 
@@ -494,20 +547,27 @@ const OrderStatisticsChart: React.FC = () => {
 
         const processedData: ProcessedData[] = interval.map((date, index) => {
           const data = results[index];
-          const process4Data = data.find((d: { process: number }) => d.process === 4) || {
+          const process4Data = data.find(
+            (d: { process: number }) => d.process === 4
+          ) || {
             totalCount: 0,
             totalAmount: 0,
           };
-          const process5Data = data.find((d: { process: number }) => d.process === 5) || {
+          const process5Data = data.find(
+            (d: { process: number }) => d.process === 5
+          ) || {
             totalCount: 0,
             totalAmount: 0,
           };
 
           return {
-            date: format(date, 
-              viewMode === 'year' ? 'MM/yyyy' : 
-              viewMode === 'quarter' ? 'MM/yyyy' : 
-              'dd/MM'
+            date: format(
+              date,
+              viewMode === "year"
+                ? "MM/yyyy"
+                : viewMode === "quarter"
+                ? "MM/yyyy"
+                : "dd/MM"
             ),
             process4Count: Math.round(process4Data.totalCount),
             process5Count: Math.round(process5Data.totalCount),
@@ -530,14 +590,15 @@ const OrderStatisticsChart: React.FC = () => {
   }, [selectedDate, viewMode]);
 
   const calculateTotals = () => {
-    return yearlyData.reduce(
+    return chartData.reduce(
       (acc, curr) => ({
         totalCompleted: acc.totalCompleted + curr.process4Count,
         totalCancelled: acc.totalCancelled + curr.process5Count,
         totalRevenue: acc.totalRevenue + curr.totalAmount,
         totalCancelledRevenue: acc.totalCancelledRevenue + curr.cancelledAmount,
         completionRate:
-          (acc.totalCompleted / (acc.totalCompleted + acc.totalCancelled)) * 100,
+          ((acc.totalCompleted + curr.process4Count) / 
+           (acc.totalCompleted + curr.process4Count + acc.totalCancelled + curr.process5Count)) * 100,
       }),
       {
         totalCompleted: 0,
@@ -548,7 +609,6 @@ const OrderStatisticsChart: React.FC = () => {
       }
     );
   };
-
   if (loading) {
     return (
       <div className="dashboard-panel">
@@ -579,30 +639,45 @@ const OrderStatisticsChart: React.FC = () => {
   }
 
   const totals = calculateTotals();
-  const { orderDomain, revenueDomain } = calculateAxisDomain(chartData);
+  const { orderDomain, revenueDomain, revenueTickCount } =
+    calculateAxisDomain(chartData);
+
+  const formatYAxisRevenue = (value: number) => {
+    if (value >= 1000000000) {
+      return `${(value / 1000000000).toLocaleString("vi-VN", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      })}B`;
+    }
+    if (value >= 1000000) {
+      return `${(value / 1000000).toLocaleString("vi-VN", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 1,
+      })}M`;
+    }
+    return value.toString();
+  };
 
   return (
     <div className="dashboard-panel">
-    <div className="dashboard-header">
-      <div className="header-content">
-        <div className="title-wrapper">
-          <h1>
-            Revenue Management
-            <p>
-            {getViewModeTitle(viewMode)} revenue statistics from orders
-            </p>
-          </h1>
+      <div className="dashboard-header">
+        <div className="header-content">
+          <div className="title-wrapper">
+            <h1>
+              Revenue Management
+              <p>{getViewModeTitle(viewMode)} revenue statistics from orders</p>
+            </h1>
+          </div>
         </div>
-      </div>
-      <DateSelector 
-          selectedDate={selectedDate} 
+        <DateSelector
+          selectedDate={selectedDate}
           viewMode={viewMode}
           onChange={setSelectedDate}
           onViewModeChange={setViewMode}
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
         />
-    </div>
+      </div>
 
       <div className="statistics-grid">
         <div className="stat-card completed">
@@ -681,8 +756,8 @@ const OrderStatisticsChart: React.FC = () => {
       </div>
 
       <div className="chart-section">
-        <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart
+        <ResponsiveContainer width="100%" height={900}>
+          <ComposedChart
             data={chartData}
             margin={{
               top: 20,
@@ -727,11 +802,13 @@ const OrderStatisticsChart: React.FC = () => {
               yAxisId="right"
               orientation="right"
               domain={revenueDomain}
-              tickCount={6}
-              tickFormatter={(value) => `${(value / 1000000).toFixed(0)}M`}
+              tickCount={5}
+              tickFormatter={formatYAxisRevenue}
+              interval="preserveStartEnd" // Thêm property này để tránh lặp
+              allowDuplicatedCategory={false} // Và property này nữa
             >
               <Label
-                value="Revenue (Million VND)"
+                value="Revenue (VND)"
                 angle={90}
                 position="insideRight"
                 offset={5}
@@ -743,19 +820,17 @@ const OrderStatisticsChart: React.FC = () => {
               yAxisId="left"
               dataKey="process4Count"
               name="Completed Orders"
-              fill="var(--color-completed)"
+              fill="#c79816"
               radius={[4, 4, 0, 0]}
               barSize={20}
-              stackId="orders"
             />
             <Bar
               yAxisId="left"
               dataKey="process5Count"
               name="Cancelled Orders"
-              fill="var(--color-cancelled)"
+              fill="#000"
               radius={[4, 4, 0, 0]}
               barSize={20}
-              stackId="orders"
             />
 
             <Line
@@ -763,25 +838,55 @@ const OrderStatisticsChart: React.FC = () => {
               type="monotone"
               dataKey="totalAmount"
               name="Completed Revenue"
-              stroke="var(--color-revenue)"
+              stroke="#c79816"
               strokeWidth={2}
-              dot={{ fill: "var(--color-revenue)", r: 4 }}
-              activeDot={{ r: 6, strokeWidth: 2 }}
+              dot={{
+                fill: "#c79816",
+                r: 4,
+                strokeWidth: 2,
+                stroke: "#fff",
+              }}
+              activeDot={{
+                r: 6,
+                strokeWidth: 2,
+                stroke: "#fff",
+              }}
             />
             <Line
               yAxisId="right"
               type="monotone"
               dataKey="cancelledAmount"
               name="Cancelled Revenue"
-              stroke="var(--color-cancelled)"
+              stroke="#000"
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ fill: "var(--color-cancelled)", r: 4 }}
-              activeDot={{ r: 6, strokeWidth: 2 }}
+              dot={{
+                fill: "#000",
+                r: 4,
+                strokeWidth: 2,
+                stroke: "#fff",
+                className: "cancelled-dot",
+              }}
+              activeDot={{
+                r: 6,
+                strokeWidth: 2,
+                stroke: "#fff",
+                className: "cancelled-dot",
+              }}
             />
 
-            <Tooltip content={<CustomTooltip />} />
-            <Legend verticalAlign="top" align="right" iconType="circle" />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+            />
+            <Legend
+              verticalAlign="top"
+              align="right"
+              iconType="circle"
+              wrapperStyle={{
+                paddingBottom: "20px",
+              }}
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

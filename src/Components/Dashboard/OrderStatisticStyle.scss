@@ -33,6 +33,7 @@ $info: #2563eb;
     padding: 2rem;
     min-height: 600px;
     position: relative;
+    
     .month-selector {
       .date-navigation {
         .view-mode-toggle {
@@ -298,45 +299,127 @@ $info: #2563eb;
 
     .chart-section {
       background: var(--color-surface);
-      border-radius: var(--radius-md);
+      border-radius: var(--radius-lg);
       border: 1px solid var(--color-border);
-      padding: 1.5rem;
+      // padding: 2.5rem;
+      margin-top: 2rem;
+      box-shadow: var(--shadow-lg);
   
       .recharts-wrapper {
-        .recharts-cartesian-grid-horizontal line {
-          stroke: var(--color-border);
+        margin: 1rem 0;
+        padding: 0 0rem;
+        
+        // Trục và lưới
+        .recharts-cartesian-grid {
+          line {
+            stroke: rgba($primary-dark, 0.04);
+            stroke-width: 1;
+          }
         }
   
-        .recharts-cartesian-grid-vertical line {
-          display: none;
+        .recharts-xAxis, .recharts-yAxis {
+          .recharts-cartesian-axis-line {
+            stroke: var(--color-border);
+            stroke-width: 1;
+          }
+  
+          .recharts-cartesian-axis-tick-line {
+            stroke: var(--color-border);
+          }
+  
+          .recharts-cartesian-axis-tick-value {
+            font-size: 0.875rem;
+            font-weight: 500;
+            fill: var(--text-secondary);
+          }
         }
   
-        .recharts-legend-wrapper {
-          padding: 0.5rem;
-          
-          .recharts-legend-item {
-            padding: 0 1rem;
-
-            &.cancelled-revenue .recharts-legend-item-text {
-              color: var(--color-cancelled-revenue);
+        // Bars
+        .recharts-bar-rectangle {
+          path {
+            transition: all 0.3s ease;
+            cursor: pointer;
+          }
+  
+          &:hover {
+            path {
+              filter: brightness(1.1);
             }
           }
         }
   
+        // Lines
+        .recharts-line {
+          &[stroke="var(--color-revenue)"] {
+            .recharts-line-dots circle {
+              filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+              transition: all 0.2s ease;
+              
+              &:hover {
+                r: 8;
+                filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4));
+              }
+            }
+          }
+  
+          &[stroke="var(--color-cancelled)"] {
+            .recharts-line-dots circle {
+              filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+              transition: all 0.2s ease;
+              
+              &:hover {
+                r: 8;
+                filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4));
+              }
+  
+              &.cancelled-dot {
+                stroke-dasharray: 3 3;
+              }
+            }
+          }
+        }
         .recharts-tooltip-wrapper {
           .custom-tooltip {
-            background: var(--color-background);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          }
+        }
+  
+        // Legend
+        .recharts-default-legend {
+          margin: 2rem 0 !important;
+          padding: 1rem !important;
+          border-radius: var(--radius-md);
+          background: rgba($primary-dark, 0.02);
+  
+          .recharts-legend-item {
+            margin: 0 1.5rem !important;
+  
+            .recharts-legend-item-text {
+              font-size: 0.9rem;
+              font-weight: 500;
+              color: var(--text-secondary);
+            }
+          }
+        }
+  
+        // Tooltip
+        .recharts-tooltip-wrapper {
+          .custom-tooltip {
+            background: var(--color-surface);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-lg);
             border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            padding: 1rem;
-            box-shadow: var(--shadow-md);
-            min-width: 200px;
+            min-width: 250px;
   
             .tooltip-header {
+              font-size: 1rem;
               font-weight: 600;
               color: var(--text-primary);
-              margin-bottom: 0.5rem;
-              padding-bottom: 0.5rem;
+              margin-bottom: 1rem;
+              padding-bottom: 0.75rem;
               border-bottom: 1px solid var(--color-border);
             }
   
@@ -345,66 +428,89 @@ $info: #2563eb;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.25rem 0;
+                padding: 0.75rem 0;
+  
+                &:not(:last-child) {
+                  border-bottom: 1px dashed rgba($primary-dark, 0.08);
+                }
   
                 .label {
-                  color: var(--text-secondary);
-                  margin-right: 1rem;
                   font-size: 0.875rem;
+                  color: var(--text-secondary);
+                  margin-right: 1.5rem;
                 }
   
                 .value {
+                  font-size: 0.95rem;
                   font-weight: 600;
-                  font-size: 0.875rem;
+                  
+                  &.completed {
+                    color: var(--color-completed);
+                  }
+                  
+                  &.cancelled {
+                    color: var(--color-cancelled);
+                  }
+                  
+                  &.revenue {
+                    color: var(--color-revenue);
+                    background: rgba($primary-gold, 0.1);
+                    padding: 0.25rem 0.75rem;
+                    border-radius: var(--radius-sm);
+                  }
   
-                  &.completed { color: var(--color-completed); }
-                  &.cancelled { color: var(--color-cancelled); }
-                  &.revenue { color: var(--color-revenue); }
-                  &.cancelled-revenue { color: var(--color-cancelled-revenue); }
+                  &.cancelled-revenue {
+                    color: var(--color-cancelled-revenue);
+                    background: rgba($danger, 0.1);
+                    padding: 0.25rem 0.75rem;
+                    border-radius: var(--radius-sm);
+                  }
                 }
-              }
-
-              // Thêm đường ngăn cách giữa orders và revenue
-              .tooltip-item:nth-child(2) {
-                border-bottom: 1px dashed var(--color-border);
-                margin-bottom: 0.5rem;
-                padding-bottom: 0.5rem;
-              }
-            }
-          }
-        }
-
-        // Style cho đường doanh thu
-        .recharts-line-curve {
-          &[stroke="var(--color-revenue)"] {
-            stroke-width: 2;
-          }
-          &[stroke="var(--color-cancelled-revenue)"] {
-            stroke-width: 2;
-            stroke-dasharray: 5 5;
-          }
-        }
-
-        // Style cho dots
-        .recharts-line-dots {
-          circle {
-            &[fill="var(--color-revenue)"] {
-              r: 4;
-              &:hover {
-                r: 6;
-              }
-            }
-            &[fill="var(--color-cancelled-revenue)"] {
-              r: 4;
-              &:hover {
-                r: 6;
               }
             }
           }
         }
       }
+  
+      // Labels trục
+      .recharts-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        fill: var(--text-secondary);
+      }
     }
-
+  
+    // Responsive adjustments
+    @media (max-width: 1200px) {
+      .chart-section {
+        padding: 1.5rem;
+        
+        .recharts-wrapper {
+          .recharts-default-legend {
+            padding: 0.75rem !important;
+            
+            .recharts-legend-item {
+              margin: 0 1rem !important;
+            }
+          }
+        }
+      }
+    }
+  
+    @media (max-width: 768px) {
+      .chart-section {
+        margin: 0 -1rem;
+        border-radius: 0;
+        
+        .recharts-wrapper {
+          min-width: 600px;
+          
+          .recharts-default-legend {
+            transform: scale(0.9);
+          }
+        }
+      }
+    }
     .loading-overlay {
       position: absolute;
       top: 0;
@@ -545,5 +651,6 @@ $info: #2563eb;
       }
     }
   }
+  
   
 }
