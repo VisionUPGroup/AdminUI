@@ -142,6 +142,7 @@ const UpdateModal: React.FC<UpdateModalProps> = ({ isOpen, toggle, onSave, initi
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled
             />
             {emailError && <p style={{ color: 'red' }}>{emailError}</p>}
           </FormGroup>

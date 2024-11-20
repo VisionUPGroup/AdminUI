@@ -10,10 +10,11 @@ import {
 } from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
 import { useAuthService } from "../../../../Api/authService";
-import UserModal from "./UserModal";
+
 import Pagination from "./Pagination";
 import Swal from "sweetalert2";
 import "./UserStyle.scss";
+import UserUpdateModal from "./UserUpdateModal";
 
 interface Role {
   id: number;
@@ -43,6 +44,7 @@ const UsersList: React.FC = () => {
   const { register } = useAuthService();
   const [userData, setUserData] = useState<UserData[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
@@ -59,7 +61,7 @@ const UsersList: React.FC = () => {
     try {
       const response = await fetchAccountByRole(1, search, page);
 
-      // Lọc dữ liệu theo trạng thái (active/inactive)
+      // Lọc dữ liệu theo trạng thái
       let filteredData = response.items;
       if (filterStatus === "active") {
         filteredData = response.items.filter(
@@ -95,13 +97,9 @@ const UsersList: React.FC = () => {
     setModalOpen(true);
   };
 
-  const toggleModal = () => {
-    setModalOpen(!modalOpen);
-  };
-
   const handleEdit = (user: UserData) => {
     setEditingUser(user);
-    setModalOpen(true);
+    setUpdateModalOpen(true); // Mở modal update thay vì modal create
   };
 
   const handleSaveUser = async (userData: {
@@ -120,53 +118,32 @@ const UsersList: React.FC = () => {
       );
 
       if (response) {
-        const newUser: UserData = {
-          ...response,
-          createdAt: new Date(),
-          status: true,
-        };
-
-        setUserData((prevData) => [newUser, ...prevData]);
-
         await Swal.fire({
           icon: "success",
           title: "Success",
           text: "User has been registered successfully!",
           confirmButtonText: "OK",
         });
-        toggleModal();
+        
+        // Refresh data after successful creation
+        await getUserData(currentPage, searchTerm);
+        setModalOpen(false);
       }
     } catch (error: any) {
       console.error("Error registering user:", error);
+      let errorMessage = "Failed to register user. Please try again.";
 
-      // Xử lý error response từ API
       if (error.response?.status === 400) {
-        // Lấy error message từ API response
-        let errorMessage = error.response.data?.message;
-
-        // Nếu có validation errors chi tiết
-        if (error.response.data?.errors) {
-          errorMessage = Object.values(error.response.data.errors)
-            .flat()
-            .join("\n");
-        }
-
-        // Hiển thị error với Swal
-        await Swal.fire({
-          icon: "error",
-          title: "Registration Failed",
-          html: errorMessage.replace(/\n/g, "<br>"),
-          confirmButtonColor: "#d33",
-        });
-      } else {
-        // Xử lý các lỗi khác
-        await Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Failed to register user. Please try again.",
-          confirmButtonColor: "#d33",
-        });
+        errorMessage = error.response.data?.message || 
+          Object.values(error.response.data.errors || {}).flat().join("\n");
       }
+
+      await Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        html: errorMessage.replace(/\n/g, "<br>"),
+        confirmButtonColor: "#d33",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -201,11 +178,7 @@ const UsersList: React.FC = () => {
 
       if (result.isConfirmed) {
         setIsLoading(true);
-
-        // Gọi API delete account
         await deleteAccount(userId);
-
-        // Cập nhật lại danh sách sau khi xóa
         await getUserData(currentPage, searchTerm);
 
         await Swal.fire({
@@ -217,10 +190,9 @@ const UsersList: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Error deleting user:", error);
-      // Hiển thị error message từ API
-      const errorMessage =
-        error.response?.data?.message ||
+      const errorMessage = error.response?.data?.message || 
         "Failed to delete user. Please try again.";
+      
       Swal.fire({
         icon: "error",
         title: "Delete Error",
@@ -400,11 +372,20 @@ const UsersList: React.FC = () => {
         </div>
       </div>
 
-      <UserModal
+      {/* <UserModal
         isOpen={modalOpen}
         toggle={toggleModal}
         onSave={handleSaveUser}
         // editingUser={editingUser}
+      /> */}
+          <UserUpdateModal
+        isOpen={updateModalOpen}
+        toggle={() => setUpdateModalOpen(false)}
+        onSave={() => {
+          getUserData(currentPage, searchTerm);
+          setUpdateModalOpen(false);
+        }}
+        editingUser={editingUser}
       />
     </div>
   );

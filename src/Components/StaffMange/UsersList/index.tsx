@@ -324,33 +324,6 @@ const UsersList: React.FC = () => {
     setEditingUser(null);
     setModalOpen(true);
   };
-  const handleUpdateUser = async (userData: {
-    username: string;
-    email: string;
-    phoneNumber: string;
-    status: boolean;
-  }) => {
-    try {
-      // Gọi API update user ở đây
-      // const response = await updateUser(userData);
-
-      await Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "User has been updated successfully!",
-        confirmButtonColor: "#c79816",
-      });
-      getUserData(currentPage, searchTerm);
-    } catch (error) {
-      console.error("Error updating user:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to update user. Please try again.",
-      });
-    }
-    setUpdateModalOpen(false);
-  };
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -565,6 +538,7 @@ const UsersList: React.FC = () => {
                               <div className="user-details">
                                 <div className="name">{user.username}</div>
                                 <div className="email">{user.email}</div>
+                                <div className="phone">{user.phoneNumber}</div>
                               </div>
                             </div>
                           </td>
@@ -637,41 +611,43 @@ const UsersList: React.FC = () => {
             </div>
 
             <div className="profiles-content">
-            <button 
-    className={`add-profile-btn ${!selectedUser.status ? 'disabled-btn' : ''}`} // Thay đổi tên class
-    onClick={handleCreateProfile}
-    disabled={!selectedUser.status}
-  >
-    <FaPlus /> Add New Profile
-    {!selectedUser.status && (
-      <div className="tooltip-container">
-        User inactive can't create new profile
-      </div>
-    )}
-  </button>
+              <button
+                className={`add-profile-btn ${
+                  !selectedUser.status ? "disabled-btn" : ""
+                }`} // Thay đổi tên class
+                onClick={handleCreateProfile}
+                disabled={!selectedUser.status}
+              >
+                <FaPlus /> Add New Profile
+                {!selectedUser.status && (
+                  <div className="tooltip-container">
+                    User inactive can't create new profile
+                  </div>
+                )}
+              </button>
 
-  {isLoadingProfiles ? (
-  <div className="profiles-loading">
-    <div className="loading-spinner-container">
-      <div className="spinner-ring"></div>
-      <div className="loading-text">Loading profiles...</div>
-    </div>
-  </div>
-) : !userProfiles || userProfiles.length === 0 ? (
-  <div className="no-profiles">
-    <div className="empty-state">
-      <FaRegUserCircle className="empty-icon" />
-      <h3>No profiles found</h3>
-      <p>Create a new profile to get started</p>
-      {/* <button
+              {isLoadingProfiles ? (
+                <div className="profiles-loading">
+                  <div className="loading-spinner-container">
+                    <div className="spinner-ring"></div>
+                    <div className="loading-text">Loading profiles...</div>
+                  </div>
+                </div>
+              ) : !userProfiles || userProfiles.length === 0 ? (
+                <div className="no-profiles">
+                  <div className="empty-state">
+                    <FaRegUserCircle className="empty-icon" />
+                    <h3>No profiles found</h3>
+                    <p>Create a new profile to get started</p>
+                    {/* <button
         className="create-first-profile-btn"
         onClick={handleCreateProfile}
       >
         <FaPlus /> Create First Profile
       </button> */}
-    </div>
-  </div>
-) : (
+                  </div>
+                </div>
+              ) : (
                 <>
                   <div className="profiles-grid">
                     {userProfiles.map((profile) => (
@@ -712,7 +688,7 @@ const UsersList: React.FC = () => {
                             </div>
                             <div className="info-content">
                               <label>Phone Number</label>
-                              <span>{profile.phoneNumber || "N/A"}</span>
+                              <span>{profile.phoneNumber}</span>
                             </div>
                           </div>
 
@@ -823,7 +799,10 @@ const UsersList: React.FC = () => {
       <UserUpdateModal
         isOpen={updateModalOpen}
         toggle={() => setUpdateModalOpen(false)}
-        onSave={handleUpdateUser}
+        onSave={() => {
+          getUserData(currentPage, searchTerm);
+          setUpdateModalOpen(false);
+        }}
         editingUser={editingUser}
       />
     </div>

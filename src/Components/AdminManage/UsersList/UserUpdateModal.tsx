@@ -263,7 +263,7 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
                   id="username"
                   name="username"
                   value={formData.username}
-                  disabled
+ 
                   className="disabled-input"
                 />
               </div>
@@ -281,9 +281,8 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
                   name="email"
                   placeholder="Enter email"
                   value={formData.email}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('email')}
-                  className={touched.email && errors.email ? 'is-invalid' : ''}
+                 
+                  className="disabled-input"
                 />
               </div>
               {touched.email && errors.email && (
@@ -303,9 +302,8 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
                   name="phoneNumber"
                   placeholder="Enter phone number"
                   value={formData.phoneNumber}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('phoneNumber')}
-                  className={touched.phoneNumber && errors.phoneNumber ? 'is-invalid' : ''}
+           
+                 className="disabled-input"
                 />
               </div>
               {touched.phoneNumber && errors.phoneNumber && (
@@ -314,7 +312,7 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
             </div>
           </FormGroup>
 
-          <FormGroup>
+          {/* <FormGroup>
             <div className="input-wrapper">
               <Label for="password">New Password (Optional)</Label>
               <div className="input-container">
@@ -325,9 +323,8 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
                   name="password"
                   placeholder="Enter new password"
                   value={formData.password}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
-                  className={touched.password && errors.password ? 'is-invalid' : ''}
+                 
+                 className="disabled-input"
                 />
                 <button
                   type="button"
@@ -341,7 +338,7 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
                 <div className="error-message">{errors.password}</div>
               )}
             </div>
-          </FormGroup>
+          </FormGroup> */}
 
           {formData.password && (
             <FormGroup>
