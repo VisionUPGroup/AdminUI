@@ -4,7 +4,7 @@ import { getToken } from "./tokenHelper";
 export const useExchangeEyeGlassService = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    const fetchAllExchangeEyeGlass = async (AccountID, ProductGlassID, pageIndex) => {
+    const fetchAllExchangeEyeGlass = async (StaffID, AccountID, ProductGlassID, OrderID, pageIndex) => {
         try {
             const token = getToken();
             const url = `${baseUrl}/api/exchange-eyeglass`;    
@@ -13,6 +13,8 @@ export const useExchangeEyeGlassService = () => {
                     Authorization: `Bearer ${token}`,
                 },
                 params: {
+                    StaffID: StaffID,
+                    OrderID: OrderID,
                     AccountID: AccountID,
                     ProductGlassID: ProductGlassID,
                     PageIndex: pageIndex,
