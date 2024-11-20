@@ -1,0 +1,372 @@
+// Variables
+$gold: #c79816;
+$white: #ffffff;
+$black: #000000;
+$light-gold: rgba($gold, 0.1);
+$border: rgba($black, 0.08);
+$text-primary: rgba($black, 0.85);
+$text-secondary: rgba($black, 0.65);
+$error: #ef4444;
+
+// Custom icon styling mixin
+@mixin icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: $light-gold;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: $gold;
+    stroke-width: 2px;
+    transition: all 0.2s ease;
+  }
+}
+
+.exchange-request-modal {
+  .modal-dialog {
+    max-width: 580px;
+  }
+
+  .modal-content {
+    border: 1px solid rgba($gold, 0.2);
+    border-radius: 16px;
+    box-shadow: 
+      0 8px 24px rgba($black, 0.08),
+      0 2px 8px rgba($black, 0.04);
+    overflow: hidden;
+    background: $white;
+
+    .modal-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid $border;
+      background: linear-gradient(to right, rgba($gold, 0.05), rgba($gold, 0.02));
+
+      .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $text-primary;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        
+        &::before {
+          content: '';
+          display: block;
+          width: 4px;
+          height: 24px;
+          background: $gold;
+          border-radius: 2px;
+        }
+      }
+
+      .close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+        background: transparent;
+        border: 1px solid transparent;
+
+        svg {
+          width: 20px;
+          height: 20px;
+          stroke-width: 2.5px;
+          transition: all 0.2s ease;
+        }
+
+        &:hover {
+          background: $light-gold;
+          border-color: rgba($gold, 0.2);
+
+          svg {
+            transform: rotate(90deg);
+            color: $gold;
+          }
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 32px;
+      background: $white;
+
+      .form-group {
+        margin-bottom: 24px;
+        position: relative;
+
+        &:last-child {
+          margin-bottom: 16px;
+        }
+
+        label {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+          color: $text-primary;
+          font-weight: 500;
+          font-size: 0.95rem;
+
+          .icon-wrapper {
+            @include icon-container;
+          }
+        }
+
+        .input-group {
+          position: relative;
+
+          .form-control {
+            height: auto;
+            padding: 14px 16px;
+            padding-left: 48px; // Space for left icon
+            font-size: 1rem;
+            border: 2px solid $border;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            color: $text-primary;
+            background: $white;
+            
+            &::placeholder {
+              color: $text-secondary;
+              font-size: 0.95rem;
+            }
+
+            &:hover:not(:disabled) {
+              border-color: rgba($gold, 0.3);
+
+              & + .input-icon {
+                background: rgba($gold, 0.15);
+              }
+            }
+
+            &:focus {
+              border-color: $gold;
+              box-shadow: 0 0 0 4px rgba($gold, 0.15);
+              background: $white;
+
+              & + .input-icon {
+                background: $gold;
+                svg {
+                  color: $white;
+                  transform: scale(1.1);
+                }
+              }
+            }
+
+            &:disabled {
+              background: rgba($black, 0.03);
+              color: $text-secondary;
+              cursor: not-allowed;
+              border-color: $border;
+
+              & + .input-icon {
+                opacity: 0.5;
+              }
+            }
+
+            &.is-invalid {
+              border-color: $error;
+              padding-right: 48px;
+
+              & + .input-icon {
+                background: rgba($error, 0.1);
+                svg {
+                  color: $error;
+                }
+              }
+
+              &:focus {
+                box-shadow: 0 0 0 4px rgba($error, 0.15);
+              }
+            }
+          }
+
+          textarea.form-control {
+            min-height: 120px;
+            line-height: 1.6;
+            resize: vertical;
+            padding-left: 16px;
+
+            & + .input-icon {
+              top: 14px;
+              transform: none;
+            }
+          }
+
+          .input-icon {
+            @include icon-container;
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba($gold, 0.1);
+            pointer-events: none;
+            z-index: 2;
+          }
+        }
+
+        .invalid-feedback {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 8px;
+          color: $error;
+          font-size: 0.85rem;
+          padding: 8px 12px;
+          background: rgba($error, 0.05);
+          border-radius: 6px;
+
+          svg {
+            stroke-width: 2.5px;
+            width: 16px;
+            height: 16px;
+          }
+        }
+      }
+    }
+
+    .modal-footer {
+      padding: 24px 32px;
+      border-top: 1px solid $border;
+      background: linear-gradient(to right, rgba($gold, 0.02), rgba($gold, 0.05));
+      gap: 16px;
+
+      .btn {
+        min-width: 140px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        letter-spacing: 0.01em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+
+        svg {
+          width: 18px;
+          height: 18px;
+          stroke-width: 2px;
+        }
+
+        &-primary {
+          background: linear-gradient(135deg, $gold, darken($gold, 8%));
+          border: none;
+          color: $white;
+          
+          &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba($gold, 0.25);
+
+            svg {
+              transform: translateX(3px);
+            }
+          }
+
+          &:active {
+            transform: translateY(0);
+          }
+
+          &:disabled {
+            background: desaturate($gold, 35%);
+            opacity: 0.7;
+          }
+        }
+
+        &-secondary {
+          background: transparent;
+          border: 2px solid $border;
+          color: $text-primary;
+
+          &:hover:not(:disabled) {
+            border-color: $gold;
+            color: $gold;
+            background: $light-gold;
+
+            svg {
+              transform: translateX(-3px);
+            }
+          }
+
+          &:disabled {
+            color: $text-secondary;
+            border-color: $border;
+          }
+        }
+
+        &.loading {
+          position: relative;
+          color: transparent !important;
+          pointer-events: none;
+
+          &::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            top: 50%;
+            left: 50%;
+            margin: -10px 0 0 -10px;
+            border: 2px solid;
+            border-radius: 50%;
+            border-color: currentColor transparent transparent;
+            animation: buttonLoader 0.6s linear infinite;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes buttonLoader {
+  to { transform: rotate(360deg); }
+}
+
+// Modal animations
+.modal.fade {
+  .modal-dialog {
+    transform: scale(0.98) translateY(-10px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &.show .modal-dialog {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+// Custom scrollbar
+textarea.form-control {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba($black, 0.03);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gold, 0.2);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba($gold, 0.3);
+    }
+  }
+}

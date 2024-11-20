@@ -34,7 +34,36 @@ $gold-gradient: linear-gradient(135deg, $primary-gold, darken($primary-gold, 15%
         );
         padding: 2rem 1.5rem;
         text-align: center;
-        border-bottom: 1px solid rgba($primary-dark, 0.06);
+        border-right: 1px solid rgba($primary-dark, 0.06);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+         .status-badge {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          z-index: 1;
+
+          &.active {
+            background: rgba(#22c55e, 0.1);
+            color: #16a34a;
+            border: 1px solid rgba(#16a34a, 0.2);
+          }
+
+          &.inactive {
+            background: rgba(#ef4444, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(#dc2626, 0.2);
+          }
+        }
 
         .profile-avatar {
           width: 90px;

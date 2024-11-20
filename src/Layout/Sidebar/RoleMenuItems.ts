@@ -64,37 +64,10 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
         icon: Circle,
         active: false,
       },
-      {
-        path: "/sales/transactions",
-        title: "Transactions",
-        type: "link",
-        icon: Circle,
-        active: false,
-      },
+ 
     ],
   },
-  {
-    path: "/reports",
-    title: "Reports",
-    icon: BarChart,
-    type: "link",
-    active: false,
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    type: "sub",
-    active: false,
-    children: [
-      {
-        path: "/settings/profile",
-        title: "Profile",
-        type: "link",
-        icon: Circle,
-        active: false,
-      },
-    ],
-  },
+
 ];
 
 // Menu items cho Admin (Role 3) - Giữ nguyên menu items hiện tại

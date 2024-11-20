@@ -1,12 +1,12 @@
 import React, { Fragment, useEffect, useState } from "react";
-import { 
-  FaPlus, 
-  FaSearch, 
-  FaArrowUp, 
-  FaUsers, 
-  FaRegUserCircle, 
-  FaPen, 
-  FaTrash 
+import {
+  FaPlus,
+  FaSearch,
+  FaArrowUp,
+  FaUsers,
+  FaRegUserCircle,
+  FaPen,
+  FaTrash,
 } from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
 import { useAuthService } from "../../../../Api/authService";
@@ -39,12 +39,14 @@ interface ApiResponse {
 }
 
 const UsersList: React.FC = () => {
-  const { fetchAccountByRole,deleteAccount } = useAccountService();
+  const { fetchAccountByRole, deleteAccount } = useAccountService();
   const { register } = useAuthService();
   const [userData, setUserData] = useState<UserData[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -56,13 +58,17 @@ const UsersList: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await fetchAccountByRole(1, search, page);
-      
+
       // Lọc dữ liệu theo trạng thái (active/inactive)
       let filteredData = response.items;
-      if (filterStatus === 'active') {
-        filteredData = response.items.filter((user: { status: any; }) => user.status);
-      } else if (filterStatus === 'inactive') {
-        filteredData = response.items.filter((user: { status: any; }) => !user.status);
+      if (filterStatus === "active") {
+        filteredData = response.items.filter(
+          (user: { status: any }) => user.status
+        );
+      } else if (filterStatus === "inactive") {
+        filteredData = response.items.filter(
+          (user: { status: any }) => !user.status
+        );
       }
 
       setUserData(filteredData);
@@ -71,9 +77,9 @@ const UsersList: React.FC = () => {
     } catch (error) {
       console.error("Failed to load user data:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Failed to load user data. Please try again.',
+        icon: "error",
+        title: "Error",
+        text: "Failed to load user data. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -98,68 +104,67 @@ const UsersList: React.FC = () => {
     setModalOpen(true);
   };
 
-
-  const handleSaveUser = async (userData: { 
-    username: string; 
-    email: string; 
-    phoneNumber: string; 
-    password: string 
+  const handleSaveUser = async (userData: {
+    username: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
   }) => {
     try {
       setIsLoading(true);
       const response = await register(
-        userData.username, 
-        userData.password, 
-        userData.email, 
+        userData.username,
+        userData.password,
+        userData.email,
         userData.phoneNumber
       );
-      
+
       if (response) {
         const newUser: UserData = {
           ...response,
           createdAt: new Date(),
-          status: true
+          status: true,
         };
 
-        setUserData(prevData => [newUser, ...prevData]);
+        setUserData((prevData) => [newUser, ...prevData]);
 
         await Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: 'User has been registered successfully!',
-          confirmButtonText: 'OK'
+          icon: "success",
+          title: "Success",
+          text: "User has been registered successfully!",
+          confirmButtonText: "OK",
         });
         toggleModal();
       }
     } catch (error: any) {
       console.error("Error registering user:", error);
-      
+
       // Xử lý error response từ API
       if (error.response?.status === 400) {
         // Lấy error message từ API response
         let errorMessage = error.response.data?.message;
-        
+
         // Nếu có validation errors chi tiết
         if (error.response.data?.errors) {
           errorMessage = Object.values(error.response.data.errors)
             .flat()
-            .join('\n');
+            .join("\n");
         }
 
         // Hiển thị error với Swal
         await Swal.fire({
-          icon: 'error',
-          title: 'Registration Failed',
-          html: errorMessage.replace(/\n/g, '<br>'),
-          confirmButtonColor: '#d33'
+          icon: "error",
+          title: "Registration Failed",
+          html: errorMessage.replace(/\n/g, "<br>"),
+          confirmButtonColor: "#d33",
         });
       } else {
         // Xử lý các lỗi khác
         await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to register user. Please try again.',
-          confirmButtonColor: '#d33'
+          icon: "error",
+          title: "Error",
+          text: "Failed to register user. Please try again.",
+          confirmButtonColor: "#d33",
         });
       }
     } finally {
@@ -171,7 +176,7 @@ const UsersList: React.FC = () => {
     const value = event.target.value;
     setSearchTerm(value);
     setCurrentPage(1);
-  }
+  };
 
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
@@ -185,40 +190,42 @@ const UsersList: React.FC = () => {
   const handleDelete = async (userId: number) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
+        title: "Are you sure?",
         text: `Do you want to delete user ?`,
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#c79816',
-        cancelButtonColor: 'Black',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonColor: "#c79816",
+        cancelButtonColor: "Black",
+        confirmButtonText: "Yes, delete it!",
       });
 
       if (result.isConfirmed) {
         setIsLoading(true);
-        
+
         // Gọi API delete account
         await deleteAccount(userId);
-        
+
         // Cập nhật lại danh sách sau khi xóa
         await getUserData(currentPage, searchTerm);
-        
+
         await Swal.fire({
-          icon: 'success',
-          title: 'Deleted!',
-          text: 'User has been deleted successfully.',
-          confirmButtonColor: '#c79816'
+          icon: "success",
+          title: "Deleted!",
+          text: "User has been deleted successfully.",
+          confirmButtonColor: "#c79816",
         });
       }
     } catch (error: any) {
       console.error("Error deleting user:", error);
       // Hiển thị error message từ API
-      const errorMessage = error.response?.data?.message || 'Failed to delete user. Please try again.';
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to delete user. Please try again.";
       Swal.fire({
-        icon: 'error',
-        title: 'Delete Error',
+        icon: "error",
+        title: "Delete Error",
         text: errorMessage,
-        confirmButtonColor: '#d33'
+        confirmButtonColor: "#d33",
       });
     } finally {
       setIsLoading(false);
@@ -237,10 +244,10 @@ const UsersList: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <button className="create-btn" onClick={handleCreateUser}>
+            {/* <button className="create-btn" onClick={handleCreateUser}>
               <FaPlus className="btn-icon" />
               Create User
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -261,7 +268,7 @@ const UsersList: React.FC = () => {
           <div className="stat-card">
             <div className="stat-content">
               <div className="stat-value">
-                {userData.filter(user => user.status).length}
+                {userData.filter((user) => user.status).length}
               </div>
               <div className="stat-label">Active Users</div>
               <div className="stat-change">
@@ -287,20 +294,26 @@ const UsersList: React.FC = () => {
             </div>
             <div className="filters">
               <button
-                className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
-                onClick={() => handleFilter('all')}
+                className={`filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("all")}
               >
                 All Users
               </button>
               <button
-                className={`filter-btn ${filterStatus === 'active' ? 'active' : ''}`}
-                onClick={() => handleFilter('active')}
+                className={`filter-btn ${
+                  filterStatus === "active" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${filterStatus === 'inactive' ? 'active' : ''}`}
-                onClick={() => handleFilter('inactive')}
+                className={`filter-btn ${
+                  filterStatus === "inactive" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("inactive")}
               >
                 Inactive
               </button>
@@ -311,59 +324,69 @@ const UsersList: React.FC = () => {
             <div className="loading-spinner">Loading...</div>
           ) : (
             <>
-               <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>User Information</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userData.map((user) => (
-              <tr key={user.id}>
-                <td>
-                  <div className="user-info">
-                    <div className="user-icon">
-                      <FaRegUserCircle />
-                    </div>
-                    <div className="user-details">
-                      <div className="name">{user.username}</div>
-                      <div className="email">{user.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>{user.role.name}</td>
-                <td>
-                  <span className={`status-badge ${user.status ? 'active' : 'inactive'}`}>
-                    {user.status ? 'Active' : 'Inactive'}
-                  </span>
-                </td>
-                <td>
-                  <div className="actions">
-                    <button 
-                      className="edit-btn"
-                      onClick={() => handleEdit(user)}
-                    >
-                      <FaPen />
-                    </button>
-                    <button 
-                      className={`delete-btn ${!user.status ? 'disabled' : ''}`}
-                      onClick={() => handleDelete(user.id)}
-                      disabled={!user.status}
-                      title={!user.status ? "Cannot delete inactive user" : "Delete user"}
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              <div className="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User Information</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {userData.map((user) => (
+                      <tr key={user.id}>
+                        <td>
+                          <div className="user-info">
+                            <div className="user-icon">
+                              <FaRegUserCircle />
+                            </div>
+                            <div className="user-details">
+                              <div className="name">{user.username}</div>
+                              <div className="email">{user.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{user.role.name}</td>
+                        <td>
+                          <span
+                            className={`status-badge ${
+                              user.status ? "active" : "inactive"
+                            }`}
+                          >
+                            {user.status ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="actions">
+                            <button
+                              className="edit-btn"
+                              onClick={() => handleEdit(user)}
+                            >
+                              <FaPen />
+                            </button>
+                            <button
+                              className={`delete-btn ${
+                                !user.status ? "disabled" : ""
+                              }`}
+                              onClick={() => handleDelete(user.id)}
+                              disabled={!user.status}
+                              title={
+                                !user.status
+                                  ? "Cannot delete inactive user"
+                                  : "Delete user"
+                              }
+                            >
+                              <FaTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <div className="pagination-wrapper">
                 <Pagination
@@ -377,9 +400,9 @@ const UsersList: React.FC = () => {
         </div>
       </div>
 
-      <UserModal 
-        isOpen={modalOpen} 
-        toggle={toggleModal} 
+      <UserModal
+        isOpen={modalOpen}
+        toggle={toggleModal}
         onSave={handleSaveUser}
         // editingUser={editingUser}
       />

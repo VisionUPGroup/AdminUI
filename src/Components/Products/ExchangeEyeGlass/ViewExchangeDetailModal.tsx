@@ -1,6 +1,25 @@
 import React from "react";
-import { Modal, ModalHeader, ModalBody, Table } from "reactstrap";
-
+import { Modal, ModalHeader, ModalBody } from "reactstrap";
+import { 
+  User, 
+  Package, 
+  ShoppingBag, 
+  MapPin, 
+  Phone, 
+  Mail,
+  Archive,
+  DollarSign,
+  Eye,
+  Calendar,
+  Hash,
+  FileText,
+  CheckCircle,
+  XCircle,
+  Truck,
+  Info
+} from "react-feather";
+import "./ViewExchangeDetailStyles.scss"
+// Giữ nguyên các interfaces như cũ
 interface Account {
   id: number;
   username: string;
@@ -78,208 +97,251 @@ const ViewExchangeDetailModal: React.FC<ViewExchangeDetailModalProps> = ({
   toggle,
   exchangeDetail,
 }) => {
-  const getProcessStatus = (process: any) => {
-    switch (process) {
-      case 0: return "Pending";
-      case 1: return "Processing";
-      case 2: return "Shipping";
-      case 3: return "Delivered";
-      case 4: return "Completed";
-      case 5: return "Cancelled";
-      default: return "Unknown";
-    }
+  const getProcessStatus = (process: number) => {
+    const statuses = {
+      0: { label: "Pending", class: "pending" },
+      1: { label: "Processing", class: "pending" },
+      2: { label: "Shipping", class: "pending" },
+      3: { label: "Delivered", class: "active" },
+      4: { label: "Completed", class: "active" },
+      5: { label: "Cancelled", class: "inactive" }
+    };
+    return statuses[process as keyof typeof statuses] || { label: "Unknown", class: "pending" };
   };
-  
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  };
+
+  if (!exchangeDetail) return null;
+
   return (
-    <Modal isOpen={isOpen} toggle={toggle} size="lg">
-      <ModalHeader toggle={toggle}>Exchange Detail</ModalHeader>
+    <Modal 
+      isOpen={isOpen} 
+      toggle={toggle} 
+      size="lg" 
+      className="exchange-detail-modal"
+    >
+      <ModalHeader toggle={toggle}>
+        <Info className="modal-title-icon" /> Exchange Detail #{exchangeDetail.id}
+      </ModalHeader>
       <ModalBody>
-        {exchangeDetail ? (
-          <Table bordered hover>
-            <thead>
-              <tr>
-                <th colSpan={2} style={{ textAlign: "center" }}>Exchange Information</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Exchange ID</th>
-                <td>{exchangeDetail.id}</td>
-              </tr>
-              <tr>
-                <th>Reason</th>
-                <td>{exchangeDetail.reason}</td>
-              </tr>
-              <tr>
-                <th>Status</th>
-                <td>{exchangeDetail.status === 1 ? "Active" : "Inactive"}</td>
-              </tr>
-            </tbody>
+        {/* Exchange Information Section */}
+        <div className="detail-section">
+          <div className="section-header">
+            <Package /> Exchange Information
+          </div>
+          <div className="section-content">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <div className="label">Exchange ID</div>
+                <div className="value">#{exchangeDetail.id}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Status</div>
+                <div className={`value status ${exchangeDetail.status === 1 ? 'active' : 'inactive'}`}>
+                  {exchangeDetail.status === 1 ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Reason</div>
+                <div className="value">{exchangeDetail.reason}</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <thead>
-              <tr>
-                <th colSpan={2} style={{ textAlign: "center" }}>Customer Information</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Customer ID</th>
-                <td>{exchangeDetail.customer.id}</td>
-              </tr>
-              <tr>
-                <th>Username</th>
-                <td>{exchangeDetail.customer.username}</td>
-              </tr>
-              <tr>
-                <th>Email</th>
-                <td>{exchangeDetail.customer.email}</td>
-              </tr>
-              <tr>
-                <th>Phone Number</th>
-                <td>{exchangeDetail.customer.phoneNumber || "N/A"}</td>
-              </tr>
-              <tr>
-                <th>Status</th>
-                <td>{exchangeDetail.customer.status ? "Active" : "Inactive"}</td>
-              </tr>
-            </tbody>
+        {/* Customer Information Section */}
+        <div className="detail-section">
+          <div className="section-header">
+            <User /> Customer Information
+          </div>
+          <div className="section-content">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <div className="label">Customer ID</div>
+                <div className="value">#{exchangeDetail.customer.id}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Username</div>
+                <div className="value">{exchangeDetail.customer.username}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Email</div>
+                <div className="value">{exchangeDetail.customer.email}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Phone Number</div>
+                <div className="value">{exchangeDetail.customer.phoneNumber || "N/A"}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Account Status</div>
+                <div className={`value status ${exchangeDetail.customer.status ? 'active' : 'inactive'}`}>
+                  {exchangeDetail.customer.status ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <thead>
-              <tr>
-                <th colSpan={2} style={{ textAlign: "center" }}>Product Glass Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Product Glass ID</th>
-                <td>{exchangeDetail.productGlass.id}</td>
-              </tr>
-              <tr>
-                <th>Eye Glass Name</th>
-                <td>{exchangeDetail.productGlass.eyeGlass.name}</td>
-              </tr>
-              <tr>
-                <th>Eye Glass Price</th>
-                <td>{exchangeDetail.productGlass.eyeGlass.price}</td>
-              </tr>
-              <tr>
-                <th>Left Lens Name</th>
-                <td>{exchangeDetail.productGlass.leftLen.name}</td>
-              </tr>
-              <tr>
-                <th>Left Lens Description</th>
-                <td>{exchangeDetail.productGlass.leftLen.description}</td>
-              </tr>
-              <tr>
-                <th>Left Lens Price</th>
-                <td>{exchangeDetail.productGlass.leftLen.price}</td>
-              </tr>
-              <tr>
-                <th>Right Lens Name</th>
-                <td>{exchangeDetail.productGlass.rightLen.name}</td>
-              </tr>
-              <tr>
-                <th>Right Lens Description</th>
-                <td>{exchangeDetail.productGlass.rightLen.description}</td>
-              </tr>
-              <tr>
-                <th>Right Lens Price</th>
-                <td>{exchangeDetail.productGlass.rightLen.price}</td>
-              </tr>
-              {/* Các thông số khác của kính */}
-              <tr>
-                <th>Spherical OD</th>
-                <td>{exchangeDetail.productGlass.sphereOD}</td>
-              </tr>
-              <tr>
-                <th>Cylindrical OD</th>
-                <td>{exchangeDetail.productGlass.cylinderOD}</td>
-              </tr>
-              <tr>
-                <th>Axis OD</th>
-                <td>{exchangeDetail.productGlass.axisOD}</td>
-              </tr>
-              <tr>
-                <th>Spherical OS</th>
-                <td>{exchangeDetail.productGlass.sphereOS}</td>
-              </tr>
-              <tr>
-                <th>Cylindrical OS</th>
-                <td>{exchangeDetail.productGlass.cylinderOS}</td>
-              </tr>
-              <tr>
-                <th>Axis OS</th>
-                <td>{exchangeDetail.productGlass.axisOS}</td>
-              </tr>
-              <tr>
-                <th>Add OD</th>
-                <td>{exchangeDetail.productGlass.addOD}</td>
-              </tr>
-              <tr>
-                <th>Add OS</th>
-                <td>{exchangeDetail.productGlass.addOS}</td>
-              </tr>
-              <tr>
-                <th>PD</th>
-                <td>{exchangeDetail.productGlass.pd}</td>
-              </tr>
-              <tr>
-                <th>Total</th>
-                <td>{exchangeDetail.productGlass.total}</td>
-              </tr>
-              <tr>
-                <th>Quantity</th>
-                <td>{exchangeDetail.productGlass.quantity}</td>
-              </tr>
-              <tr>
-                <th>Product Glass Status</th>
-                <td>{exchangeDetail.productGlass.status ? "Active" : "Inactive"}</td>
-              </tr>
-            </tbody>
+        {/* Product Glass Section */}
+        <div className="detail-section">
+          <div className="section-header">
+            <Eye /> Product Glass Details
+          </div>
+          <div className="section-content">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <div className="label">Product ID</div>
+                <div className="value">#{exchangeDetail.productGlass.id}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Eye Glass Name</div>
+                <div className="value">{exchangeDetail.productGlass.eyeGlass.name}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Eye Glass Price</div>
+                <div className="value">{(exchangeDetail.productGlass.eyeGlass.price)} VND</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Left Lens Name</div>
+                <div className="value">{exchangeDetail.productGlass.leftLen.name}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Left Lens Description</div>
+                <div className="value">{exchangeDetail.productGlass.leftLen.description}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Left Lens Price</div>
+                <div className="value">{(exchangeDetail.productGlass.leftLen.price)} VND</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Right Lens Name</div>
+                <div className="value">{exchangeDetail.productGlass.rightLen.name}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Right Lens Description</div>
+                <div className="value">{exchangeDetail.productGlass.rightLen.description}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Right Lens Price</div>
+                <div className="value">{(exchangeDetail.productGlass.rightLen.price)} VND</div>
+              </div>
+            </div>
 
-            <thead>
-              <tr>
-                <th colSpan={2} style={{ textAlign: "center" }}>Order Information</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Order ID</th>
-                <td>{exchangeDetail.order.id}</td>
-              </tr>
-              <tr>
-                <th>Kiosk Name</th>
-                <td>{exchangeDetail.order.kiosk ? exchangeDetail.order.kiosk.name : "N/A"}</td>
-              </tr>
-              <tr>
-                <th>Kiosk Address</th>
-                <td>{exchangeDetail.order.kiosk ? exchangeDetail.order.kiosk.address : "N/A"}</td>
-              </tr>
-              <tr>
-                <th>Kiosk Phone Number</th>
-                <td>{exchangeDetail.order.kiosk ? exchangeDetail.order.kiosk.phoneNumber : "N/A"}</td>
-              </tr>
-              <tr>
-                <th>Receiver Address</th>
-                <td>{exchangeDetail.order.receiverAddress}</td>
-              </tr>
-              <tr>
-                <th>Order Code</th>
-                <td>{exchangeDetail.order.code}</td>
-              </tr>
-              <tr>
-                <th>Process</th>
-                <td>{getProcessStatus(exchangeDetail.order.process)}</td>
-              </tr>
-              <tr>
-                <th>Order Status</th>
-                <td>{exchangeDetail.order.status ? "Active" : "Inactive"}</td>
-              </tr>
-            </tbody>
-          </Table>
-        ) : (
-          <p>No details available</p>
-        )}
+            {/* Prescription Information */}
+            <div className="prescription-grid">
+              <div className="prescription-item">
+                <div className="prescription-label">Sphere OD</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.sphereOD}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Cylinder OD</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.cylinderOD}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Axis OD</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.axisOD}°</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Add OD</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.addOD}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Sphere OS</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.sphereOS}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Cylinder OS</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.cylinderOS}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Axis OS</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.axisOS}°</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Add OS</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.addOS}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">PD</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.pd}mm</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Total</div>
+                <div className="prescription-value">{(exchangeDetail.productGlass.total)} VND</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Quantity</div>
+                <div className="prescription-value">{exchangeDetail.productGlass.quantity}</div>
+              </div>
+              <div className="prescription-item">
+                <div className="prescription-label">Status</div>
+                <div className={`prescription-value status ${exchangeDetail.productGlass.status ? 'active' : 'inactive'}`}>
+                  {exchangeDetail.productGlass.status ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Information Section */}
+        <div className="detail-section">
+          <div className="section-header">
+            <ShoppingBag /> Order Information
+          </div>
+          <div className="section-content">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <div className="label">Order ID</div>
+                <div className="value">#{exchangeDetail.order.id}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Order Code</div>
+                <div className="value">{exchangeDetail.order.code}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Process Status</div>
+                <div className={`value status ${getProcessStatus(exchangeDetail.order.process).class}`}>
+                  {getProcessStatus(exchangeDetail.order.process).label}
+                </div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Total Amount</div>
+                <div className="value">{(exchangeDetail.order.total)} VND</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Order Status</div>
+                <div className={`value status ${exchangeDetail.order.status ? 'active' : 'inactive'}`}>
+                  {exchangeDetail.order.status ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Receiver Address</div>
+                <div className="value">{exchangeDetail.order.receiverAddress}</div>
+              </div>
+              {exchangeDetail.order.kiosk && (
+                <>
+                  <div className="detail-item">
+                    <div className="label">Kiosk Name</div>
+                    <div className="value">{exchangeDetail.order.kiosk.name}</div>
+                  </div>
+                  <div className="detail-item">
+                    <div className="label">Kiosk Address</div>
+                    <div className="value">{exchangeDetail.order.kiosk.address}</div>
+                  </div>
+                  <div className="detail-item">
+                    <div className="label">Kiosk Phone</div>
+                    <div className="value">{exchangeDetail.order.kiosk.phoneNumber}</div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </ModalBody>
     </Modal>
   );

@@ -1,97 +1,124 @@
+import { useState, FormEvent, ChangeEvent } from 'react';
+import { Eye, EyeOff, User, Lock } from 'react-feather';
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 import { useAppSelector } from "@/Redux/Hooks";
-import { useRouter } from "next/navigation";
-import { ChangeEvent, FormEvent, useState } from "react";
-import { Eye, EyeOff } from "react-feather";
-import Cookies from "js-cookie";
-import { toast } from "react-toastify";
-import { Button, Form, FormGroup, Input, InputGroup, InputGroupText, Label } from "reactstrap";
 import { useAuthService } from "../../../../Api/authService";
+import './LoginPageStyles.scss';
 
-const LoginForm = () => {
+const LoginPage = () => {
   const { i18LangStatus } = useAppSelector((store) => store.LangReducer);
-  const [showPassWord, setShowPassWord] = useState(false);
   const [formValues, setFormValues] = useState({
-    username: "",
-    password: "",
+    username: '',
+    password: ''
   });
-  const { username, password } = formValues;
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuthService();
 
-  const handleUserValue = (event: ChangeEvent<HTMLInputElement>) => {
-    setFormValues({ ...formValues, [event.target.name]: event.target.value });
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormValues({ ...formValues, [e.target.name]: e.target.value });
   };
 
-  const formSubmitHandle = async (event: FormEvent) => {
-    event.preventDefault();
-    const response = await login(username, password);
-  
-    if (response && response.accessToken) {
-      // Lưu token và role vào cookies
-      Cookies.set("token", response.accessToken);
-      Cookies.set("roleId", response.user.roleID);
-      Cookies.set("userData", JSON.stringify({
-        username: response.user.username,
-        roleId: response.user.roleID,
-        // Thêm các thông tin user khác nếu cần
-      }));
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const response = await login(formValues.username, formValues.password);
       
-      toast.success("Login successful");
-      
-      // Redirect dựa vào role
-      if (response.user.roleID === "2") {
-        router.push(`${process.env.PUBLIC_URL}/staff/dashboard`);
-      } else if (response.user.roleID === "3") {
-        router.push(`${process.env.PUBLIC_URL}/admin/dashboard`);
+      if (response && response.accessToken) {
+        Cookies.set("token", response.accessToken);
+        Cookies.set("roleId", response.user.roleID);
+        Cookies.set("userData", JSON.stringify({
+          username: response.user.username,
+          roleId: response.user.roleID,
+        }));
+        
+        toast.success("Login successful");
+        
+        if (response.user.roleID === 2) {
+          router.push(`/en/welcomestaff`);
+        } else if (response.user.roleID === 3) {
+          router.push(`/en/welcomeadmin`);
+        } else {
+          router.push(`${process.env.PUBLIC_URL}/dashboard`);
+        }
       } else {
-        router.push(`${process.env.PUBLIC_URL}/dashboard`);
+        toast.error("Please Enter Valid Username Or Password");
       }
-    } else {
-      toast.error("Please Enter Valid Username Or Password");
+    } catch (error) {
+      toast.error("Invalid credentials");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Form className="form-horizontal auth-form" onSubmit={formSubmitHandle}>
-      <FormGroup>
-        <Input
-          required
-          onChange={handleUserValue}
-          type="text"
-          value={username}
-          name="username"
-          placeholder="Username"
-          id="exampleInputUsername1"
-        />
-      </FormGroup>
-      <FormGroup>
-        <InputGroup onClick={() => setShowPassWord(!showPassWord)}>
-          <Input
-            required
-            onChange={handleUserValue}
-            type={showPassWord ? "text" : "password"}
-            value={password}
-            name="password"
-            placeholder="Password"
-          />
-          <InputGroupText>{showPassWord ? <Eye /> : <EyeOff />}</InputGroupText>
-        </InputGroup>
-      </FormGroup>
-      <div className="form-terms">
-        <div className="custom-control custom-checkbox me-sm-2">
-          <Label className="d-block">
-            <Input className="checkbox_animated" id="chk-ani2" type="checkbox" />
-            Remember Me
-          </Label>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
+          <h1>Welcome Vison Up</h1>
+          <p>Please sign in to continue</p>
         </div>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="form-group">
+            <User className="input-icon" />
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formValues.username}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <Lock className="input-icon" />
+            <input
+              type={showPassword ? 'text' : 'password'}
+              name="password"
+              placeholder="Password"
+              value={formValues.password}
+              onChange={handleInputChange}
+              required
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
+          <div className="form-options">
+            <label className="remember-me">
+              <input type="checkbox" />
+              <span>Remember me</span>
+            </label>
+            <a href="#" className="forgot-password">Forgot Password?</a>
+          </div>
+
+          <button 
+            type="submit" 
+            className={`login-button ${isLoading ? 'loading' : ''}`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="loader"></div>
+            ) : (
+              'Sign In'
+            )}
+          </button>
+        </form>
       </div>
-      <div className="form-button">
-        <Button color="primary" type="submit">
-          Login
-        </Button>
-      </div>
-    </Form>
+    </div>
   );
 };
 
-export default LoginForm;
+export default LoginPage;
