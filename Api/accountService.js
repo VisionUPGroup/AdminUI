@@ -4,30 +4,21 @@ import { getToken } from "./tokenHelper";
 export const useAccountService = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // Fetch accounts by RoleID
-  const fetchAccountByRole = async (roleID, username = "", pageIndex = 1) => {
-    try {
-      const token = getToken();
-      const response = await axios.get(`${baseUrl}/api/accounts`, {
-        params: {
-          RoleID: roleID,
-          Username: username,
-          PageIndex: pageIndex,
-          PageSize: 10, // Số lượng items mỗi trang
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      return {
-        items: response.data.data,
-        totalItems: response.data.totalCount, // Giả sử API trả về tổng số items
-        currentPage: pageIndex,
-      };
+  const fetchAccounts = async (params) => {
+    try {
+      console.log("Fetching accounts with params:", params);
+      const response = await axios.get(`${baseUrl}/api/accounts`, {
+        params: params,
+        headers: {
+          Authorization: `Bearer ${getToken()}`
+        }
+      });
+      console.log("Accounts fetched successfully:", response.data);
+      return response.data;
     } catch (error) {
       console.error("Error fetching accounts:", error);
-      throw error;
+      return null;
     }
   };
 
@@ -84,10 +75,33 @@ export const useAccountService = () => {
     }
   };
 
+  // Create new account
+  const createAccount = async (accountData) => {
+    try {
+      const token = getToken();
+      const response = await axios.post(
+        `${baseUrl}/api/accounts`,
+        accountData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Account created successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating account:", error);
+      throw error;
+    }
+  };
+
   return {
-    fetchAccountByRole,
+    fetchAccounts,
     fetchAccountById,
     updateAccount,
     deleteAccount,
+    createAccount, // Add the new function to the returned object
   };
 };

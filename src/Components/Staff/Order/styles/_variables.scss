@@ -1,0 +1,57 @@
+// styles/_variables.scss
+$primary: #d39d4e;
+$surface: #ffffff;
+$background: #f8f9fa;
+$text-primary: #2c3e50;
+$text-secondary: #6c757d;
+
+$border-radius: 8px;
+$border-radius-sm: 4px;  // Add this line
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+$border-radius-full: 9999px;
+
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+
+$transition-base: all 0.2s ease;
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Colors
+
+$secondary: #2C3E50;
+$accent: #F39C12; // For rating stars
+$background: #F8FAFC;
+$surface: #FFFFFF;
+$text-primary: #1A1A1A;
+$text-secondary: #616161;
+$success: #2ECC71;
+$black: #000000;
+
+// Typography
+$font-heading: 'Inter', sans-serif;
+
+// Layout
+$container-padding: 24px;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+$shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+
+// Transitions
+$transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+// Spacing
+$spacing-unit: 4px;
+$border-radius: 12px;
+$border-radius-lg: 16px;
+$border-radius-full: 9999px;
+
+// Add gradient backgrounds
+$gradient-primary: linear-gradient(135deg, #d39d4e 0%, #f1c40f 100%);
+$gradient-background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+
+$font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;

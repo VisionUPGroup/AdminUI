@@ -1,0 +1,661 @@
+@import '../../styles/_variables';
+@import '../../styles/_mixins';
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modalContainer {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.4s ease-out;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($color: #d39d4e, $alpha: 0.5);
+    border-radius: 3px;
+
+    &:hover {
+      background: #d39d4e;
+    }
+  }
+}
+
+.modalHeader {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .closeButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    svg {
+      width: 24px;
+      height: 24px;
+      color: #666;
+    }
+  }
+}
+
+.modalBody {
+  padding: 2rem;
+}
+
+// Shipping Method Section
+.shippingMethods {
+  margin-bottom: 2rem;
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #1a1a1a;
+  }
+
+  .methodsContainer {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+
+    .methodOption {
+      position: relative;
+      padding: 1.25rem;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        
+        &:checked + .methodContent {
+          .checkmark {
+            background: #d39d4e;
+            border-color: #d39d4e;
+
+            &::after {
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      .methodContent {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+
+        .checkmark {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(0, 0, 0, 0.2);
+          border-radius: 50%;
+          position: relative;
+          flex-shrink: 0;
+          transition: all 0.2s ease;
+
+          &::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+          }
+        }
+
+        .methodInfo {
+          flex: 1;
+
+          .methodTitle {
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 0.25rem;
+          }
+
+          .methodDescription {
+            font-size: 0.875rem;
+            color: #666;
+          }
+        }
+      }
+
+      &:hover {
+        border-color: #d39d4e;
+      }
+
+      &.selected {
+        border-color: #d39d4e;
+        background: rgba($color: #d39d4e, $alpha: 0.05);
+      }
+    }
+  }
+}
+
+// Form Styles
+.formSection {
+  margin-top: 2rem;
+
+  .formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+
+    .fullWidth {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .formGroup {
+    margin-bottom: 1.25rem;
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #d39d4e;
+        box-shadow: 0 0 0 4px rgba($color: #d39d4e, $alpha: 0.1);
+      }
+
+      &.error {
+        border-color: #dc3545;
+
+        &:focus {
+          box-shadow: 0 0 0 4px rgba($color: #dc3545, $alpha: 0.1);
+        }
+      }
+    }
+
+    .errorMessage {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+  }
+}
+
+// Order Summary Section
+.orderSummary {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #1a1a1a;
+  }
+
+  .summaryRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    font-size: 0.875rem;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .label {
+      color: #666;
+    }
+
+    .value {
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    &.total {
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      border-top: 2px solid rgba(0, 0, 0, 0.1);
+      font-size: 1rem;
+      font-weight: 600;
+
+      .value {
+        color: #d39d4e;
+      }
+    }
+    
+  }
+}
+
+// Action Buttons
+.modalActions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+
+  button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.cancelBtn {
+      background: white;
+      border: 1.5px solid rgba(0, 0, 0, 0.1);
+      color: #666;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+    }
+
+    &.submitBtn {
+      background: #d39d4e;
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        background: darken(#d39d4e, 5%);
+      }
+
+      &:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+.voucherInput {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  input {
+    flex: 1;
+    padding-right: 100px; // Space for button
+    text-transform: uppercase;
+    
+    &.success {
+      border-color: #28a745;
+      background-color: rgba(#28a745, 0.05);
+    }
+    
+    &:disabled {
+      background-color: #f8f9fa;
+      cursor: not-allowed;
+    }
+  }
+
+  .applyVoucherBtn,
+  .removeVoucherBtn {
+    min-width: 80px;
+    padding: 0 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .applyVoucherBtn {
+    background-color: #d39d4e;
+    color: white;
+    border: none;
+
+    &:hover:not(:disabled) {
+      background-color: darken(#d39d4e, 5%);
+    }
+
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  .removeVoucherBtn {
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+
+    &:hover {
+      background-color: #dc3545;
+      color: white;
+    }
+  }
+}
+
+.voucherError,
+.voucherSuccess {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  animation: fadeIn 0.3s ease-out;
+
+  svg {
+    font-size: 1rem;
+  }
+}
+
+.voucherError {
+  color: #dc3545;
+}
+
+.voucherSuccess {
+  color: #28a745;
+}
+
+// Thêm animation cho voucher feedback
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .modalContainer {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .modalHeader {
+    padding: 1rem 1.5rem;
+  }
+
+  .modalBody {
+    padding: 1.5rem;
+  }
+
+  .shippingMethods {
+    .methodsContainer {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .formSection {
+    .formGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .modalActions {
+    button {
+      flex: 1;
+      padding: 0.875rem;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Thêm vào cuối file OrderNowModal.module.scss
+
+// Styles cho phần Deposit
+.depositSection {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+
+  .depositToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    
+    .depositInfo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .depositIcon {
+        width: 32px;
+        height: 32px;
+        color: #d39d4e;
+      }
+
+      h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      p {
+        margin: 4px 0 0;
+        font-size: 0.875rem;
+        color: #666;
+      }
+    }
+  }
+}
+
+// Custom Toggle Switch
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .slider {
+      background-color: #d39d4e;
+    }
+
+    &:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    &:focus + .slider {
+      box-shadow: 0 0 1px #d39d4e;
+    }
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 28px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+// Update summaryRow để thêm styles cho thông tin deposit
+.summaryRow {
+  &.depositRow {
+    background-color: rgba($color: #d39d4e, $alpha: 0.1);
+    margin: 8px 0;
+    padding: 12px;
+    border-radius: 8px;
+
+    .label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1a1a1a;
+      font-weight: 500;
+
+      svg {
+        color: #d39d4e;
+      }
+    }
+
+    .value {
+      color: #d39d4e;
+      font-weight: 600;
+    }
+  }
+
+  .totalNote {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 4px;
+    text-align: right;
+  }
+}
+
+// Responsive styles for deposit section
+@media (max-width: 640px) {
+  .depositSection {
+    margin: 1rem 0;
+    padding: 1rem;
+
+    .depositToggle {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .switch {
+        align-self: flex-end;
+      }
+    }
+  }
+}

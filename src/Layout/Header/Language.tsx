@@ -21,6 +21,27 @@ const Language = () => {
     const updatedPath = pathname.replace(languageCodeRegex, `/${lng}$1`);
     router.push(updatedPath);
   };
+  //   const { i18LangStatus } = useAppSelector((store) => store.LangReducer);
+  // const { i18n } = useTranslation(i18LangStatus);
+  // const pathname = usePathname();
+  // const router = useRouter();
+  // const dispatch = useDispatch();
+
+  // const changeLng = (lng: string) => {
+  //   dispatch(setLanguage(lng));
+  //   i18n.changeLanguage(lng);
+    
+  //   // Remove language prefix and handle routing
+  //   const segments = pathname.split('/');
+  //   const isLanguagePrefix = languages.includes(segments[1]);
+  //   const pathWithoutLang = isLanguagePrefix ? 
+  //     segments.slice(2).join('/') : 
+  //     segments.slice(1).join('/');
+    
+  //   const newPath = `/${pathWithoutLang}`;
+  //   router.push(newPath);
+  // };
+  
   const LanguageData = [
     {
       lang: "en",

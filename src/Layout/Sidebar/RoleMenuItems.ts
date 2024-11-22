@@ -58,8 +58,8 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
         active: false,
       },
       {
-        path: "/sales/transactions",
-        title: "Transactions",
+        path: "/sales/staff-orders/create",
+        title: "Create",
         type: "link",
         icon: Circle,
         active: false,

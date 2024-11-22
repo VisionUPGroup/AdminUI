@@ -1,0 +1,610 @@
+@import './_variables';
+
+.container {
+  background: $background;
+  min-height: 100vh;
+  padding: $container-padding;
+}
+
+.header {
+  margin-bottom: $spacing-unit * 8;
+
+  .backButton {
+    display: flex;
+    align-items: center;
+    gap: $spacing-unit * 2;
+    color: $text-secondary;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: $spacing-unit * 2;
+    transition: $transition-base;
+
+    &:hover {
+      color: $text-primary;
+    }
+  }
+
+  .productPreview {
+    margin-top: $spacing-unit * 4;
+    display: flex;
+    align-items: center;
+    gap: $spacing-unit * 4;
+    padding: $spacing-unit * 4;
+    background: $surface;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-sm;
+
+    .productImage {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: $border-radius;
+    }
+
+    .productInfo {
+      h2 {
+        margin-bottom: $spacing-unit * 2;
+        font-family: $font-heading;
+      }
+
+      .price {
+        color: $primary;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    }
+  }
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: $spacing-unit * 6;
+}
+
+.typeSelection {
+  h2 {
+    margin-bottom: $spacing-unit * 6;
+    font-family: $font-heading;
+    color: $text-primary;
+  }
+
+  .typeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-unit * 4;
+  }
+}
+
+.typeCard {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-unit * 4;
+  padding: $spacing-unit * 6;
+  background: $surface;
+  border: none;
+  border-radius: $border-radius-lg;
+  text-align: left;
+  cursor: pointer;
+  transition: $transition-smooth;
+  box-shadow: $shadow-sm;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+
+  .iconWrapper {
+    color: $primary;
+    background: rgba($primary, 0.1);
+    padding: $spacing-unit * 3;
+    border-radius: $border-radius;
+  }
+
+  .typeContent {
+    flex: 1;
+
+    h3 {
+      color: $text-primary;
+      margin-bottom: $spacing-unit * 2;
+      font-family: $font-heading;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+  }
+}
+
+.leftSection {
+  .typeHeader {
+    margin-bottom: $spacing-unit * 6;
+
+    .backToTypes {
+      display: flex;
+      align-items: center;
+      gap: $spacing-unit * 2;
+      color: $text-secondary;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: $spacing-unit * 2;
+      margin-bottom: $spacing-unit * 2;
+
+      &:hover {
+        color: $text-primary;
+      }
+    }
+
+    h2 {
+      color: $primary;
+      font-family: $font-heading;
+    }
+  }
+
+  .filters {
+    background: $surface;
+    padding: $spacing-unit * 4;
+    border-radius: $border-radius;
+    margin-bottom: $spacing-unit * 4;
+    display: flex;
+    gap: $spacing-unit * 4;
+
+    select {
+      flex: 1;
+      padding: $spacing-unit * 2;
+      border: 1px solid rgba($text-secondary, 0.2);
+      border-radius: $border-radius;
+      background: $surface;
+    }
+
+    .priceRange {
+      display: flex;
+      align-items: center;
+      gap: $spacing-unit * 2;
+      flex: 1;
+
+      input {
+        width: 100%;
+        padding: $spacing-unit * 2;
+        border: 1px solid rgba($text-secondary, 0.2);
+        border-radius: $border-radius;
+
+        &::placeholder {
+          color: rgba($text-secondary, 0.5);
+        }
+      }
+
+      span {
+        color: $text-secondary;
+      }
+    }
+  }
+}
+
+.lensGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $spacing-unit * 4;
+}
+
+.lensCard {
+  position: relative;
+  background: $surface;
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  cursor: pointer;
+  transition: $transition-smooth;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+
+  &.selected {
+    border-color: $primary;
+  }
+
+  .imageSection {
+    position: relative;
+    height: 200px;
+    background: $background;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .outOfStock {
+      position: absolute;
+      top: $spacing-unit * 3;
+      right: $spacing-unit * 3;
+      padding: $spacing-unit * 2 $spacing-unit * 3;
+      background: rgba(#dc3545, 0.9);
+      color: $surface;
+      border-radius: $border-radius-full;
+      font-size: 0.75rem;
+    }
+  }
+
+  .content {
+    padding: $spacing-unit * 4;
+
+    h3 {
+      margin-bottom: $spacing-unit * 2;
+      font-family: $font-heading;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: 0.875rem;
+      margin-bottom: $spacing-unit * 3;
+      line-height: 1.5;
+    }
+
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $spacing-unit * 2;
+      margin-bottom: $spacing-unit * 3;
+
+      .feature {
+        padding: $spacing-unit $spacing-unit * 2;
+        background: $background;
+        border-radius: $border-radius-full;
+        font-size: 0.75rem;
+        color: $text-secondary;
+      }
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .price {
+        color: $primary;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+
+      .rating {
+        display: flex;
+        align-items: center;
+        gap: $spacing-unit;
+
+        span {
+          color: $text-secondary;
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+
+  .selectedCheck {
+    position: absolute;
+    top: $spacing-unit * 3;
+    right: $spacing-unit * 3;
+    width: 32px;
+    height: 32px;
+    background: $primary;
+    color: $surface;
+    border-radius: $border-radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.rightSection {
+  position: sticky;
+  top: $spacing-unit * 4;
+  height: max-content;
+}
+
+.emptyState {
+  height: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: $surface;
+  border-radius: $border-radius-lg;
+  padding: $spacing-unit * 6;
+  text-align: center;
+  border: 2px dashed rgba($text-secondary, 0.2);
+
+  .illustration {
+    font-size: 3rem;
+    margin-bottom: $spacing-unit * 4;
+    opacity: 0.5;
+  }
+
+  h3 {
+    color: $text-primary;
+    margin-bottom: $spacing-unit * 2;
+    font-family: $font-heading;
+  }
+
+  p {
+    color: $text-secondary;
+    max-width: 280px;
+    line-height: 1.5;
+  }
+}
+
+.prescriptionForm {
+  background: $surface;
+  border-radius: $border-radius-lg;
+  padding: $spacing-unit * 6;
+
+  h3 {
+    margin-bottom: $spacing-unit * 6;
+    font-family: $font-heading;
+  }
+
+  .eyeSection {
+    .eye {
+      margin-bottom: $spacing-unit * 6;
+
+      h4 {
+        color: $text-secondary;
+        margin-bottom: $spacing-unit * 3;
+      }
+
+      .inputs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: $spacing-unit * 3;
+      }
+    }
+
+    .field {
+      label {
+        display: block;
+        color: $text-secondary;
+        font-size: 0.875rem;
+        margin-bottom: $spacing-unit * 2;
+      }
+
+      input {
+        width: 100%;
+        padding: $spacing-unit * 2;
+        border: 1px solid rgba($text-secondary, 0.2);
+        border-radius: $border-radius;
+        transition: $transition-base;
+
+        &:focus {
+          border-color: $primary;
+          outline: none;
+          box-shadow: 0 0 0 2px rgba($primary, 0.1);
+        }
+      }
+    }
+
+    .pdField {
+      position: relative;
+      margin-top: $spacing-unit * 4;
+      
+      label {
+        display: block;
+        color: $text-secondary;
+        margin-bottom: $spacing-unit * 2;
+      }
+
+      input {
+        width: 100%;
+        max-width: 200px;
+        padding: $spacing-unit * 2;
+        padding-right: $spacing-unit * 8;
+        border: 1px solid rgba($text-secondary, 0.2);
+        border-radius: $border-radius;
+        
+        &:focus {
+          border-color: $primary;
+          outline: none;
+          box-shadow: 0 0 0 2px rgba($primary, 0.1);
+        }
+      }
+
+      .unit {
+        position: absolute;
+        right: calc(100% - 180px);
+        top: 32px;
+        color: $text-secondary;
+        padding: $spacing-unit * 2;
+      }
+    }
+  }
+}
+
+.nonPrescriptionDetails {
+  background: $surface;
+  border-radius: $border-radius-lg;
+  padding: $spacing-unit * 6;
+
+  h3 {
+    margin-bottom: $spacing-unit * 4;
+    font-family: $font-heading;
+  }
+
+  .selectedLensInfo {
+    text-align: center;
+    margin-bottom: $spacing-unit * 6;
+
+    img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: $border-radius;
+      margin-bottom: $spacing-unit * 3;
+    }
+
+    h4 {
+      color: $primary;
+      margin-bottom: $spacing-unit * 2;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: 0.875rem;
+      margin-bottom: $spacing-unit * 3;
+    }
+
+    .price {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.continueButton {
+  width: 100%;
+  padding: $spacing-unit * 3;
+  background: $gradient-primary;
+  color: $surface;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-unit * 3;
+  padding: $spacing-unit * 8;
+  color: $text-secondary;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba($primary, 0.1);
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+.noResults {
+  text-align: center;
+  padding: $spacing-unit * 8;
+  color: $text-secondary;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive Styles
+@media (max-width: 1200px) {
+  .mainContent {
+    grid-template-columns: 1fr 350px;
+  }
+
+  .typeGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+
+  .rightSection {
+    position: static;
+    margin-top: $spacing-unit * 6;
+  }
+
+  .filters {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: $spacing-unit * 2;
+  }
+
+  .productPreview {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .lensGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .prescriptionForm {
+    .eye .inputs {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}
+
+.error {
+  background: rgba(#dc3545, 0.1);
+  color: #dc3545;
+  padding: $spacing-unit * 4;
+  border-radius: $border-radius;
+  margin-bottom: $spacing-unit * 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  .retryButton {
+    background: #dc3545;
+    color: $surface;
+    border: none;
+    padding: $spacing-unit * 2 $spacing-unit * 4;
+    border-radius: $border-radius;
+    cursor: pointer;
+    transition: $transition-base;
+    
+    &:hover {
+      background: darken(#dc3545, 10%);
+    }
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-unit * 3;
+  padding: $spacing-unit * 8;
+  color: $text-secondary;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba($primary, 0.1);
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}

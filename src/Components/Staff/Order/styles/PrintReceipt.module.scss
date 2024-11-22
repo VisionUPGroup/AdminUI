@@ -1,0 +1,258 @@
+// components/PrintReceipt/PrintReceipt.module.scss
+
+@import './variables';
+
+.printReceiptWrapper {
+  background: white;
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 14px;
+  color: $text-primary;
+
+  @media print {
+    padding: 0;
+    max-width: none;
+  }
+}
+
+.header {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba($black, 0.1);
+
+  .logoSection {
+    display: flex;
+    gap: 1rem;
+    
+    img {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+
+    .companyDetails {
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: $text-secondary;
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .receiptInfo {
+    text-align: right;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: $primary;
+    }
+
+    table {
+      td {
+        padding: 0.25rem 0;
+        
+        &:first-child {
+          padding-right: 1rem;
+          color: $text-secondary;
+        }
+
+        &:last-child {
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+.productsSection {
+  margin-bottom: 2rem;
+
+  .productsTable {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba($black, 0.1);
+    }
+
+    th {
+      background: $background;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .itemType {
+      font-size: 0.85rem;
+      color: $text-secondary;
+    }
+
+    .amount {
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .lensRow {
+      background: rgba($background, 0.3);
+
+      .lensSpecs {
+        p {
+          margin: 0.25rem 0;
+        }
+
+        small {
+          display: block;
+          color: $text-secondary;
+          font-size: 0.85rem;
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+  }
+}
+
+.paymentSummary {
+  margin-left: auto;
+  width: 300px;
+  margin-bottom: 2rem;
+
+  table {
+    width: 100%;
+    margin-bottom: 1rem;
+
+    td {
+      padding: 0.5rem 0;
+
+      &:last-child {
+        text-align: right;
+        font-weight: 500;
+      }
+    }
+
+    .discount td {
+      color: $success;
+    }
+
+    .total {
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-top: 2px solid rgba($black, 0.1);
+      padding-top: 1rem;
+    }
+
+    .paid td:last-child {
+      color: $success;
+    }
+
+    .remaining td:last-child {
+      color: #EF4444;
+    }
+  }
+
+  .paymentMethod {
+    padding-top: 1rem;
+    border-top: 1px solid rgba($black, 0.1);
+
+    p {
+      margin-bottom: 0.5rem;
+      color: $text-secondary;
+    }
+
+    .paymentDetail {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+
+      span:last-child {
+        font-weight: 500;
+      }
+
+      small {
+        display: block;
+        font-size: 0.8rem;
+        color: $text-secondary;
+      }
+    }
+  }
+}
+
+.footer {
+  text-align: center;
+  padding-top: 2rem;
+  border-top: 2px solid rgba($black, 0.1);
+
+  .qrCodeSection {
+    margin-bottom: 1rem;
+
+    canvas {
+      margin-bottom: 0.5rem;
+    }
+
+    small {
+      display: block;
+      color: $text-secondary;
+      font-size: 0.8rem;
+    }
+  }
+
+  .terms {
+    margin-bottom: 1rem;
+
+    p {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    small {
+      display: block;
+      color: $text-secondary;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+  }
+
+  .copySection {
+    color: $text-secondary;
+    font-size: 0.8rem;
+  }
+}
+
+// Print-specific styles
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  .printReceiptWrapper {
+    font-size: 12pt;
+  }
+
+  .header, .footer {
+    border-color: #000;
+  }
+
+  .productsTable {
+    th {
+      background-color: #fff !important;
+      border-bottom: 2px solid #000;
+    }
+
+    .lensRow {
+      background-color: #fff !important;
+    }
+  }
+}

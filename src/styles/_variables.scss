@@ -1,0 +1,30 @@
+// Colors
+$primary: #4A90E2;
+$secondary: #2C3E50;
+$accent: #F39C12;
+$background: #F8FAFC;
+$surface: #FFFFFF;
+$text-primary: #1A1A1A;
+$text-secondary: #616161;
+$success: #2ECC71;
+
+// Typography
+$font-heading: 'Inter', sans-serif;
+
+// Layout
+$container-padding: 24px;
+
+// Shadows
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+// Transitions
+$transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-smooth: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+// Spacing
+$spacing-unit: 4px;
+$border-radius: 12px;
+$border-radius-lg: 16px;
+$border-radius-full: 9999px;

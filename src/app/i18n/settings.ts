@@ -17,3 +17,23 @@ export function getOptions(lng = fallbackLng, ns: string | string[] = defaultNS)
     // }
   };
 }
+
+// export const fallbackLng = "en";
+// export const languages = [fallbackLng, "es", "en", "fr", "ae", "pt", "du", "cn", "hi"];
+// export const defaultNS = "translation";
+
+// export function getOptions(lng = fallbackLng, ns: string | string[] = defaultNS) {
+//   return {
+//     supportedLngs: languages,
+//     fallbackLng,
+//     lng,
+//     fallbackNS: defaultNS,
+//     defaultNS,
+//     ns,
+//     // Remove URL language prefix
+//     detection: {
+//       order: ['cookie', 'localStorage', 'navigator'],
+//       caches: ['cookie']
+//     }
+//   };
+// }

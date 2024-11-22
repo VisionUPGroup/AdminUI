@@ -15,7 +15,7 @@ export const useOrderService = () => {
                 },
                 params: {
                     Username: username,
-                    KioskID:kioskId,
+                    KioskID: kioskId,
                     Process: process,
                     PageIndex: pageIndex,
                     PageSize: 20, // Set to 20 as requested
@@ -115,52 +115,121 @@ export const useOrderService = () => {
     };
 
     // Fetch order statistics with dynamic startDate and endDate
-// Trong orderService.js
-const fetchStatisticOrder = async (date, endDate) => {
-    try {
-        const token = getToken();
-        const params = endDate 
-          ? { startDate: date, endDate: endDate }
-          : { dateOnly: date };
-          
-        const response = await axios.get(
-            `${baseUrl}/api/orders/statistic`,
-            {
-                params,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                }
-            }
-        );
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching statistics:", error);
-        throw error;
-    }
-};
-const fetchStatisticOrderDateToDate = async (startDate, endDate) => {
-    try {
-        const token = getToken();
-        const params =  { startDate: startDate, endDate: endDate }
-       
-          
-        const response = await axios.get(
-            `${baseUrl}/api/orders/statistic-date-to-date`,
-            {
-                params,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                }
-            }
-        );
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching statistics:", error);
-        throw error;
-    }
-};
+    // Trong orderService.js
+    const fetchStatisticOrder = async (date, endDate) => {
+        try {
+            const token = getToken();
+            const params = endDate
+                ? { startDate: date, endDate: endDate }
+                : { dateOnly: date };
 
+            const response = await axios.get(
+                `${baseUrl}/api/orders/statistic`,
+                {
+                    params,
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching statistics:", error);
+            throw error;
+        }
+    };
+    const fetchStatisticOrderDateToDate = async (startDate, endDate) => {
+        try {
+            const token = getToken();
+            const params = { startDate: startDate, endDate: endDate }
+
+
+            const response = await axios.get(
+                `${baseUrl}/api/orders/statistic-date-to-date`,
+                {
+                    params,
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching statistics:", error);
+            throw error;
+        }
+    };
+
+    const createOrder = async (orderData, accountId) => {
+        const token = getToken();
+        try {
+            const response = await axios.post(
+                `${baseUrl}/api/staff/orders`,
+                orderData,
+                {
+                    params: { accountId },
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        Accept: '*/*',
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error creating order:', error);
+            throw error;
+        }
+    };
+
+    // Create a new immediate order
+    // const createOrderNow = async (orderData, accountId) => {
+    //     const token = getToken();
+    //     try {
+    //         const response = await axios.post(
+    //             `${baseUrl}/api/staff/orders/now`,
+    //             orderData,
+    //             {
+    //                 params: { accountId },
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`,
+    //                     'Content-Type': 'application/json',
+    //                     Accept: '*/*',
+    //                 },
+    //             }
+    //         );
+    //         return response.data;
+    //     } catch (error) {
+    //         console.error('Error creating immediate order:', error);
+    //         throw error;
+    //     }
+    // };
+
+    const createOrderNow = async (orderData) => {
+        const token = getToken();
+        try {
+            // Extract accountId from orderDetails array
+            const accountId = orderData.orderDetails[0].productGlassRequest.accountID;
+            
+            const response = await axios.post(
+                `${baseUrl}/api/staff/orders/now?accountId=${accountId}`, // Move accountId to URL query
+                orderData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        Accept: '/'
+                    },
+                }
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error creating immediate order:', error);
+            throw error;
+        }
+    };
     
+
     return {
         fetchAllOrder,
         fetchStaffOrder,
@@ -168,6 +237,8 @@ const fetchStatisticOrderDateToDate = async (startDate, endDate) => {
         fetchStatisticOrderDateToDate,
         deleteOrder,
         updateOrderProcess,
-        countOrder
+        countOrder,
+        createOrder,
+        createOrderNow
     };
 };
