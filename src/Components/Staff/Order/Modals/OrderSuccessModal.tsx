@@ -162,10 +162,10 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             <Printer size={18} />
             <span>Print</span>
           </button>
-          <button onClick={onViewDetails} className={styles.secondaryButton}>
+          {/* <button onClick={onViewDetails} className={styles.secondaryButton}>
             <FileText size={18} />
             <span>Details</span>
-          </button>
+          </button> */}
           <button onClick={onNewOrder} className={styles.primaryButton}>
             <ArrowRight size={18} />
             <span>New Order</span>
