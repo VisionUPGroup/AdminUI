@@ -194,7 +194,7 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
 
             {/* Right Eye Section */}
             <div className="eye-section">
-              <h3><FaRegEyeSlash /> Right Eye</h3>
+              <h3><FaEye /> Right Eye</h3>
               <div className="measurement-inputs">
                 <div className="form-group">
                   <label>Spherical (D)</label>

@@ -62,14 +62,17 @@ const Sidebar = () => {
     setIsChange(!isChange);
     mainmenu.filter((menuItem: MenuItem) => {
       if (menuItem !== item) menuItem.active = false;
-      if (menuItem.children && menuItem.children.includes(item)) menuItem.active = true;
+      if (menuItem.children && menuItem.children.includes(item))
+        menuItem.active = true;
       if (menuItem.children) {
         menuItem.children.filter((submenuItems) => {
           if (submenuItems !== item) {
             submenuItems.active = false;
           }
           if (submenuItems.children) {
-            submenuItems.children.map((childItem) => (childItem.active = false));
+            submenuItems.children.map(
+              (childItem) => (childItem.active = false)
+            );
             if (submenuItems.children.includes(item)) {
               submenuItems.active = true;
               menuItem.active = true;
@@ -86,7 +89,11 @@ const Sidebar = () => {
 
   const mainMenu = mainmenu.map((menuItem: MenuItem, i: number) => (
     <li className={`${menuItem.active ? "active" : ""}`} key={i}>
-      {menuItem.sidebartitle ? <div className="sidebar-title">{menuItem.sidebartitle}</div> : ""}
+      {menuItem.sidebartitle ? (
+        <div className="sidebar-title">{menuItem.sidebartitle}</div>
+      ) : (
+        ""
+      )}
       {menuItem.type === "sub" ? (
         <a
           className="sidebar-header "
@@ -104,18 +111,42 @@ const Sidebar = () => {
         ""
       )}
       {menuItem.type === "link" ? (
-        <Link href={`/${i18LangStatus}${menuItem.path}`} className={`sidebar-header ${menuItem.active ? "active" : ""}`} onClick={() => setNavActive(menuItem)}>
+        <Link
+          href={`/${i18LangStatus}${menuItem.path}`}
+          className={`sidebar-header ${menuItem.active ? "active" : ""}`}
+          onClick={() => setNavActive(menuItem)}
+        >
           <menuItem.icon />
           <span>{t(menuItem.title)}</span>
-          {menuItem.children ? <i className="fa fa-angle-right pull-right"></i> : ""}
+          {menuItem.children ? (
+            <i className="fa fa-angle-right pull-right"></i>
+          ) : (
+            ""
+          )}
         </Link>
       ) : (
         ""
       )}
       {menuItem.children ? (
-        <ul className={`sidebar-submenu ${menuItem.active ? "menu-open" : ""}`} style={menuItem.active ? { opacity: 1, transition: "opacity 500ms ease-in" } : {}}>
+        <ul
+          className={`sidebar-submenu ${menuItem.active ? "menu-open" : ""}`}
+          style={
+            menuItem.active
+              ? { opacity: 1, transition: "opacity 500ms ease-in" }
+              : {}
+          }
+        >
           {menuItem.children.map((childrenItem, index) => (
-            <li key={index} className={childrenItem.children ? (childrenItem.active ? "active" : "") : ""}>
+            <li
+              key={index}
+              className={
+                childrenItem.children
+                  ? childrenItem.active
+                    ? "active"
+                    : ""
+                  : ""
+              }
+            >
               {childrenItem.type === "sub" ? (
                 <a
                   href={Href}
@@ -125,14 +156,19 @@ const Sidebar = () => {
                   }}
                 >
                   <i className="fa fa-circle"></i>
-                  {childrenItem.title} <i className="fa fa-angle-right pull-right"></i>
+                  {childrenItem.title}{" "}
+                  <i className="fa fa-angle-right pull-right"></i>
                 </a>
               ) : (
                 ""
               )}
 
               {childrenItem.type === "link" ? (
-                <Link href={`/${i18LangStatus}${childrenItem.path}`} className={childrenItem.active ? "active" : ""} onClick={() => setNavActive(childrenItem)}>
+                <Link
+                  href={`/${i18LangStatus}${childrenItem.path}`}
+                  className={childrenItem.active ? "active" : ""}
+                  onClick={() => setNavActive(childrenItem)}
+                >
                   <i className="fa fa-circle"></i>
                   {childrenItem.title}{" "}
                 </Link>
@@ -140,11 +176,22 @@ const Sidebar = () => {
                 ""
               )}
               {childrenItem.children ? (
-                <ul className={`sidebar-submenu ${childrenItem.active ? "menu-open" : "active"}`}>
+                <ul
+                  className={`sidebar-submenu ${
+                    childrenItem.active ? "menu-open" : "active"
+                  }`}
+                >
                   {childrenItem.children.map((childrenSubItem, key) => (
-                    <li className={childrenSubItem.active ? "active" : ""} key={key}>
+                    <li
+                      className={childrenSubItem.active ? "active" : ""}
+                      key={key}
+                    >
                       {childrenSubItem.type === "link" ? (
-                        <Link href={`/${i18LangStatus}${childrenSubItem.path}`} className={childrenSubItem.active ? "active" : ""} onClick={() => setNavActive(childrenSubItem)}>
+                        <Link
+                          href={`/${i18LangStatus}${childrenSubItem.path}`}
+                          className={childrenSubItem.active ? "active" : ""}
+                          onClick={() => setNavActive(childrenSubItem)}
+                        >
                           <i className="fa fa-circle"></i>
                           {childrenSubItem.title}
                         </Link>
@@ -171,9 +218,13 @@ const Sidebar = () => {
       <div className={`page-sidebar ${sidebar && "open"}`}>
         <div className="main-header-left d-none d-lg-block">
           <div className="logo-wrapper">
-            <Link href={`/${i18LangStatus}/dashboard`}>
-              <img className="blur-up lazyloaded" src={`${ImagePath}/dashboard/multikart-logo-black.png`} alt="" />
-            </Link>
+            {/* <Link href={`/${i18LangStatus}/dashboard`}>
+      <img className="blur-up lazyloaded" src={`${ImagePath}/dashboard/multikart-logo-black.png`} alt="" />
+    </Link> */}
+            <h2>
+              <span style={{ color: "black" }}>Vision</span>{" "}
+              <span style={{ color: "#C79816" }}>Up</span>
+            </h2>
           </div>
         </div>
         <div className="sidebar custom-scrollbar">

@@ -1,6 +1,5 @@
 import { FC, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { Button } from 'reactstrap';
 
 // Dynamic import to avoid SSR issues
 const DataTable = dynamic(() => import('react-data-table-component'), {

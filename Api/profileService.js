@@ -4,19 +4,26 @@ import { getToken } from "./tokenHelper";
 export const useProfileService = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const fetchProfilesByAccountId = async (AccountId) => {
+  const fetchProfilesByAccountId = async (accountId, pageIndex, pageSize) => {
     try {
       const token = getToken();
       const response = await axios.get(`${baseUrl}/api/profiles`, {
         params: {
-          AccountID: AccountId,
+          AccountID: accountId,
+          PageIndex: pageIndex,
+          PageSize: pageSize
+          
         },
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      return response.data.data;
+      return {
+        items: response.data.data,
+        totalItems: response.data.totalCount, // Giả sử API trả về tổng số items
+        currentPage: pageIndex,
+      };
     } catch (error) {
       console.error("Error fetching profiles:", error);
       throw error;

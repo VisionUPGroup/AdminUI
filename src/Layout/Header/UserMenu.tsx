@@ -21,7 +21,7 @@ const UserMenu = () => {
           </div>
         </div>
         <ul className="profile-dropdown onhover-show-div p-20 profile-dropdown-hover">
-          <li>
+          {/* <li>
             <Link href={`/settings/profile`}>
               <i data-feather="user"></i>Edit Profile
             </Link>
@@ -40,7 +40,7 @@ const UserMenu = () => {
             <a href={Href}>
               <i data-feather="settings"></i>Settings
             </a>
-          </li>
+          </li> */}
           <li>
             <a onClick={handleLogOut}>
               <i data-feather="log-out"></i>Logout

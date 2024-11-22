@@ -42,6 +42,13 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
         icon: Circle,
         active: false,
       },
+      {
+        path: "/products/exchange-eyeglass",
+        title: "ExchangeEyeGlass",
+        type: "link",
+        icon: Circle,
+        active: false,
+      },
     ],
   },
   {
@@ -88,6 +95,7 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
       },
     ],
   },
+
 ];
 
 // Menu items cho Admin (Role 3) - Giữ nguyên menu items hiện tại
@@ -119,6 +127,13 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
         type: "link",
         icon: Box,
         active: false
+      },
+      {
+        path: "/products/exchange-eyeglass",
+        title: "ExchangeEyeGlass",
+        type: "link",
+        icon: Circle,
+        active: false,
       },
     ],
   },

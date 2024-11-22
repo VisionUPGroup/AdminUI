@@ -26,6 +26,7 @@ import "./ProfileCardStyle.scss";
 import { useProfileService } from "../../../../Api/profileService";
 import ExpandableUserRow from "./ExpandableUserRow";
 import RefractionModal from "./RefractionRecordsModal";
+import UserUpdateModal from "./UserUpdateModal";
 
 interface Role {
   id: number;
@@ -57,11 +58,11 @@ interface Profile {
   address: string;
   urlImage: string;
   birthday: string;
-  status:boolean
+  status: boolean;
 }
 
 const UsersList: React.FC = () => {
-  const { fetchAccountByRole } = useAccountService();
+  const { fetchAccountByRole, deleteAccount } = useAccountService();
   const { register } = useAuthService();
   const {
     fetchProfilesByAccountId,
@@ -82,6 +83,7 @@ const UsersList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
@@ -93,12 +95,29 @@ const UsersList: React.FC = () => {
   const [selectedProfileForRefraction, setSelectedProfileForRefraction] =
     useState<{ id: number; name: string } | null>(null);
   const itemsPerPage = 10;
+  const [profileCurrentPage, setProfileCurrentPage] = useState(1);
+  const [profileTotalPages, setProfileTotalPages] = useState(1);
+  const [profileItemsPerPage] = useState(6); // Số profiles trên mỗi trang
 
-  const getUserData = async (page: number, search: string) => {
+  const getUserData = async (page: number, search: string, status?: string) => {
     setIsLoading(true);
     try {
       const response = await fetchAccountByRole(1, search, page);
-      setUserData(response.items);
+      let filteredData = response.items;
+      if (filterStatus === null) {
+        filteredData = response.items;
+      }
+      if (filterStatus === "active") {
+        filteredData = response.items.filter(
+          (user: { status: any }) => user.status
+        );
+      } else if (filterStatus === "inactive") {
+        filteredData = response.items.filter(
+          (user: { status: any }) => !user.status
+        );
+      }
+
+      setUserData(filteredData);
       setTotalItems(response.totalItems);
       setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
     } catch (error) {
@@ -134,6 +153,33 @@ const UsersList: React.FC = () => {
       name: profile.fullName,
     });
   };
+  const handleProfilePageChange = async (page: number) => {
+    if (!selectedUser) return;
+
+    try {
+      setIsLoadingProfiles(true);
+      const response = await fetchProfilesByAccountId(
+        selectedUser.id,
+        page,
+        profileItemsPerPage
+      );
+
+      setUserProfiles(
+        Array.isArray(response.items) ? response.items : [response.items]
+      );
+      setProfileCurrentPage(page);
+    } catch (error) {
+      console.error("Error fetching profiles:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load profiles. Please try again.",
+      });
+    } finally {
+      setIsLoadingProfiles(false);
+    }
+  };
+
   const handleDeleteProfile = async (profileId: number) => {
     try {
       const result = await Swal.fire({
@@ -154,10 +200,29 @@ const UsersList: React.FC = () => {
           text: "Profile has been deleted.",
           confirmButtonColor: "#c79816",
         });
-        // Refresh profiles
+
+        // Refresh profiles sau khi xóa
         if (selectedUser) {
-          const profiles = await fetchProfilesByAccountId(selectedUser.id);
-          setUserProfiles(Array.isArray(profiles) ? profiles : [profiles]);
+          const response = await fetchProfilesByAccountId(
+            selectedUser.id,
+            profileCurrentPage,
+            profileItemsPerPage
+          );
+
+          // Cập nhật lại danh sách profiles
+          setUserProfiles(
+            Array.isArray(response.items) ? response.items : [response.items]
+          );
+
+          // Nếu page hiện tại không còn profiles nào, chuyển về page trước đó
+          if (response.items.length === 0 && profileCurrentPage > 1) {
+            handleProfilePageChange(profileCurrentPage - 1);
+          }
+
+          // Cập nhật tổng số trang
+          setProfileTotalPages(
+            Math.ceil(response.totalItems / profileItemsPerPage)
+          );
         }
       }
     } catch (error) {
@@ -173,11 +238,8 @@ const UsersList: React.FC = () => {
   const handleSaveProfile = async (profileData: any) => {
     try {
       if (editingProfile) {
-        console.log('UsersList: Updating existing profile:', editingProfile.id);
-        console.log('UsersList: Updating existing profile:', profileData);
         await updateProfile({
           ...profileData,
-       
         });
         await Swal.fire({
           icon: "success",
@@ -187,7 +249,6 @@ const UsersList: React.FC = () => {
         });
       } else {
         await createProfiles(profileData);
-        console.log('UsersList: Create profile:', profileData);
         await Swal.fire({
           icon: "success",
           title: "Success",
@@ -195,10 +256,19 @@ const UsersList: React.FC = () => {
           confirmButtonColor: "#c79816",
         });
       }
-      // Refresh profiles
+      // Refresh profiles với trang hiện tại
       if (selectedUser) {
-        const profiles = await fetchProfilesByAccountId(selectedUser.id);
-        setUserProfiles(Array.isArray(profiles) ? profiles : [profiles]);
+        const response = await fetchProfilesByAccountId(
+          selectedUser.id,
+          profileCurrentPage,
+          profileItemsPerPage
+        );
+        setUserProfiles(
+          Array.isArray(response.items) ? response.items : [response.items]
+        );
+        setProfileTotalPages(
+          Math.ceil(response.totalItems / profileItemsPerPage)
+        );
       }
       setIsProfileModalOpen(false);
     } catch (error) {
@@ -216,8 +286,18 @@ const UsersList: React.FC = () => {
     setSelectedUserId(user.id);
     try {
       setIsLoadingProfiles(true);
-      const profiles = await fetchProfilesByAccountId(user.id);
-      setUserProfiles(Array.isArray(profiles) ? profiles : [profiles]);
+      const response = await fetchProfilesByAccountId(
+        user.id,
+        profileCurrentPage,
+        profileItemsPerPage
+      );
+
+      setUserProfiles(
+        Array.isArray(response.items) ? response.items : [response.items]
+      );
+      setProfileTotalPages(
+        Math.ceil(response.totalItems / profileItemsPerPage)
+      );
     } catch (error) {
       console.error("Error fetching profiles:", error);
       Swal.fire({
@@ -238,7 +318,7 @@ const UsersList: React.FC = () => {
 
   useEffect(() => {
     getUserData(currentPage, searchTerm);
-  }, [currentPage, searchTerm]); // Reload when page or search changes
+  }, [currentPage, searchTerm, filterStatus]);
 
   const handleCreateUser = () => {
     setEditingUser(null);
@@ -296,7 +376,8 @@ const UsersList: React.FC = () => {
 
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
+    getUserData(1, searchTerm, status);
   };
 
   const handlePageChange = (page: number) => {
@@ -310,17 +391,20 @@ const UsersList: React.FC = () => {
         text: "You won't be able to revert this!",
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "black",
+        confirmButtonColor: "#c79816",
+        cancelButtonColor: "#000000",
         confirmButtonText: "Yes, delete it!",
       });
 
       if (result.isConfirmed) {
-        // Add your delete API call here
-        // await deleteAccount(userId);
-
-        await Swal.fire("Deleted!", "User has been deleted.", "success");
-        getUserData(currentPage, searchTerm);
+        await deleteAccount(userId);
+        await Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "User has been deleted successfully.",
+          confirmButtonColor: "#c79816",
+        });
+        getUserData(currentPage, searchTerm, filterStatus);
       }
     } catch (error) {
       console.error("Error deleting user:", error);
@@ -328,6 +412,7 @@ const UsersList: React.FC = () => {
         icon: "error",
         title: "Error",
         text: "Failed to delete user. Please try again.",
+        confirmButtonColor: "#c79816",
       });
     }
   };
@@ -444,7 +529,6 @@ const UsersList: React.FC = () => {
                           className={`user-row ${
                             selectedUserId === user.id ? "selected" : ""
                           }`}
-                          onClick={() => handleUserSelect(user)}
                         >
                           <td>
                             <div className="user-info">
@@ -454,6 +538,7 @@ const UsersList: React.FC = () => {
                               <div className="user-details">
                                 <div className="name">{user.username}</div>
                                 <div className="email">{user.email}</div>
+                                <div className="phone">{user.phoneNumber}</div>
                               </div>
                             </div>
                           </td>
@@ -470,21 +555,25 @@ const UsersList: React.FC = () => {
                           <td>
                             <div className="actions">
                               <button
+                                className="view-btn"
+                                onClick={() => handleUserSelect(user)}
+                              >
+                                <FaIdCard />
+                              </button>
+                              <button
                                 className="edit-btn"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setEditingUser(user);
-                                  setModalOpen(true);
+                                  setUpdateModalOpen(true);
                                 }}
                               >
                                 <FaPen />
                               </button>
                               <button
                                 className="delete-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleUserDelete(user.id);
-                                }}
+                                onClick={() => handleUserDelete(user.id)}
+                                disabled={!user.status}
                               >
                                 <FaTrash />
                               </button>
@@ -522,14 +611,27 @@ const UsersList: React.FC = () => {
             </div>
 
             <div className="profiles-content">
-              <button className="add-profile-btn" onClick={handleCreateProfile}>
+              <button
+                className={`add-profile-btn ${
+                  !selectedUser.status ? "disabled-btn" : ""
+                }`} // Thay đổi tên class
+                onClick={handleCreateProfile}
+                disabled={!selectedUser.status}
+              >
                 <FaPlus /> Add New Profile
+                {!selectedUser.status && (
+                  <div className="tooltip-container">
+                    User inactive can't create new profile
+                  </div>
+                )}
               </button>
 
               {isLoadingProfiles ? (
-                <div className="loading-profiles">
-                  <div className="spinner"></div>
-                  <p>Loading profiles...</p>
+                <div className="profiles-loading">
+                  <div className="loading-spinner-container">
+                    <div className="spinner-ring"></div>
+                    <div className="loading-text">Loading profiles...</div>
+                  </div>
                 </div>
               ) : !userProfiles || userProfiles.length === 0 ? (
                 <div className="no-profiles">
@@ -537,118 +639,131 @@ const UsersList: React.FC = () => {
                     <FaRegUserCircle className="empty-icon" />
                     <h3>No profiles found</h3>
                     <p>Create a new profile to get started</p>
-                    <button
-                      className="create-first-profile-btn"
-                      onClick={handleCreateProfile}
-                    >
-                      <FaPlus /> Create First Profile
-                    </button>
+                    {/* <button
+        className="create-first-profile-btn"
+        onClick={handleCreateProfile}
+      >
+        <FaPlus /> Create First Profile
+      </button> */}
                   </div>
                 </div>
               ) : (
-                <div className="profiles-grid">
-                  {userProfiles.map((profile) => (
-                    <div
-                      key={profile.id}
-                      className="profile-card"
-                      onClick={() => handleProfileClick(profile.id)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="profile-header">
-                        <div className="profile-avatar">
-                          {profile.urlImage ? (
-                            <img
-                              src={profile.urlImage}
-                              alt={profile.fullName}
-                              className="avatar-image"
-                            />
-                          ) : (
-                            <div className="avatar-placeholder">
-                              <FaRegUserCircle />
+                <>
+                  <div className="profiles-grid">
+                    {userProfiles.map((profile) => (
+                      <div
+                        key={profile.id}
+                        className="profile-card"
+                        onClick={() => handleProfileClick(profile.id)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <div className="profile-header">
+                          <span
+                            className={`status-badge ${
+                              profile.status ? "active" : "inactive"
+                            }`}
+                          >
+                            {profile.status ? "Active" : "Inactive"}
+                          </span>
+                          <div className="profile-avatar">
+                            {profile.urlImage ? (
+                              <img
+                                src={profile.urlImage}
+                                alt={profile.fullName}
+                                className="avatar-image"
+                              />
+                            ) : (
+                              <div className="avatar-placeholder">
+                                <FaRegUserCircle />
+                              </div>
+                            )}
+                          </div>
+                          <h4>{profile.fullName}</h4>
+                        </div>
+
+                        <div className="profile-info">
+                          <div className="info-item">
+                            <div className="info-icon">
+                              <FaPhone />
                             </div>
-                          )}
-                        </div>
-                        <h4>{profile.fullName}</h4>
-                      </div>
+                            <div className="info-content">
+                              <label>Phone Number</label>
+                              <span>{profile.phoneNumber}</span>
+                            </div>
+                          </div>
 
-                      <div className="profile-info">
-                        <div className="info-item">
-                          <div className="info-icon">
-                            <FaPhone />
-                          </div>
-                          <div className="info-content">
-                            <label>Phone Number</label>
-                            <span>{profile.phoneNumber || "N/A"}</span>
-                          </div>
-                        </div>
-
-                        <div className="info-item">
-                          <div className="info-icon">
-                            <FaBirthdayCake />
-                          </div>
-                          <div className="info-content">
-                            <label>Birthday</label>
-                            <span>
-                              {profile.birthday
-                                ? new Date(profile.birthday).toLocaleDateString(
-                                    "en-GB",
-                                    {
+                          <div className="info-item">
+                            <div className="info-icon">
+                              <FaBirthdayCake />
+                            </div>
+                            <div className="info-content">
+                              <label>Birthday</label>
+                              <span>
+                                {profile.birthday
+                                  ? new Date(
+                                      profile.birthday
+                                    ).toLocaleDateString("en-GB", {
                                       day: "2-digit",
                                       month: "short",
                                       year: "numeric",
-                                    }
-                                  )
-                                : "N/A"}
-                            </span>
+                                    })
+                                  : "N/A"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="info-item">
+                            <div className="info-icon">
+                              <FaMapMarkerAlt />
+                            </div>
+                            <div className="info-content">
+                              <label>Address</label>
+                              <span>{profile.address || "N/A"}</span>
+                            </div>
                           </div>
                         </div>
 
-                        <div className="info-item">
-                          <div className="info-icon">
-                            <FaMapMarkerAlt />
-                          </div>
-                          <div className="info-content">
-                            <label>Address</label>
-                            <span >{profile.address || "N/A"}</span>
-                          </div>
+                        <div className="profile-actions">
+                          <button
+                            className="view-records-btn"
+                            onClick={(e) =>
+                              handleViewRefractionRecords(profile, e)
+                            }
+                          >
+                            <FaClinicMedical />
+                          </button>
+                          <button
+                            className="edit-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditProfile(profile);
+                            }}
+                          >
+                            <FaPen />
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProfile(profile.id);
+                            }}
+                          >
+                            <FaTrash />
+                          </button>
                         </div>
                       </div>
-
-                      <div className="profile-actions">
-                        <button
-                          className="view-records-btn"
-                          onClick={(e) =>
-                            handleViewRefractionRecords(profile, e)
-                          }
-                        >
-                          <FaClinicMedical />
-                          
-                        </button>
-                        <button
-                          className="edit-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditProfile(profile);
-                          }}
-                        >
-                          <FaPen />
-                        </button>
-                        <button
-                          className="delete-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteProfile(profile.id);
-                          }}
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  <div className="profiles-pagination">
+                    <Pagination
+                      currentPage={profileCurrentPage}
+                      totalPages={profileTotalPages}
+                      onPageChange={handleProfilePageChange}
+                    />
+                  </div>
+                </>
               )}
             </div>
-
 
             <ProfileManagementModal
               isOpen={isProfileModalOpen}
@@ -674,13 +789,22 @@ const UsersList: React.FC = () => {
         // editingUser={editingUser}
       />
       {selectedProfileForRefraction && (
-  <RefractionModal
-    profileId={selectedProfileForRefraction.id}
-    profileName={selectedProfileForRefraction.name}
-    isOpen={!!selectedProfileForRefraction}
-    onClose={() => setSelectedProfileForRefraction(null)}
-  />
-)}
+        <RefractionModal
+          profileId={selectedProfileForRefraction.id}
+          profileName={selectedProfileForRefraction.name}
+          isOpen={!!selectedProfileForRefraction}
+          onClose={() => setSelectedProfileForRefraction(null)}
+        />
+      )}
+      <UserUpdateModal
+        isOpen={updateModalOpen}
+        toggle={() => setUpdateModalOpen(false)}
+        onSave={() => {
+          getUserData(currentPage, searchTerm);
+          setUpdateModalOpen(false);
+        }}
+        editingUser={editingUser}
+      />
     </div>
   );
 };

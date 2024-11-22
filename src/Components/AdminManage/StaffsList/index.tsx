@@ -1,8 +1,17 @@
 import { Fragment, useEffect, useState } from "react";
-import { FaPlus, FaSearch, FaArrowUp, FaUsers, FaRegUserCircle, FaPen, FaTrash } from "react-icons/fa";
+import {
+  FaPlus,
+  FaSearch,
+  FaArrowUp,
+  FaUsers,
+  FaRegUserCircle,
+  FaPen,
+  FaTrash,
+} from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
 import Pagination from "./Pagination"; // Import Pagination component
 import "./StaffStyle.scss";
+import Swal from "sweetalert2";
 
 interface Role {
   id: number;
@@ -27,11 +36,15 @@ interface ApiResponse {
   currentPage: number;
 }
 
+
 const StaffsList: React.FC = () => {
-  const { fetchAccountByRole } = useAccountService();
+  const { fetchAccountByRole, deleteAccount } = useAccountService();
   const [staffData, setStaffData] = useState<StaffData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "inactive">("all");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "inactive"
+  >("all");
+  const [filteredStaffData, setFilteredStaffData] = useState<StaffData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +64,18 @@ const StaffsList: React.FC = () => {
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    let filtered = [...staffData];
+
+    // Filter theo status
+    if (filterStatus !== "all") {
+      filtered = filtered.filter((staff) =>
+        filterStatus === "active" ? staff.status : !staff.status
+      );
+    }
+
+    setFilteredStaffData(filtered);
+  }, [staffData, filterStatus]);
 
   useEffect(() => {
     fetchStaffData(currentPage, searchTerm);
@@ -69,6 +94,44 @@ const StaffsList: React.FC = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+  const handleDelete = async (staff: StaffData) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to delete staff "${staff.username}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#c79816',
+        cancelButtonColor: 'black',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (result.isConfirmed) {
+
+
+        await deleteAccount(staff.id);
+        
+        // Show success message
+        await Swal.fire({
+          title: 'Deleted!',
+          text: 'Staff has been deleted successfully.',
+          icon: 'success',
+          confirmButtonColor: '#c79816',
+        });
+
+        // Refresh data
+        fetchStaffData(currentPage, searchTerm);
+      }
+    } catch (error) {
+      console.error("Failed to delete staff:", error);
+      Swal.fire({
+        title: 'Error!',
+        text: 'Failed to delete staff. Please try again.',
+        icon: 'error'
+      });
+    }
+  };
 
   return (
     <div className="staff-management">
@@ -81,12 +144,12 @@ const StaffsList: React.FC = () => {
               <p>Manage and monitor your staff accounts</p>
             </div>
           </div>
-          <div className="header-actions">
+          {/* <div className="header-actions">
             <button className="create-btn">
               <FaPlus className="btn-icon" />
               Add New Staff
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Stats Section */}
@@ -97,7 +160,7 @@ const StaffsList: React.FC = () => {
               <div className="stat-label">Total Staff</div>
               <div className="stat-change">
                 <FaArrowUp />
-                10% from last month
+                All staff include
               </div>
             </div>
             <FaUsers className="stat-icon" />
@@ -106,12 +169,12 @@ const StaffsList: React.FC = () => {
           <div className="stat-card">
             <div className="stat-content">
               <div className="stat-value">
-                {staffData.filter(staff => staff.status).length}
+                {staffData.filter((staff) => staff.status).length}
               </div>
               <div className="stat-label">Active Staff</div>
               <div className="stat-change">
                 <FaArrowUp />
-                5% from last month
+                All staff with status active
               </div>
             </div>
             <FaRegUserCircle className="stat-icon" />
@@ -132,20 +195,26 @@ const StaffsList: React.FC = () => {
             </div>
             <div className="filters">
               <button
-                className={`filter-btn ${filterStatus === 'all' ? 'active' : ''}`}
-                onClick={() => handleFilter('all')}
+                className={`filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("all")}
               >
                 All Staff
               </button>
               <button
-                className={`filter-btn ${filterStatus === 'active' ? 'active' : ''}`}
-                onClick={() => handleFilter('active')}
+                className={`filter-btn ${
+                  filterStatus === "active" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${filterStatus === 'inactive' ? 'active' : ''}`}
-                onClick={() => handleFilter('inactive')}
+                className={`filter-btn ${
+                  filterStatus === "inactive" ? "active" : ""
+                }`}
+                onClick={() => handleFilter("inactive")}
               >
                 Inactive
               </button>
@@ -167,7 +236,7 @@ const StaffsList: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {staffData.map((staff) => (
+                    {filteredStaffData.map((staff) => (
                       <tr key={staff.id}>
                         <td>
                           <div className="staff-info">
@@ -182,8 +251,12 @@ const StaffsList: React.FC = () => {
                         </td>
                         <td>{staff.role.name}</td>
                         <td>
-                          <span className={`status-badge ${staff.status ? 'active' : 'inactive'}`}>
-                            {staff.status ? 'Active' : 'Inactive'}
+                          <span
+                            className={`status-badge ${
+                              staff.status ? "active" : "inactive"
+                            }`}
+                          >
+                            {staff.status ? "Active" : "Inactive"}
                           </span>
                         </td>
                         <td>
@@ -191,9 +264,14 @@ const StaffsList: React.FC = () => {
                             <button className="edit-btn">
                               <FaPen />
                             </button>
-                            <button className="delete-btn">
-                              <FaTrash />
-                            </button>
+                            <button 
+                  className={`delete-btn ${!staff.status ? 'disabled' : ''}`}
+                  disabled={!staff.status}
+                  onClick={() => staff.status && handleDelete(staff)}
+                  title={!staff.status ? "Cannot delete inactive staff" : "Delete staff"}
+                >
+                  <FaTrash />
+                </button>
                           </div>
                         </td>
                       </tr>

@@ -1,6 +1,6 @@
 import { Container, Row } from "reactstrap";
 import LoginTabs from "./LoginTabsDummy";
-import LoginSlider from "@/Layout/Login/LoginSlider";
+
 
 const DummyLogin = () => {
   return (
@@ -8,7 +8,7 @@ const DummyLogin = () => {
       <div className="authentication-box">
         <Container>
           <Row>
-            <LoginSlider />
+         
             <LoginTabs />
           </Row>
         </Container>
