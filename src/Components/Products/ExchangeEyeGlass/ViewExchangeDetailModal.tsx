@@ -80,6 +80,7 @@ interface Order {
 interface ExchangeDetail {
   id: number;
   customer: Account;
+  staff: Account;
   productGlass: ProductGlass;
   order: Order;
   reason: string;
@@ -181,6 +182,39 @@ const ViewExchangeDetailModal: React.FC<ViewExchangeDetailModalProps> = ({
                 <div className="label">Account Status</div>
                 <div className={`value status ${exchangeDetail.customer.status ? 'active' : 'inactive'}`}>
                   {exchangeDetail.customer.status ? 'Active' : 'Inactive'}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Staff Information Section */}
+        <div className="detail-section">
+          <div className="section-header">
+            <User /> Staff Information
+          </div>
+          <div className="section-content">
+            <div className="detail-grid">
+              <div className="detail-item">
+                <div className="label">Staff ID</div>
+                <div className="value">#{exchangeDetail.staff.id}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Username</div>
+                <div className="value">{exchangeDetail.staff.username}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Email</div>
+                <div className="value">{exchangeDetail.staff.email}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Phone Number</div>
+                <div className="value">{exchangeDetail.staff.phoneNumber || "N/A"}</div>
+              </div>
+              <div className="detail-item">
+                <div className="label">Account Status</div>
+                <div className={`value status ${exchangeDetail.staff.status ? 'active' : 'inactive'}`}>
+                  {exchangeDetail.staff.status ? 'Active' : 'Inactive'}
                 </div>
               </div>
             </div>

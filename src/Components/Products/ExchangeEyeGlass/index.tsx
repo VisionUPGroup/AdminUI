@@ -43,6 +43,8 @@ const ExchangeEyeGlass: React.FC = () => {
   const [isAddRequestModalOpen, setIsAddRequestModalOpen] = useState(false);
   const [accountID, setAccountID] = useState<string | null>(null);
   const [productGlassID, setProductGlassID] = useState<string | null>(null);
+  const [staffID, setStaffID] = useState<string | null>(null);
+  const [orderID, setOrderID] = useState<string | null>(null);
   const [pageIndex, setPageIndex] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
@@ -60,8 +62,10 @@ const ExchangeEyeGlass: React.FC = () => {
 
     try {
       const { items, totalItems } = await fetchAllExchangeEyeGlass(
+        staffID,
         accountID,
         productGlassID,
+        orderID,
         pageIndex
       );
       if (items && items.length > 0) {
@@ -245,6 +249,32 @@ const ExchangeEyeGlass: React.FC = () => {
                   </Col>
 
                   <Col md="4">
+                    <div className="search-input-group">
+                      <label>Staff ID</label>
+                      <Input
+                        type="number"
+                        placeholder="Enter Staff ID"
+                        value={staffID || ""}
+                        onChange={(e) => setStaffID(e.target.value || null)}
+                        className="search-input"
+                      />
+                    </div>
+                  </Col>
+
+                  <Col md="4">
+                    <div className="search-input-group">
+                      <label>Order ID</label>
+                      <Input
+                        type="number"
+                        placeholder="Enter Order ID"
+                        value={orderID || ""}
+                        onChange={(e) => setOrderID(e.target.value || null)}
+                        className="search-input"
+                      />
+                    </div>
+                  </Col>
+
+                  <Col md="4">
                     <Button className="search-button" onClick={handleSearch}>
                       <Search size={18} />
                       Search Records
@@ -275,6 +305,7 @@ const ExchangeEyeGlass: React.FC = () => {
                         <tr>
                           <th>ID</th>
                           <th>Account</th>
+                          <th>Staff</th>
                           <th>Product Glass</th>
                           <th>Order ID</th>
                           <th>Reason</th>
@@ -287,6 +318,7 @@ const ExchangeEyeGlass: React.FC = () => {
                           <tr key={item.id}>
                             <td>{item.id}</td>
                             <td>{item.customer.id}</td>
+                            <td>{item.staff.id}</td>
                             <td>{item.productGlass.id}</td>
                             <td>{item.order.id}</td>
                             <td>
