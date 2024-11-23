@@ -1,0 +1,106 @@
+.filter-selects {
+  .select-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+    .select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 300px;
+    }
+    
+    .select-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex: 1;
+      
+      .select-icon {
+        position: absolute;
+        left: 10px;
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+      
+      .filter-select {
+        width: 100%;
+        padding: 0.5rem 2.5rem 0.5rem 2rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        outline: none;
+        font-size: 0.875rem;
+        color: #374151;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:focus {
+          border-color: #c79816;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        &:hover:not(:disabled) {
+          border-color: #c79816;
+        }
+        
+        &:disabled {
+          background-color: #f3f4f6;
+          cursor: not-allowed;
+        }
+      }
+      
+      .loading-spinner {
+        position: absolute;
+        right: 10px;
+        
+        .spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid #e5e7eb;
+          border-top-color: #c79816;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+      }
+    }
+    
+    .reset-filter-button {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #ffffff;
+      background: #c79816;
+      border: none;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      
+      &:hover:not(:disabled) {
+      
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(0);
+        box-shadow: none;
+      }
+      
+      .reset-icon {
+        font-size: 0.875rem;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

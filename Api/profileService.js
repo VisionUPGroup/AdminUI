@@ -11,7 +11,8 @@ export const useProfileService = () => {
         params: {
           AccountID: accountId,
           PageIndex: pageIndex,
-          PageSize: pageSize
+          PageSize: pageSize,
+          Descending: true
           
         },
         headers: {

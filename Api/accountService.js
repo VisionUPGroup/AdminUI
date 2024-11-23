@@ -14,6 +14,7 @@ export const useAccountService = () => {
           Username: username,
           PageIndex: pageIndex,
           PageSize: 10, // Số lượng items mỗi trang
+          Descending: true
         },
         headers: {
           Authorization: `Bearer ${token}`,
