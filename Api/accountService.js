@@ -4,6 +4,22 @@ import { getToken } from "./tokenHelper";
 export const useAccountService = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
+  // Fetch accounts by RoleID
+  const fetchAccountByRole = async (roleID, username = "", pageIndex = 1) => {
+    try {
+      const token = getToken();
+      const response = await axios.get(`${baseUrl}/api/accounts`, {
+        params: {
+          RoleID: roleID,
+          Username: username,
+          PageIndex: pageIndex,
+          PageSize: 10, // Số lượng items mỗi trang
+          Descending: true
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
   const fetchAccounts = async (params) => {
     try {

@@ -19,6 +19,7 @@ export const useExchangeEyeGlassService = () => {
                     ProductGlassID: ProductGlassID,
                     PageIndex: pageIndex,
                     PageSize: 20,
+                    Descending: true
                 },
             });
     

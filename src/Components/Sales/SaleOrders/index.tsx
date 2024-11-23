@@ -32,7 +32,9 @@ import OrderStatusTracker from "./OderTracker";
 import LensInformation from "./LensInformation";
 import PaymentInfo from "./PaymentInfomation";
 import "./OrderStyle.scss";
+import "./FilterStyle.scss";
 import Pagination from "./Pagination";
+import FilterSelects from "./FilterSelect";
 
 const SalesOrders: React.FC = () => {
   // States
@@ -118,7 +120,7 @@ const SalesOrders: React.FC = () => {
   const [totalItemsCompleted, setTotalItemsCompleted] = useState(0);
   const [revenueCompleted, setRevenueCompleted] = useState(0);
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
-
+  const [kioskFilter, setKioskFilter] = useState("");
   // Services
   const { fetchAllOrder, countOrder, deleteOrder, updateOrderProcess } =
     useOrderService();
@@ -133,7 +135,12 @@ const SalesOrders: React.FC = () => {
     fetchData();
     fetchRevenueCompleted();
     totalOrderCounting();
-  }, [searchTerm, statusFilter, currentPage]);
+  }, [searchTerm, statusFilter, currentPage, kioskFilter]);
+
+  const handleKioskSelect = (kioskId: string) => {
+    setKioskFilter(kioskId);
+    setCurrentPage(1);
+  };
   const totalOrderCounting = async () => {
     const data = await countOrder();
     try {
@@ -146,21 +153,28 @@ const SalesOrders: React.FC = () => {
     try {
       setIsLoading(true);
   
-      const data = await fetchAllOrder("", statusFilter, currentPage);
+      // Gọi API với các params filter
+      const data = await fetchAllOrder(
+        searchTerm,
+        statusFilter,
+        currentPage,
+        "",
+        kioskFilter
+      );
   
+      // Cập nhật tổng số items và set lại data
+      setTotalItems(data.totalItems || 0); // Đảm bảo cập nhật tổng số items từ API
+      
       const formattedData = await Promise.all(
         data.items.map(async (order: any) => {
-          // Fetch voucher information
           const voucherResponse = order.voucherID
             ? await fetchVoucherById(order.voucherID)
             : null;
           const voucherName = voucherResponse ? voucherResponse.name : null;
   
-          // Fetch account information
-          let username = "Unknown"; // Giá trị mặc định
+          let username = "Unknown";
           try {
             const accountResponse = await fetchAccountById(order.accountID);
-            // Kiểm tra và lấy username từ response
             username = accountResponse?.username || "Unknown";
           } catch (error) {
             console.error(`Error fetching username for account ${order.accountID}:`, error);
@@ -169,7 +183,7 @@ const SalesOrders: React.FC = () => {
           return {
             id: order.id,
             accountID: order.accountID,
-            username, // Luôn có giá trị vì đã set mặc định là "Unknown"
+            username,  
             orderTime: new Date(order.orderTime).toLocaleString(),
             status: order.status,
             receiverAddress: order.receiverAddress,
@@ -220,12 +234,11 @@ const SalesOrders: React.FC = () => {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchValue = event.target.value;
     setSearchTerm(searchValue);
+    setCurrentPage(1); // Reset về trang 1 khi search
   };
-
-  const handleStatusFilterChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleStatusFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(event.target.value);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi status
   };
   const handleDeleteOrder = async (orderId: number) => {
     try {
@@ -272,7 +285,7 @@ const SalesOrders: React.FC = () => {
       filtered = filtered.filter(
         (order) =>
           order.code.toLowerCase().includes(searchLower) ||
-        order.username?.toLowerCase().includes(searchLower) ||
+          order.username?.toLowerCase().includes(searchLower) ||
           order.id.toString().includes(searchLower) ||
           order.receiverAddress?.toLowerCase().includes(searchLower)
       );
@@ -401,16 +414,26 @@ const SalesOrders: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <div className="search-box">
-              <FaSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search by order code, address, customer..."
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-            </div>
-          </div>
+          <div className="search-box">
+  <FaSearch className="search-icon" />
+  <input
+    type="text"
+    placeholder="Search by username"
+    value={searchTerm}
+    onChange={handleSearch}
+    className="search-input"
+  />
+</div>
+  <FilterSelects 
+    onKioskSelect={handleKioskSelect} 
+    selectedKiosk={kioskFilter} 
+    onReset={() => {
+      setKioskFilter("");
+      setCurrentPage(1);
+      toast.success("Filter has been reset");
+    }} 
+  />
+</div>
         </div>
 
         {/* Stats Section */}
@@ -506,12 +529,14 @@ const SalesOrders: React.FC = () => {
                     <tbody>
                       {orderData.map((order) => (
                         <tr key={order.id}>
+                          
                           <td>
                             <div className="order-id">
                               <span className="code">{order.code}</span>
+                              <span className="order-number">ID: {order.id}</span>  {/* Thêm dòng này */}
                               <span className="username">
-            <FaUser /> {order.username}
-          </span>
+                                <FaUser /> {order.username}
+                              </span>
                               <span className="time">
                                 {new Date(order.orderTime).toLocaleString()}
                               </span>
@@ -601,11 +626,7 @@ const SalesOrders: React.FC = () => {
                       ? "No orders match your search criteria"
                       : "There are no orders to display"}
                   </p>
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={Math.ceil(totalItems / 20)}
-                    onPageChange={handlePageChange}
-                  />
+             
                 </div>
               )}
             </div>
