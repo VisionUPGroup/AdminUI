@@ -84,17 +84,14 @@ const Kiosk: React.FC = () => {
   }) => {
     try {
       await moveOrderKiosk(data);
-
-      // Cập nhật trạng thái hasOrders sau khi move
       setKioskData((prev) =>
-        prev.map((kiosk) => {
-          if (kiosk.id === data.currentKioskID) {
-            return { ...kiosk, hasOrders: false };
-          }
-          return kiosk;
-        })
+        prev.map((kiosk) =>
+          kiosk.id === data.currentKioskID
+            ? { ...kiosk, hasOrders: false }
+            : kiosk
+        )
       );
-
+      setCurrentPage(1); // Reset page khi dữ liệu thay đổi
       toast.success("Orders moved successfully");
       setMoveModalOpen(false);
     } catch (error) {
@@ -105,23 +102,28 @@ const Kiosk: React.FC = () => {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    // Không cần setCurrentPage(1) ở đây vì đã xử lý trong useEffect
   };
 
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
+    // Không cần setCurrentPage(1) ở đây vì đã xử lý trong useEffect
   };
 
   useEffect(() => {
     let filtered = kioskData;
 
+    // Áp dụng search filter
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (kiosk) =>
-          kiosk.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          kiosk.address.toLowerCase().includes(searchTerm.toLowerCase())
+          kiosk.name.toLowerCase().includes(searchLower) ||
+          kiosk.address.toLowerCase().includes(searchLower)
       );
     }
 
+    // Áp dụng status filter
     if (filterStatus !== "all") {
       filtered = filtered.filter(
         (kiosk) => kiosk.status === (filterStatus === "active")
@@ -129,6 +131,8 @@ const Kiosk: React.FC = () => {
     }
 
     setFilteredData(filtered);
+    // Reset về trang 1 khi thay đổi filter hoặc search
+    setCurrentPage(1);
   }, [searchTerm, filterStatus, kioskData]);
 
   const handleDelete = async (kiosk: KioskDataType) => {
@@ -179,7 +183,7 @@ const Kiosk: React.FC = () => {
       if (result.isConfirmed) {
         await deleteKiosk(kiosk.id);
         setKioskData((prev) => prev.filter((k) => k.id !== kiosk.id));
-        setFilteredData((prev) => prev.filter((k) => k.id !== kiosk.id));
+        setCurrentPage(1); // Reset page sau khi xóa
         toast.success("Kiosk deleted successfully");
       }
     } catch (error) {
@@ -429,31 +433,30 @@ const Kiosk: React.FC = () => {
                     ? "No kiosks match your search criteria"
                     : "Start by adding your first kiosk"}
                 </p>
-                <button
+                {/* <button
                   className="create-btn"
                   onClick={() => setCreateModalOpen(true)}
                 >
                   <FaPlus className="btn-icon" />
                   Create First Kiosk
-                </button>
+                </button> */}
               </div>
             )}
           </div>
         </div>
       </div>
-
       {/* Modals */}
       <KioskModal
         isOpen={createModalOpen}
         toggle={() => setCreateModalOpen(false)}
-        onSave={async (data) => {
+        onSave={async () => {
           toast.success("Kiosk created successfully");
           await fetchKioskData();
+          setCurrentPage(1); // Reset page khi thêm mới
           setCreateModalOpen(false);
-          
         }}
       />
-
+      ;
       <KioskUpdateModal
         isOpen={updateModalOpen}
         toggle={() => setUpdateModalOpen(false)}
@@ -462,13 +465,14 @@ const Kiosk: React.FC = () => {
           try {
             await updateKiosk(data);
             await fetchKioskData();
+            setCurrentPage(1); // Reset page khi cập nhật
             setUpdateModalOpen(false);
-            toast.success("Kiosk updated successfully");
           } catch (error) {
             toast.error("Failed to update kiosk");
           }
         }}
       />
+      ;
       <OrderListModal
         isOpen={orderModalOpen}
         toggle={() => setOrderModalOpen(false)}
