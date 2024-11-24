@@ -70,8 +70,10 @@ const Kiosk: React.FC = () => {
     try {
       setIsLoading(true);
       const data = await fetchAllKiosk();
-      setKioskData(data);
-      setFilteredData(data);
+      // Sort data by ID in descending order
+      const sortedData = data.sort((a: { id: number; }, b: { id: number; }) => b.id - a.id);
+      setKioskData(sortedData);
+      setFilteredData(sortedData);
     } catch (error) {
       toast.error("Failed to fetch kiosk data");
     } finally {
@@ -113,7 +115,7 @@ const Kiosk: React.FC = () => {
   useEffect(() => {
     let filtered = kioskData;
 
-    // Áp dụng search filter
+    // Apply search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -123,15 +125,17 @@ const Kiosk: React.FC = () => {
       );
     }
 
-    // Áp dụng status filter
+    // Apply status filter
     if (filterStatus !== "all") {
       filtered = filtered.filter(
         (kiosk) => kiosk.status === (filterStatus === "active")
       );
     }
 
+    // Maintain descending order after filtering
+    filtered = filtered.sort((a, b) => b.id - a.id);
+
     setFilteredData(filtered);
-    // Reset về trang 1 khi thay đổi filter hoặc search
     setCurrentPage(1);
   }, [searchTerm, filterStatus, kioskData]);
 

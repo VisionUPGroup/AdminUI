@@ -286,11 +286,17 @@ const RefractionModal: React.FC<RefractionModalProps> = ({
           )}
         </div>
         {selectedRecordId && (
-          <MeasurementModal
-            isOpen={!!selectedRecordId}
-            onClose={() => setSelectedRecordId(null)}
-            recordId={selectedRecordId}
-          />
+      <MeasurementModal
+      isOpen={!!selectedRecordId}
+      onClose={() => setSelectedRecordId(null)}
+      recordId={selectedRecordId}
+      employeeId={205} // Thêm employeeId mặc định
+      onSave={(data) => {
+        // Có thể xử lý sau khi lưu nếu cần
+        console.log('Measurements saved:', data);
+        fetchRecords(); // Refresh data sau khi lưu
+      }}
+    />
         )}
       </div>
     </div>

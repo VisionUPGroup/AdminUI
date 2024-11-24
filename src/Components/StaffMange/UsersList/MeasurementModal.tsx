@@ -7,12 +7,11 @@ import MeasurementForm from "./MeasurementForm";
 interface MeasurementFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Measurement[]) => void;
-  editingMeasurement?: Measurement[];  // Thay đổi kiểu dữ liệu ở đây
   recordId: number;
-  employeeId: number;
+  employeeId?: number; // Làm cho optional
+  onSave?: (data: Measurement[]) => void; // Làm cho optional
+  editingMeasurement?: Measurement[];  
 }
-
 interface Measurement {
   id?: number;
   recordID: number;
