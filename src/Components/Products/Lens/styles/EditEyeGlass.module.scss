@@ -1,7 +1,7 @@
 .editProductPage {
     padding: 24px;
-    background-color:#ffffff; 
-  
+    background-color: #ffffff;
+
     // Card Styles
     .imageCard,
     .formCard {
@@ -11,13 +11,13 @@
         overflow: hidden;
         background-color: white;
     }
-  
+
     .sectionTitle {
         margin-bottom: 24px;
         color: #1e293b;
         font-weight: 600;
     }
-  
+
     // Image Gallery Styles
     .imageGallery {
         .mainImage {
@@ -31,34 +31,34 @@
             align-items: center;
             justify-content: center;
             border: 2px dashed #e2e8f0;
-    
+
             img {
                 width: 100%;
                 height: 100%;
                 object-fit: contain;
             }
-    
+
             .uploadPlaceholder {
                 text-align: center;
                 color: #64748b;
-    
+
                 svg {
                     margin-bottom: 12px;
                     color: #94a3b8;
                 }
-    
+
                 p {
                     margin: 0;
                     font-size: 14px;
                 }
             }
         }
-    
+
         .thumbnails {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 12px;
-            
+
             .thumbnail {
                 position: relative;
                 width: 100%;
@@ -68,7 +68,7 @@
                 cursor: pointer;
                 background-color: #f8fafc;
                 border: 2px dashed #e2e8f0;
-    
+
                 img {
                     position: absolute;
                     top: 0;
@@ -77,7 +77,7 @@
                     height: 100%;
                     object-fit: cover;
                 }
-    
+
                 .emptyThumbnail {
                     position: absolute;
                     top: 0;
@@ -89,7 +89,7 @@
                     justify-content: center;
                     color: #94a3b8;
                 }
-    
+
                 .thumbnailOverlay {
                     position: absolute;
                     top: 0;
@@ -104,24 +104,24 @@
                     color: white;
                     opacity: 0;
                     transition: opacity 0.3s ease;
-    
+
                     span {
                         font-size: 12px;
                         margin-top: 4px;
                     }
                 }
-    
+
                 &:hover .thumbnailOverlay {
                     opacity: 1;
                 }
-    
+
                 &.active {
                     border-color: #7366ff;
                 }
             }
         }
     }
-  
+
     // Modern Tabs Styles
     .modernTabs {
         display: flex;
@@ -129,7 +129,7 @@
         margin-bottom: 2rem;
         border: none;
         padding: 0.5rem;
-    
+
         .tabLink {
             display: flex;
             align-items: center;
@@ -141,51 +141,51 @@
             transition: all 0.2s ease;
             cursor: pointer;
             background: transparent;
-    
+
             svg {
                 color: currentColor;
             }
-    
+
             &:hover {
                 background-color: #f1f5f9;
                 color: #7366ff;
             }
-    
+
             &.active {
                 background-color: #7366ff;
                 color: white;
             }
         }
     }
-  
+
     // Form Section Styles
     .formSection {
         padding: 1.5rem;
-    
+
         .sectionHeader {
             margin-bottom: 2rem;
-    
+
             h4 {
                 color: #1e293b;
                 font-weight: 600;
                 margin-bottom: 0.5rem;
             }
-    
+
             p {
                 color: #64748b;
                 margin: 0;
             }
         }
     }
-  
+
     // Modern Form Group Styles
     .modernFormGroup {
         margin-bottom: 1.5rem;
         position: relative;
-    
+
         .inputIcon {
             position: relative;
-    
+
             .fieldIcon {
                 position: absolute;
                 left: 1rem;
@@ -194,7 +194,7 @@
                 color: #94a3b8;
                 z-index: 1;
             }
-    
+
             .modernInput {
                 width: 100%;
                 padding: 0.75rem 1rem 0.75rem 3rem;
@@ -204,22 +204,22 @@
                 background-color: #f8fafc;
                 transition: all 0.2s ease;
                 color: #1e293b;
-    
+
                 &:focus {
                     border-color: #7366ff;
                     box-shadow: 0 0 0 3px rgba(115, 102, 255, 0.1);
                     background-color: white;
                 }
-    
+
                 &.inputError {
                     border-color: #ef4444;
                     background-color: #fef2f2;
                 }
-    
+
                 &::placeholder {
                     color: #94a3b8;
                 }
-    
+
                 // Special styling for textareas
                 &.textarea {
                     height: auto;
@@ -245,7 +245,7 @@
                 color: #64748b;
                 font-size: 0.875rem;
             }
-    
+
             .errorMessage {
                 position: absolute;
                 left: 0;
@@ -256,8 +256,59 @@
                 align-items: center;
             }
         }
+
+        .priceIcon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #94a3b8;
+            z-index: 1;
+            background-color: #f8fafc;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modernInput.priceInput {
+            padding-left: 4rem !important;
+            text-align: right;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+
+            &::placeholder {
+                text-align: left;
+                letter-spacing: normal;
+            }
+
+            &:focus {
+                &+.priceIcon {
+                    color: #7366ff;
+                    background-color: white;
+                }
+            }
+
+            &.inputError {
+                &+.priceIcon {
+                    color: #ef4444;
+                    background-color: #fef2f2;
+                }
+            }
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            &[type=number] {
+                -moz-appearance: textfield;
+            }
+        }
     }
-  
+
     // Modern Switch Styles
     .modernSwitch {
         display: flex;
@@ -266,7 +317,7 @@
         background-color: #f8fafc;
         border-radius: 8px;
         margin: 1.5rem 0;
-    
+
         input[type="checkbox"] {
             position: relative;
             width: 48px;
@@ -278,15 +329,15 @@
             background-color: #e2e8f0;
             border-radius: 12px;
             transition: all 0.3s ease;
-    
+
             &:checked {
                 background-color: #7366ff;
-    
+
                 &::after {
                     transform: translateX(24px);
                 }
             }
-    
+
             &::after {
                 content: '';
                 position: absolute;
@@ -299,7 +350,7 @@
                 transition: transform 0.3s ease;
             }
         }
-    
+
         .switchLabel {
             display: flex;
             align-items: center;
@@ -308,13 +359,13 @@
             color: #475569;
             font-weight: 500;
             cursor: pointer;
-    
+
             svg {
                 color: #7366ff;
             }
         }
     }
-  
+
     // Form Actions Styles
     .formActions {
         display: flex;
@@ -323,7 +374,7 @@
         margin-top: 2rem;
         padding-top: 2rem;
         border-top: 1px solid #e2e8f0;
-    
+
         button {
             display: flex;
             align-items: center;
@@ -331,28 +382,28 @@
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s ease;
-    
+
             &:global(.btn-light) {
                 background-color: #f8fafc;
                 border: 1px solid #e2e8f0;
                 color: #64748b;
-    
+
                 &:hover {
                     background-color: #f1f5f9;
                     color: #1e293b;
                 }
             }
-    
+
             &:global(.btn-primary) {
                 background-color: #7366ff;
                 border: none;
                 color: white;
-    
+
                 &:hover {
                     background-color: darken(#7366ff, 5%);
                     transform: translateY(-2px);
                 }
-    
+
                 &:disabled {
                     background-color: #94a3b8;
                     transform: none;
@@ -373,7 +424,7 @@
         align-items: center;
         justify-content: center;
         z-index: 1050;
-    
+
         .modal {
             width: 100%;
             max-width: 500px;
@@ -381,20 +432,20 @@
             border-radius: 12px;
             overflow: hidden;
             animation: modalFadeIn 0.3s ease;
-    
+
             .modalHeader {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 padding: 1rem 1.5rem;
                 border-bottom: 1px solid #e2e8f0;
-    
+
                 h5 {
                     margin: 0;
                     font-weight: 600;
                     color: #1e293b;
                 }
-    
+
                 .closeButton {
                     background: none;
                     border: none;
@@ -403,17 +454,17 @@
                     padding: 0.25rem;
                     border-radius: 4px;
                     transition: all 0.3s ease;
-    
+
                     &:hover {
                         background-color: #f1f5f9;
                         color: #1e293b;
                     }
                 }
             }
-    
+
             .modalBody {
                 padding: 1.5rem;
-    
+
                 .uploadArea {
                     border: 2px dashed #e2e8f0;
                     border-radius: 8px;
@@ -421,31 +472,31 @@
                     text-align: center;
                     cursor: pointer;
                     transition: all 0.3s ease;
-    
+
                     &:hover {
                         border-color: #7366ff;
                         background-color: #f8fafc;
                     }
-    
+
                     .fileInput {
                         display: none;
                     }
-    
+
                     .uploadLabel {
                         cursor: pointer;
                         color: #64748b;
-    
+
                         svg {
                             color: #94a3b8;
                             margin-bottom: 1rem;
                         }
-    
+
                         p {
                             margin: 0 0 0.5rem;
                             font-weight: 500;
                             color: #1e293b;
                         }
-    
+
                         span {
                             font-size: 0.75rem;
                             display: block;
@@ -470,7 +521,7 @@
         justify-content: center;
         align-items: center;
         z-index: 1000;
-    
+
         .spinner {
             width: 40px;
             height: 40px;
@@ -488,6 +539,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -495,15 +547,20 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 // Responsive Styles
 @media (max-width: 992px) {
     .editProductPage {
         padding: 1rem;
-    
+
         .imageGallery .mainImage {
             height: 250px;
         }
@@ -514,7 +571,7 @@
     .editProductPage {
         .modernTabs {
             flex-wrap: wrap;
-            
+
             .tabLink {
                 padding: 0.5rem 1rem;
                 width: calc(50% - 0.5rem);

@@ -391,7 +391,7 @@
     .pdField {
       position: relative;
       margin-top: $spacing-unit * 4;
-      
+
       label {
         display: block;
         color: $text-secondary;
@@ -405,7 +405,7 @@
         padding-right: $spacing-unit * 8;
         border: 1px solid rgba($text-secondary, 0.2);
         border-radius: $border-radius;
-        
+
         &:focus {
           border-color: $primary;
           outline: none;
@@ -464,6 +464,165 @@
   }
 }
 
+
+// .prescriptionForm {
+//   background: $surface;
+//   border-radius: $border-radius-lg;
+//   padding: $spacing-unit * 6;
+
+//   h3 {
+//     margin-bottom: $spacing-unit * 3;
+//     font-family: $font-heading;
+//     color: $text-primary;
+//   }
+
+//   .instruction {
+//     color: $text-secondary;
+//     font-size: 0.875rem;
+//     margin-bottom: $spacing-unit * 4;
+//   }
+
+//   .eyeSection {
+//     .eye {
+//       background: $background;
+//       padding: $spacing-unit * 4;
+//       border-radius: $border-radius;
+//       margin-bottom: $spacing-unit * 4;
+
+//       h4 {
+//         color: $text-primary;
+//         margin-bottom: $spacing-unit * 3;
+//         display: flex;
+//         align-items: center;
+//         gap: $spacing-unit * 2;
+//         font-family: $font-heading;
+
+//         &::before {
+//           content: '';
+//           display: inline-block;
+//           width: 8px;
+//           height: 8px;
+//           border-radius: 50%;
+//           background: $primary;
+//         }
+//       }
+
+//       .inputs {
+//         display: grid;
+//         grid-template-columns: repeat(3, 1fr);
+//         gap: $spacing-unit * 3;
+//       }
+//     }
+
+//     .field {
+//       position: relative;
+
+//       label {
+//         display: block;
+//         color: $text-secondary;
+//         font-size: 0.875rem;
+//         margin-bottom: $spacing-unit * 2;
+//       }
+
+//       .inputWrapper {
+//         position: relative;
+
+//         input {
+//           width: 100%;
+//           padding: $spacing-unit * 2;
+//           padding-right: $spacing-unit * 8;
+//           border: 1.5px solid rgba($text-secondary, 0.2);
+//           border-radius: $border-radius;
+//           transition: $transition-base;
+//           text-align: right;
+//           font-size: 1rem;
+//           color: $text-primary;
+//           background: $surface;
+
+//           &:focus {
+//             border-color: $primary;
+//             outline: none;
+//             box-shadow: 0 0 0 2px rgba($primary, 0.1);
+//           }
+
+//           &.error {
+//             border-color: #dc3545;
+//             background-color: rgba(#dc3545, 0.05);
+//           }
+
+//           &::-webkit-inner-spin-button,
+//           &::-webkit-outer-spin-button {
+//             opacity: 0;
+//           }
+//         }
+
+//         .unit {
+//           position: absolute;
+//           right: $spacing-unit * 3;
+//           top: 50%;
+//           transform: translateY(-50%);
+//           color: $text-secondary;
+//           font-size: 0.875rem;
+//           pointer-events: none;
+//         }
+//       }
+
+//       .errorMessage {
+//         position: absolute;
+//         left: 0;
+//         bottom: -$spacing-unit * 4;
+//         font-size: 0.75rem;
+//         color: #dc3545;
+//       }
+//     }
+//   }
+
+//   .pdSection {
+//     margin-top: $spacing-unit * 6;
+//     background: $background;
+//     padding: $spacing-unit * 4;
+//     border-radius: $border-radius;
+
+//     .field {
+//       max-width: 200px;
+//       margin: 0 auto;
+
+//       label {
+//         text-align: center;
+//         display: block;
+//         margin-bottom: $spacing-unit * 2;
+//       }
+
+//       .inputWrapper {
+//         position: relative;
+
+//         input {
+//           width: 100%;
+//           padding: $spacing-unit * 2;
+//           padding-right: $spacing-unit * 8;
+//           border: 1.5px solid rgba($text-secondary, 0.2);
+//           border-radius: $border-radius;
+//           text-align: right;
+//           transition: $transition-base;
+
+//           &:focus {
+//             border-color: $primary;
+//             outline: none;
+//             box-shadow: 0 0 0 2px rgba($primary, 0.1);
+//           }
+//         }
+
+//         .unit {
+//           position: absolute;
+//           right: $spacing-unit * 3;
+//           top: 50%;
+//           transform: translateY(-50%);
+//           color: $text-secondary;
+//         }
+//       }
+//     }
+//   }
+
 .continueButton {
   width: 100%;
   padding: $spacing-unit * 3;
@@ -474,6 +633,172 @@
   font-weight: 600;
   cursor: pointer;
   transition: $transition-base;
+  margin-top: $spacing-unit * 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-unit * 2;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.field {
+  .inputWrapper {
+    position: relative;
+
+    input.prescriptionInput {
+      width: 100%;
+      padding: $spacing-unit * 2;
+      padding-right: $spacing-unit * 10;
+      border: 1.5px solid rgba($text-secondary, 0.2);
+      border-radius: $border-radius;
+      transition: $transition-base;
+      text-align: right;
+      font-size: 1rem;
+      color: $text-primary;
+      background: $surface;
+      font-family: $font-mono; // Sử dụng font monospace cho số
+      letter-spacing: 0.5px;
+
+      // Ẩn arrows mặc định
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      // Firefox
+      &[type=number] {
+        -moz-appearance: textfield;
+      }
+
+      &::placeholder {
+        color: rgba($text-secondary, 0.5);
+        text-align: right;
+      }
+
+      &:focus {
+        border-color: $primary;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba($primary, 0.1);
+      }
+
+      &.error {
+        border-color: #dc3545;
+        background-color: rgba(#dc3545, 0.05);
+      }
+    }
+
+    .unit {
+      position: absolute;
+      right: $spacing-unit * 3;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $text-secondary;
+      font-size: 0.875rem;
+      pointer-events: none;
+      user-select: none;
+    }
+  }
+}
+
+
+// Responsive Styles
+@media (max-width: 768px) {
+  .prescriptionForm {
+    padding: $spacing-unit * 4;
+
+    .eyeSection {
+      .eye {
+        padding: $spacing-unit * 3;
+
+        .inputs {
+          grid-template-columns: 1fr;
+          gap: $spacing-unit * 4;
+        }
+      }
+
+      .field {
+        .inputWrapper {
+          input {
+            font-size: 0.875rem;
+            padding: $spacing-unit * 1.5;
+          }
+        }
+      }
+    }
+
+    .pdSection {
+      padding: $spacing-unit * 3;
+    }
+
+    .continueButton {
+      padding: $spacing-unit * 2.5;
+    }
+  }
+}
+
+.nonPrescriptionDetails {
+  background: $surface;
+  border-radius: $border-radius-lg;
+  padding: $spacing-unit * 6;
+
+  h3 {
+    margin-bottom: $spacing-unit * 4;
+    font-family: $font-heading;
+  }
+
+  .selectedLensInfo {
+    text-align: center;
+    margin-bottom: $spacing-unit * 6;
+
+    img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: $border-radius;
+      margin-bottom: $spacing-unit * 3;
+    }
+
+    h4 {
+      color: $primary;
+      margin-bottom: $spacing-unit * 2;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: 0.875rem;
+      margin-bottom: $spacing-unit * 3;
+    }
+
+    .price {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+  }
+}
+
+.continueButton {
+  width: 100%;
+  padding: $spacing-unit * 3;
+  background: $gradient-primary;
+  color: $surface;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: 600;
+  cursor: pointer;
+  transition: $transition-base;
+  margin-top: $spacing-unit * 6;
 
   &:hover {
     transform: translateY(-2px);
@@ -575,7 +900,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   .retryButton {
     background: #dc3545;
     color: $surface;
@@ -584,7 +909,7 @@
     border-radius: $border-radius;
     cursor: pointer;
     transition: $transition-base;
-    
+
     &:hover {
       background: darken(#dc3545, 10%);
     }

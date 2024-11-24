@@ -178,6 +178,15 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
 
     const [eyeGlassTypes, setEyeGlassTypes] = useState<{ id: number; glassType: string; status: boolean }[]>([]);
 
+    const formatCurrency = (value: string): string => {
+        const number = value.replace(/\D/g, '');
+        return number ? new Intl.NumberFormat('vi-VN').format(parseInt(number)) : '';
+    };
+    const parseCurrency = (value: string): string => {
+        return value.replace(/\D/g, '');
+    };
+
+
     useEffect(() => {
         const fetchData = async () => {
             if (id) {
@@ -223,7 +232,8 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                     }
 
                     if (typesData) {
-                        setEyeGlassTypes(typesData);
+                        const activeTypes = typesData.filter((type: EyeGlassType) => type.status === true);
+                        setEyeGlassTypes(activeTypes);
                     }
                 } catch (error) {
                     console.error("Error fetching eye glass data:", error);
@@ -273,12 +283,32 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
             [name]: newValue
         }));
 
-        // Validate với isAdd = false
+        if (name === 'price') {
+            // Format giá trị tiền
+            const numericValue = parseCurrency(value);
+            const formattedValue = formatCurrency(numericValue);
+
+            setFormData(prev => ({
+                ...prev,
+                [name]: numericValue // Lưu giá trị số trong state
+            }));
+
+            // Set giá trị đã format vào input
+            e.target.value = formattedValue;
+        } else {
+            const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+            setFormData(prev => ({
+                ...prev,
+                [name]: newValue
+            }));
+        }
+
         const error = validateField(name as keyof FormData, newValue, false);
         setErrors(prev => ({
             ...prev,
             [name]: error
         }));
+
     };
 
     const validationForm = (): boolean => {
@@ -501,15 +531,14 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                     <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
-                                                                <DollarSign className={styles.fieldIcon} size={18} />
+                                                                <div className={styles.priceIcon}>VND</div>
                                                                 <Input
                                                                     id="price"
                                                                     name="price"
-                                                                    type="number"
-                                                                    value={formData.price}
+                                                                    value={formatCurrency(formData.price)}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Price (VND)"
-                                                                    className={styles.modernInput}
+                                                                    placeholder="Nhập giá sản phẩm"
+                                                                    className={`${styles.modernInput} ${styles.priceInput}`}
                                                                 />
                                                                 {errors.price && <div className={styles.errorMessage}>{errors.price}</div>}
                                                             </div>
@@ -610,6 +639,29 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                             <div className={styles.inputIcon}>
                                                                 <Grid className={styles.fieldIcon} size={18} />
                                                                 <Input
+                                                                    id="style"
+                                                                    name="style"
+                                                                    type="select"
+                                                                    value={formData.style}
+                                                                    onChange={handleInputChange}
+                                                                    className={styles.modernInput}
+                                                                >
+                                                                    <option value="">Select Style</option>
+                                                                    {Object.values(StyleType).map(styleType => (
+                                                                        <option key={styleType} value={styleType}>
+                                                                            {styleType}
+                                                                        </option>
+                                                                    ))}
+                                                                </Input>
+                                                                {errors.style && <div className={styles.errorMessage}>{errors.style}</div>}
+                                                            </div>
+                                                        </div>
+                                                    </Col>
+                                                    <Col md={4}>
+                                                        <div className={styles.modernFormGroup}>
+                                                            <div className={styles.inputIcon}>
+                                                                <Grid className={styles.fieldIcon} size={18} />
+                                                                <Input
                                                                     id="design"
                                                                     name="design"
                                                                     value={formData.design}
@@ -648,12 +700,12 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
 
                                                 <div className={styles.specsGrid}>
                                                     {[
-                                                        { id: 'lensWidth', label: 'Lens Width', unit: 'mm' },
-                                                        { id: 'lensHeight', label: 'Lens Height', unit: 'mm' },
-                                                        { id: 'bridgeWidth', label: 'Bridge Width', unit: 'mm' },
-                                                        { id: 'templeLength', label: 'Temple Length', unit: 'mm' },
-                                                        { id: 'frameWidth', label: 'Frame Width', unit: 'mm' },
-                                                        { id: 'weight', label: 'Weight', unit: 'g' }
+                                                        { id: 'lensWidth', label: 'Lens Width', unit: 'mm', value: formData.lensWidth },
+                                                        { id: 'lensHeight', label: 'Lens Height', unit: 'mm', value: formData.lensHeight },
+                                                        { id: 'bridgeWidth', label: 'Bridge Width', unit: 'mm', value: formData.bridgeWidth },
+                                                        { id: 'templeLength', label: 'Temple Length', unit: 'mm', value: formData.templeLength },
+                                                        { id: 'frameWidth', label: 'Frame Width', unit: 'mm', value: formData.frameWidth },
+                                                        { id: 'weight', label: 'Weight', unit: 'g', value: formData.weight }
                                                     ].map((spec) => (
                                                         <div className={styles.specCard} key={spec.id}>
                                                             <div className={styles.specIcon}>
@@ -669,7 +721,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                                     id={spec.id}
                                                                     name={spec.id}
                                                                     type="number"
-                                                                    // value={formData[spec.id as keyof typeof formData]}  // Dòng này đang bị comment
+                                                                    value={spec.value}
                                                                     onChange={handleInputChange}
                                                                     placeholder="0"
                                                                     className={`${styles.specInput} ${errors[spec.id as keyof typeof errors] ? styles.inputError : ''}`}

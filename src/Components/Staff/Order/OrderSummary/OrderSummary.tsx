@@ -33,6 +33,7 @@ interface VoucherInfo {
   discountType: string;
   discountValue: number;
   status: boolean;
+  quantity: number; // Added quantity field
 }
 
 interface PrescriptionData {
@@ -89,7 +90,6 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
   const { fetchVoucherByCode } = useVoucherService();
 
   const calculateSubtotal = () => product.price + lens.lensPrice;
-  // const calculateVAT = () => calculateSubtotal() * 0.1;
 
   const calculateDiscount = () => {
     if (!voucherInfo || !voucherInfo.discountValue) return 0;
@@ -99,7 +99,6 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
   const calculateTotal = () => {
     const subtotal = calculateSubtotal();
-    // const vat = calculateVAT();
     const discount = calculateDiscount();
     const totalBeforeDeposit = Math.max(subtotal - discount, 0);
     return isDeposit ? totalBeforeDeposit * 0.3 : totalBeforeDeposit;
@@ -118,13 +117,23 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
       const voucherData = await fetchVoucherByCode(voucherCode);
       if (voucherData && voucherData.length > 0) {
         const voucher = voucherData[0];
+        
+        // Check voucher quantity
+        if (voucher.quantity === 0) {
+          setVoucherError('This voucher has been fully redeemed');
+          setVoucherInfo(null);
+          onVoucherSelect(null);
+          return;
+        }
+
         const mappedVoucher = {
           id: voucher.id,
           name: voucher.name,
           code: voucher.code,
           discountType: 'PERCENTAGE',
           discountValue: voucher.sale,
-          status: voucher.status
+          status: voucher.status,
+          quantity: voucher.quantity
         };
 
         if (!mappedVoucher.status) {
@@ -135,7 +144,8 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
         }
 
         setVoucherInfo(mappedVoucher);
-        onVoucherSelect(mappedVoucher); // Add this line to pass voucher to parent
+        onVoucherSelect(mappedVoucher);
+        console.log("Voucher", mappedVoucher);
       } else {
         setVoucherError('Invalid voucher code');
         setVoucherInfo(null);
@@ -150,12 +160,11 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
     }
   };
 
-  // Update the remove voucher handler
   const handleRemoveVoucher = () => {
     setVoucherInfo(null);
     setVoucherCode('');
     setVoucherError(null);
-    onVoucherSelect(null); // Add this line to clear voucher from parent
+    onVoucherSelect(null);
   };
 
   const handleSubmit = async () => {
@@ -181,7 +190,6 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
         </button>
         <div className={styles.orderInfo}>
           <h2>Order Summary</h2>
-          {/* <span className={styles.orderId}>Order ID: {orderId}</span> */}
         </div>
       </div>
 
@@ -291,7 +299,7 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
         {/* Checkout Sidebar */}
         <div className={styles.checkoutSidebar}>
-          <section className={styles.section}>
+        <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <Tag size={20} />
               <h3>Apply Voucher</h3>
@@ -334,6 +342,9 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
               <div className={styles.voucherSuccess}>
                 <Check size={16} />
                 Voucher applied: {voucherInfo.discountValue}% off
+                <span className={styles.voucherQuantity}>
+                  ({voucherInfo.quantity} remaining)
+                </span>
               </div>
             )}
           </section>

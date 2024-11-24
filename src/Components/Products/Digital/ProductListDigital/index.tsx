@@ -60,9 +60,11 @@ const EyeGlassList: React.FC = () => {
 
   const { fetchEyeGlasses, fetchEyeGlassTypes, deleteEyeGlass } = useEyeGlassService(); // Destructure fetchEyeGlasses from useEyeGlassService
   const [eyeGlassTypes, setEyeGlassTypes] = useState<EyeGlassType[]>([]);
-  const [filterParams, setFilterParams] = useState({
+  const [filterParams, setFilterParams] = useState<FilterParams>({
     PageIndex: 1,
-    PageSize: 50
+    PageSize: 10,
+    SortBy: 'ID',
+    Descending: true
   });
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,9 +77,10 @@ const EyeGlassList: React.FC = () => {
       // MinPrice: 1000,
       // MaxPrice: 10000000,
       PageIndex: 1,
-      PageSize: 50,
+      PageSize: 10,
+      SortBy: 'ID',
       // SortBy: 'Price',
-      // Descending: true
+      Descending: true
     };
 
     fetchEyeGlasses(params).then(data => {
@@ -101,11 +104,9 @@ const EyeGlassList: React.FC = () => {
   }, []);
 
 
-  // Hàm fetch data với loading state
   const fetchData = async (params: FilterParams) => {
     setIsLoading(true);
     try {
-      console.log('Fetching with params:', params); // Thêm logging
       const response = await fetchEyeGlasses(params);
       if (response?.data) {
         setEyeGlasses(response.data);
@@ -113,12 +114,47 @@ const EyeGlassList: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast.error('Failed to fetch data. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  
+  useEffect(() => {
+    fetchData(filterParams);
+  }, []);
+
+
+  const handlePageChange = (page: number) => {
+    const updatedParams = {
+      ...filterParams,
+      PageIndex: page
+    };
+    setFilterParams(updatedParams);
+    fetchData(updatedParams);
+  };
+
+  const handleChangeRowsPerPage = (currentRowsPerPage: number, currentPage: number) => {
+    const updatedParams = {
+      ...filterParams,
+      PageSize: currentRowsPerPage,
+      PageIndex: currentPage
+    };
+    setFilterParams(updatedParams);
+    fetchData(updatedParams);
+  };
+
+  const handleSort = (column: any, sortDirection: string) => {
+    const updatedParams = {
+      ...filterParams,
+      SortBy: column.sortField || column.name,
+      Descending: sortDirection === 'desc',
+      PageIndex: 1 // Reset về trang đầu khi sắp xếp
+    };
+    setFilterParams(updatedParams);
+    fetchData(updatedParams);
+  };
+
   // Handler cho filter change
   const handleFilterChange = (newParams: FilterParams) => {
     // Kiểm tra nếu là clear all (chỉ có PageIndex và PageSize)
@@ -139,16 +175,6 @@ const EyeGlassList: React.FC = () => {
       };
     }
   
-    setFilterParams(updatedParams);
-    fetchData(updatedParams);
-  };
-
-  // Handler cho pagination
-  const handlePageChange = (pageIndex: number) => {
-    const updatedParams = {
-      ...filterParams,
-      PageIndex: pageIndex
-    };
     setFilterParams(updatedParams);
     fetchData(updatedParams);
   };
@@ -244,18 +270,26 @@ const EyeGlassList: React.FC = () => {
   };
 
 
+  // const renderContent = () => {
+  //   if (isLoading) {
+  //     return (
+  //       <div className={styles.loadingWrapper}>
+  //         <div className={styles.spinner}></div>
+  //       </div>
+  //     );
+  //   }
+  //   if (!eyeGlasses.length) {
+  //     return (
+  //       <div className={styles.loadingWrapper}>
+  //         <p>No products found</p>
+  //       </div>
+  //     );
+  //   }
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !eyeGlasses.length) {
       return (
         <div className={styles.loadingWrapper}>
           <div className={styles.spinner}></div>
-        </div>
-      );
-    }
-    if (!eyeGlasses.length) {
-      return (
-        <div className={styles.loadingWrapper}>
-          <p>No products found</p>
         </div>
       );
     }
@@ -275,8 +309,12 @@ const EyeGlassList: React.FC = () => {
               paginationServer
               paginationTotalRows={totalItems}
               onChangePage={handlePageChange}
+              onChangeRowsPerPage={handleChangeRowsPerPage}
+              onSort={handleSort}
               progressPending={isLoading}
               className={styles.productTable}
+              currentPage={filterParams.PageIndex}
+              pageSize={filterParams.PageSize}
             />
           </div>
         ) : (
@@ -370,15 +408,16 @@ const EyeGlassList: React.FC = () => {
   const tableColumns = [
     {
       name: 'ID',
-      selector: (row: EyeGlass) => `#${row.id}`,
+      selector: (row: EyeGlass) => row.id,
       sortable: true,
+      sortField: 'ID',
       width: '80px',
     },
     {
       name: 'Image',
       cell: (row: EyeGlass) => (
         <img
-          src={row.eyeGlassImages?.[0]?.url || '/placeholder-image.jpg'} // Thêm fallback image
+          src={row.eyeGlassImages?.[0]?.url || '/placeholder-image.jpg'}
           alt={row.name}
           className={styles.tableImage}
         />
@@ -389,6 +428,7 @@ const EyeGlassList: React.FC = () => {
       name: 'Name',
       selector: (row: EyeGlass) => row.name,
       sortable: true,
+      sortField: 'Name',
       cell: (row: EyeGlass) => (
         <div className={styles.productNameCell}>
           <p className={styles.name}>{row.name}</p>

@@ -50,6 +50,8 @@ $dark-gradient: linear-gradient(135deg, $dark-gray 0%, $medium-gray 100%);
   }
 }
 
+@import "../../Digital/ProductListDigital/ProductListDigital.module.scss";
+
 .productListPage {
   min-height: 100vh;
   background: $background;

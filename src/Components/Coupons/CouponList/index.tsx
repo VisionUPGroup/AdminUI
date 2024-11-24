@@ -152,7 +152,13 @@ const VoucherList: React.FC = () => {
   
 
   const filteredVouchers = useMemo(() => {
-    return vouchers.filter(voucher =>
+    const sortedVouchers = [...vouchers].sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status ? -1 : 1;  
+      }
+      return b.id - a.id;
+    });
+    return sortedVouchers.filter(voucher =>
       voucher.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       voucher.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
