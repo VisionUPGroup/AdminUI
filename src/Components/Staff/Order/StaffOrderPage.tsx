@@ -33,6 +33,7 @@ interface VoucherInfo {
   discountType: string;
   discountValue: number;
   status: boolean;
+  quantity: number;
 }
 
 interface PrescriptionData {
@@ -119,6 +120,7 @@ const StaffOrderPage: React.FC = () => {
           }
         }]
       };
+      console.log("Oder",orderData);
 
       const orderResponse = await createOrderNow(orderData);
 

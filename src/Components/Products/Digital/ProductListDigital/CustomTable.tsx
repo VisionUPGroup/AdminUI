@@ -1,7 +1,6 @@
 import { FC, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamic import to avoid SSR issues
 const DataTable = dynamic(() => import('react-data-table-component'), {
     ssr: false,
     loading: () => (
@@ -21,8 +20,11 @@ interface TableProps {
     paginationTotalRows?: number;
     progressPending?: boolean;
     onChangePage?: (page: number) => void;
+    onChangeRowsPerPage?: (currentRowsPerPage: number, currentPage: number) => void;
     onSort?: (column: any, direction: string) => void;
     className?: string;
+    currentPage?: number;
+    pageSize?: number;
 }
 
 const CustomTable: FC<TableProps> = ({
@@ -33,10 +35,12 @@ const CustomTable: FC<TableProps> = ({
     paginationTotalRows,
     progressPending = false,
     onChangePage,
+    onChangeRowsPerPage,
     onSort,
     className,
+    currentPage = 1,
+    pageSize = 10,
 }) => {
-
     const customStyles = useMemo(() => ({
         table: {
             style: {
@@ -91,6 +95,9 @@ const CustomTable: FC<TableProps> = ({
             style: {
                 borderTop: '1px solid #e2e8f0',
                 padding: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
             },
             pageButtonsStyle: {
                 borderRadius: '6px',
@@ -109,23 +116,10 @@ const CustomTable: FC<TableProps> = ({
                 '&:focus': {
                     outline: 'none',
                 },
-            },
-        },
-        noData: {
-            style: {
-                padding: '24px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#64748b',
-            },
-        },
-        progress: {
-            style: {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '24px',
+                '&:disabled': {
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
+                },
             },
         },
     }), []);
@@ -144,9 +138,11 @@ const CustomTable: FC<TableProps> = ({
             </div>
         ),
         paginationComponentOptions: {
-            rowsPerPageText: 'Rows per page:',
+            rowsPerPageText: 'Items per page:',
             rangeSeparatorText: 'of',
-        }
+            selectAllRowsItem: true,
+            selectAllRowsItemText: 'All',
+        },
     }), [paginationServer]);
 
     return (
@@ -158,13 +154,27 @@ const CustomTable: FC<TableProps> = ({
                 paginationServer={paginationServer}
                 paginationTotalRows={paginationTotalRows}
                 onChangePage={onChangePage}
+                onChangeRowsPerPage={onChangeRowsPerPage}
                 onSort={onSort}
                 progressPending={progressPending}
                 customStyles={customStyles}
                 {...memoizedOptions}
+                paginationDefaultPage={currentPage}
+                paginationPerPage={pageSize}
                 persistTableHead
                 fixedHeader
             />
+            {pagination && paginationTotalRows && (
+                <div style={{ 
+                    padding: '8px 16px',
+                    borderTop: '1px solid #e2e8f0',
+                    fontSize: '14px',
+                    color: '#64748b',
+                    textAlign: 'right' 
+                }}>
+                    Total: {paginationTotalRows} items
+                </div>
+            )}
         </div>
     );
 };

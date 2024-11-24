@@ -45,8 +45,8 @@
       }
   
       .addButton {
-        background-color: $text-light;
-        color: $primary-color;
+        background-color: $text-light !important;
+        color: $primary-color !important;
         border: none;
         padding: 0.75rem 1.5rem;
         display: flex;
@@ -356,7 +356,7 @@
   
       .pageButton {
         padding: 0.75rem 1.5rem;
-        color: $text-dark;
+        // color: $text-dark;
         background: transparent;
         border: 1px solid rgba($text-dark, 0.1);
         font-weight: 500;
@@ -387,7 +387,7 @@
           border-radius: 8px;
           border: 1px solid rgba($text-dark, 0.1);
           background: transparent;
-          color: $text-dark;
+          color: $text-light;
           font-weight: 500;
           transition: all 0.3s ease;
   

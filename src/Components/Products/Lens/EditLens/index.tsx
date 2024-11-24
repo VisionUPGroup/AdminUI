@@ -66,11 +66,11 @@ interface EyeReflactive {
 // Update function parameters with type annotations
 const handleTypeChange = (type: LensType) => {
     // Function implementation
-  };
+};
 
-  const handleReflactiveChange = (reflactive: EyeReflactive) => {
+const handleReflactiveChange = (reflactive: EyeReflactive) => {
     // Function implementation
-  };
+};
 
 interface FormData {
     lensName: string;
@@ -102,13 +102,13 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
     const [loading, setLoading] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-    const { 
-        fetchLensById, 
-        fetchLensImages, 
-        updateLens, 
-        updateLensImage, 
+    const {
+        fetchLensById,
+        fetchLensImages,
+        updateLens,
+        updateLensImage,
         fetchLensTypes,
-        fetchEyeReflactives 
+        fetchEyeReflactives
     } = useLensService();
 
     // Form state
@@ -136,6 +136,15 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
 
     const [lensTypes, setLensTypes] = useState<LensType[]>([]);
     const [eyeReflactives, setEyeReflactives] = useState<EyeReflactive[]>([]);
+
+    const formatCurrency = (value: string): string => {
+        const number = value.replace(/\D/g, '');
+        return number ? new Intl.NumberFormat('vi-VN').format(parseInt(number)) : '';
+    };
+
+    const parseCurrency = (value: string): string => {
+        return value.replace(/\D/g, '');
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -237,6 +246,26 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
             ...prev,
             [name]: newValue
         }));
+
+        if (name === 'lensPrice') {
+            // Format giá trị tiền
+            const numericValue = parseCurrency(value);
+            const formattedValue = formatCurrency(numericValue);
+
+            setFormData(prev => ({
+                ...prev,
+                [name]: numericValue // Lưu giá trị số trong state
+            }));
+
+            // Set giá trị đã format vào input
+            e.target.value = formattedValue;
+        } else {
+            const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+            setFormData(prev => ({
+                ...prev,
+                [name]: newValue
+            }));
+        }
 
         const error = validateField(name as keyof FormData, newValue);
         setErrors(prev => ({
@@ -450,7 +479,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                         <TabPane tabId="basic">
                                             <div className={styles.formSection}>
                                                 <div className={styles.sectionHeader}>
-                                                <h4>General Information</h4>
+                                                    <h4>General Information</h4>
                                                     <p>Enter the basic lens information below</p>
                                                 </div>
 
@@ -474,15 +503,14 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                     <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
-                                                                <DollarSign className={styles.fieldIcon} size={18} />
+                                                                <div className={styles.priceIcon}>VND</div>
                                                                 <Input
                                                                     id="lensPrice"
                                                                     name="lensPrice"
-                                                                    type="number"
-                                                                    value={formData.lensPrice}
+                                                                    value={formatCurrency(formData.lensPrice)}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Price (VND)"
-                                                                    className={styles.modernInput}
+                                                                    placeholder="Nhập giá sản phẩm"
+                                                                    className={`${styles.modernInput} ${styles.priceInput}`}
                                                                 />
                                                                 {errors.lensPrice && <div className={styles.errorMessage}>{errors.lensPrice}</div>}
                                                             </div>

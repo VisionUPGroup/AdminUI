@@ -496,6 +496,14 @@
     .voucherSuccess {
       background-color: rgba(#28a745, 0.1);
       color: #28a745;
+
+      .voucherQuantity {
+        margin-left: $spacing-unit * 2;
+        font-size: 0.75rem;
+        opacity: 0.8;
+        border-left: 1px solid currentColor;
+        padding-left: $spacing-unit * 2;
+      }
     }
 
     // Deposit Toggle Styles

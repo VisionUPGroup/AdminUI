@@ -8,7 +8,7 @@ export const useLensService = () => {
     const fetchLenses = async (params) => {
         try {
             const response = await axios.get(`${baseUrl}/api/lens`, {
-                params: params,
+                params: params,Descending: true,
                 headers: {
                     Authorization: `Bearer ${getToken()}`
                 }

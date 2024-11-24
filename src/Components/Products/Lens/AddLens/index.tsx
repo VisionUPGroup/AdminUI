@@ -78,11 +78,11 @@ const AddLens: React.FC = () => {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
     const [previewImages, setPreviewImages] = useState<string[]>([]);
-    const { 
-        createLens, 
-        uploadLensImage, 
+    const {
+        createLens,
+        uploadLensImage,
         fetchLensTypes,
-        fetchEyeReflactives 
+        fetchEyeReflactives
     } = useLensService();
 
     // Form state
@@ -101,6 +101,15 @@ const AddLens: React.FC = () => {
     const [lensTypes, setLensTypes] = useState<LensType[]>([]);
     const [eyeReflactives, setEyeReflactives] = useState<EyeReflactive[]>([]);
     const [newImages, setNewImages] = useState<File[]>([]);
+
+    const formatCurrency = (value: string): string => {
+        const number = value.replace(/\D/g, '');
+        return number ? new Intl.NumberFormat('vi-VN').format(parseInt(number)) : '';
+    };
+
+    const parseCurrency = (value: string): string => {
+        return value.replace(/\D/g, '');
+    };
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -175,6 +184,26 @@ const AddLens: React.FC = () => {
             [name]: newValue
         }));
 
+        if (name === 'lensPrice') {
+            // Format giá trị tiền
+            const numericValue = parseCurrency(value);
+            const formattedValue = formatCurrency(numericValue);
+
+            setFormData(prev => ({
+                ...prev,
+                [name]: numericValue // Lưu giá trị số trong state
+            }));
+
+            // Set giá trị đã format vào input
+            e.target.value = formattedValue;
+        } else {
+            const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+            setFormData(prev => ({
+                ...prev,
+                [name]: newValue
+            }));
+        }
+
         // Clear error when user starts typing
         setErrors(prev => ({
             ...prev,
@@ -202,7 +231,7 @@ const AddLens: React.FC = () => {
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0] && selectedImageIndex !== null) {
             const file = e.target.files[0];
-            
+
             if (!validateImageFile(file)) {
                 return;
             }
@@ -266,7 +295,7 @@ const AddLens: React.FC = () => {
             const uploadPromises = newImages
                 .map((file, index) => {
                     if (!file) return null;
-                    
+
                     return async () => {
                         try {
                             await uploadLensImage(file, {
@@ -435,19 +464,16 @@ const AddLens: React.FC = () => {
                                                 <Col md={6}>
                                                     <div className={styles.modernFormGroup}>
                                                         <div className={styles.inputIcon}>
-                                                            <DollarSign className={styles.fieldIcon} size={18} />
+                                                            <div className={styles.priceIcon}>VND</div>
                                                             <Input
                                                                 id="lensPrice"
                                                                 name="lensPrice"
-                                                                type="number"
-                                                                value={formData.lensPrice}
+                                                                value={formatCurrency(formData.lensPrice)}
                                                                 onChange={handleInputChange}
-                                                                placeholder="Price (VND)"
-                                                                className={styles.modernInput}
+                                                                placeholder="Nhập giá sản phẩm"
+                                                                className={`${styles.modernInput} ${styles.priceInput}`}
                                                             />
-                                                            {errors.lensPrice && (
-                                                                <div className={styles.errorMessage}>{errors.lensPrice}</div>
-                                                            )}
+                                                            {errors.lensPrice && <div className={styles.errorMessage}>{errors.lensPrice}</div>}
                                                         </div>
                                                     </div>
                                                 </Col>
@@ -456,7 +482,7 @@ const AddLens: React.FC = () => {
                                             <Row className="g-4">
                                                 <Col md={6}>
                                                     <div className={styles.modernFormGroup}>
-                                                    <div className={styles.inputIcon}>
+                                                        <div className={styles.inputIcon}>
                                                             <Package className={styles.fieldIcon} size={18} />
                                                             <Input
                                                                 id="quantity"
@@ -501,7 +527,7 @@ const AddLens: React.FC = () => {
                                             </Row>
 
                                             <Row className="g-4">
-                                                <Col md={6}>
+                                                <Col md={12}>  {/* Thay đổi từ md={6} thành md={12} */}
                                                     <div className={styles.modernFormGroup}>
                                                         <div className={styles.inputIcon}>
                                                             <Grid className={styles.fieldIcon} size={18} />
@@ -528,8 +554,12 @@ const AddLens: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 </Col>
-                                                <Col md={6}>
-                                                    <div className={styles.modernSwitch}>
+                                            </Row>
+
+                                            {/* Tách status thành một Row riêng */}
+                                            <Row>
+                                                <Col>
+                                                    <div className={`${styles.modernSwitch} mt-4`}>
                                                         <Input
                                                             id="status"
                                                             name="status"
@@ -577,17 +607,17 @@ const AddLens: React.FC = () => {
                                             </div>
 
                                             <div className={styles.formActions}>
-                                                <Button 
-                                                    color="light" 
+                                                <Button
+                                                    color="light"
                                                     onClick={() => router.back()}
                                                     className={styles.cancelButton}
                                                 >
-                                                    <ArrowLeft size={14} className="me-2" /> 
+                                                    <ArrowLeft size={14} className="me-2" />
                                                     Cancel
                                                 </Button>
-                                                <Button 
-                                                    color="primary" 
-                                                    onClick={handleSave} 
+                                                <Button
+                                                    color="primary"
+                                                    onClick={handleSave}
                                                     disabled={loading}
                                                     className={styles.saveButton}
                                                 >
@@ -616,13 +646,13 @@ const AddLens: React.FC = () => {
             {/* Image Upload Modal */}
             <AnimatePresence>
                 {showImageModal && (
-                    <motion.div 
+                    <motion.div
                         className={styles.modalBackdrop}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
-                        <motion.div 
+                        <motion.div
                             className={styles.modal}
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -661,7 +691,7 @@ const AddLens: React.FC = () => {
             {/* Loading Overlay */}
             <AnimatePresence>
                 {loading && (
-                    <motion.div 
+                    <motion.div
                         className={styles.loadingOverlay}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

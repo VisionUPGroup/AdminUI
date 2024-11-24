@@ -6,7 +6,8 @@ import { Card, CardBody, Container, Row, Col, Button, Badge } from 'reactstrap';
 import CommonBreadcrumb from '@/CommonComponents/CommonBreadcrumb';
 import { useRouter } from 'next/navigation';
 import CustomTable from '../../Digital/ProductListDigital/CustomTable';
-import styles from '../../Digital/ProductListDigital/ProductListDigital.module.scss';
+// import styles from '../../Digital/ProductListDigital/ProductListDigital.module.scss';
+import styles from '../styles/Lens.module.scss';
 import LensFilter from './LensFilter';
 import { FilterParams } from './LensFilter';
 import { useMemo } from 'react';
@@ -58,7 +59,7 @@ const LensList: React.FC = () => {
   const { fetchLenses, fetchLensTypes, deleteLens } = useLensService();
   const [filterParams, setFilterParams] = useState({
     PageIndex: 1,
-    PageSize: 50
+    PageSize: 10,
   });
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,7 +67,7 @@ const LensList: React.FC = () => {
   useEffect(() => {
     const params = {
       PageIndex: 1,
-      PageSize: 50,
+      PageSize: 10,
     };
 
     fetchLenses(params).then(data => {
@@ -223,7 +224,7 @@ const LensList: React.FC = () => {
       name: 'Image',
       cell: (row: Lens) => (
         <img
-          src={row.lensImages?.[0]?.url || '/placeholder-image.jpg'}
+          src={row.lensImages?.[0]?.url || 'https://www.zeiss.com/content/dam/vis-b2c/reference-master/images/result-pages/your-eyes/focal-types_single_vision.jpg/_jcr_content/renditions/original.image_file.1920.1440.4,0,2732,2047.file/focal-types_single_vision.jpg'}
           alt={row.lensName}
           className={styles.tableImage}
         />
@@ -331,7 +332,7 @@ const LensList: React.FC = () => {
               <div className={styles.imageWrapper}>
                 <div className={styles.productId}>#{lens.id}</div>
                 <img
-                  src={lens.lensImages[0]?.url}
+                  src={lens.lensImages[0]?.url || '/placeholder-image.jpg'}
                   alt={lens.lensName}
                   className={styles.productImage}
                 />
@@ -349,8 +350,8 @@ const LensList: React.FC = () => {
                 </div>
 
                 <div className={styles.typeAndRating}>
-                  <span className={styles.typeTag}>
-                    {lens.lensType.description}
+                  <span className={`${styles.typeTag} ${styles[lens.lensType?.description?.toLowerCase()]}`}>
+                    {lens.lensType?.description}
                   </span>
                   <div className={styles.rating}>
                     {renderStars(lens.rate)}
