@@ -169,6 +169,30 @@ export const useOrderService = () => {
     }
   };
 
+  const createOrderNow = async (orderData) => {
+    try {
+      const token = getToken();
+      const response = await axios.post(
+        `${baseUrl}/api/staff/orders/now`, 
+        orderData,
+        {
+          // params: {
+          //   accountId: orderData.accountID
+          // },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'accept': '*/*'
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
+  };
+
   return {
     fetchAllOrder,
     fetchStaffOrder,
@@ -177,5 +201,6 @@ export const useOrderService = () => {
     deleteOrder,
     updateOrderProcess,
     countOrder,
+    createOrderNow
   };
 };

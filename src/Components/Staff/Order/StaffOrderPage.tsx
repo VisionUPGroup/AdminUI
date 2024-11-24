@@ -81,6 +81,9 @@ const StaffOrderPage: React.FC = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [orderId, setOrderId] = useState<string>('');
   const [selectedVoucher, setSelectedVoucher] = useState<VoucherInfo | null>(null);
+  const userInfoString = localStorage.getItem('UserInfo');
+  const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
+  const accountID = userInfo?.user?.id || 0;
 
   // Services
   const eyeGlassService = useEyeGlassService();
@@ -98,6 +101,7 @@ const StaffOrderPage: React.FC = () => {
     setLoading(true);
     try {
       const orderData = {
+        accountID: selectedCustomer.id,
         receiverAddress: selectedCustomer.profiles[0]?.address || null,
         isDeposit: true,
         voucherID: selectedVoucher?.id || null,
