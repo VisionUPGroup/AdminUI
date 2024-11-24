@@ -1,4 +1,3 @@
-// Pagination.tsx
 import React from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
@@ -13,6 +12,9 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
 }) => {
+  // Không render pagination nếu không có đủ trang
+  if (totalPages <= 1) return null;
+
   const handlePageChange = (pageNumber: number) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       onPageChange(pageNumber);
@@ -30,10 +32,11 @@ const Pagination: React.FC<PaginationProps> = ({
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
+    // First page
     if (startPage > 1) {
       pageNumbers.push(
         <button
-          key="start-ellipsis"
+          key="first"
           className="pagination-number"
           onClick={() => handlePageChange(1)}
         >
@@ -42,13 +45,14 @@ const Pagination: React.FC<PaginationProps> = ({
       );
       if (startPage > 2) {
         pageNumbers.push(
-          <span key="start-ellipsis-dots" className="pagination-number">
+          <span key="start-ellipsis" className="pagination-number">
             ...
           </span>
         );
       }
     }
 
+    // Middle pages
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(
         <button
@@ -61,17 +65,18 @@ const Pagination: React.FC<PaginationProps> = ({
       );
     }
 
+    // Last page
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
         pageNumbers.push(
-          <span key="end-ellipsis-dots" className="pagination-number">
+          <span key="end-ellipsis" className="pagination-number">
             ...
           </span>
         );
       }
       pageNumbers.push(
         <button
-          key="end-ellipsis"
+          key="last"
           className="pagination-number"
           onClick={() => handlePageChange(totalPages)}
         >

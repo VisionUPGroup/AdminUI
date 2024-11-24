@@ -618,3 +618,78 @@
       }
     }
   }
+
+  // Thêm vào file KioskStyle.scss
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .empty-icon {
+    font-size: 64px;
+    color: #c79816;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: rgba(199, 152, 22, 0.1);
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+  }
+
+  h3 {
+    color: #2d3748;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: #718096;
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+
+  .create-btn {
+    background-color: #c79816;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: darken(#c79816, 5%);
+    }
+
+    .btn-icon {
+      font-size: 16px;
+    }
+  }
+}
+
+// Nếu muốn thêm animation cho icon khi không tìm thấy dữ liệu
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-state {
+  animation: fadeInUp 0.4s ease-out;
+}

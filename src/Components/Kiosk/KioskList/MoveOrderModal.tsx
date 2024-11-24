@@ -89,37 +89,38 @@ const MoveOrderModal: React.FC<MoveOrderModalProps> = ({
           </div>
 
           <div className="target-selection">
-            <div className="section-title">Select Target Kiosk</div>
-            <div className="kiosk-grid">
-              {kioskList
-                .filter(kiosk => kiosk.id !== currentKiosk?.id)
-                .map(kiosk => (
-                  <div
-                    key={kiosk.id}
-                    className={`kiosk-card selectable ${targetKioskId === kiosk.id ? 'selected' : ''}`}
-                    onClick={() => setTargetKioskId(kiosk.id)}
-                  >
-                    {targetKioskId === kiosk.id && (
-                      <div className="selected-indicator">
-                        <FaCheck />
-                      </div>
-                    )}
-                    <div className="kiosk-icon">
-                      <FaStore />
-                    </div>
-                    <div className="kiosk-details">
-                      <h5>{kiosk.name}</h5>
-                      <p>
-                        <FaMapMarkerAlt /> {kiosk.address}
-                      </p>
-                      <span className={`status-badge ${kiosk.status ? 'active' : 'inactive'}`}>
-                        {kiosk.status ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+  <div className="section-title">Select Target Kiosk</div>
+  <div className="kiosk-grid">
+    {kioskList
+      .filter(kiosk => 
+        // Lọc các kiosk có status true và khác với kiosk hiện tại
+        kiosk.id !== currentKiosk?.id && kiosk.status === true
+      )
+      .map(kiosk => (
+        <div
+          key={kiosk.id}
+          className={`kiosk-card selectable ${targetKioskId === kiosk.id ? 'selected' : ''}`}
+          onClick={() => setTargetKioskId(kiosk.id)}
+        >
+          {targetKioskId === kiosk.id && (
+            <div className="selected-indicator">
+              <FaCheck />
             </div>
+          )}
+          <div className="kiosk-icon">
+            <FaStore />
           </div>
+          <div className="kiosk-details">
+            <h5>{kiosk.name}</h5>
+            <p>
+              <FaMapMarkerAlt /> {kiosk.address}
+            </p>
+            <span className="status-badge active">Active</span>
+          </div>
+        </div>
+      ))}
+  </div>
+</div>
         </div>
 
         <div className="modal-footer">

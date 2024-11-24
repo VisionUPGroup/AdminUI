@@ -15,7 +15,7 @@ interface KioskUpdateModalProps {
     email: string;
     openingHours: string;
     status: boolean;
-  }) => void;
+  }) => Promise<any>;
   kioskData: {
     id: number;
     name: string;
@@ -25,6 +25,19 @@ interface KioskUpdateModalProps {
     openingHours: string;
     status: boolean;
   } | null;
+}
+
+interface ApiError {
+  message: string;
+  errors?: { [key: string]: string[] };
+}
+
+interface FormError {
+  name?: string;
+  address?: string;
+  phoneNumber?: string;
+  email?: string;
+  openingHours?: string;
 }
 
 const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onSave, kioskData }) => {
@@ -38,14 +51,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
     status: true
   });
 
-  const [errors, setErrors] = useState({
-    name: '',
-    address: '',
-    phoneNumber: '',
-    email: '',
-    openingHours: ''
-  });
-
+  const [errors, setErrors] = useState<FormError>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -81,13 +87,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = {
-      name: '',
-      address: '',
-      phoneNumber: '',
-      email: '',
-      openingHours: ''
-    };
+    const newErrors: FormError = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Kiosk name is required';
@@ -129,16 +129,48 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
       toast.error('Please check all required fields');
       return;
     }
-
+  
     try {
       setIsSubmitting(true);
-      await onSave(formData);
-      toast.success('Kiosk updated successfully!');
-      setHasChanges(false);
-      toggle();
-    } catch (error) {
-      toast.error('Failed to update kiosk. Please try again.');
-      console.error('Error updating kiosk:', error);
+      const response = await onSave(formData);
+      
+      // Kiểm tra response status
+      if (response && response.status === 200) {
+        toast.success('Kiosk updated successfully!');
+        setHasChanges(false);
+        toggle();
+      } else {
+        // Nếu không phải status 200, xử lý như lỗi
+        throw new Error('Update failed');
+      }
+  
+    } catch (error: any) {
+      console.log('Error response:', error.response); // Để debug
+  
+      // Xử lý các trường hợp lỗi
+      if (error.response) {
+        // Kiểm tra status code 400
+        if (error.response.status === 400) {
+          toast.error("Name or Email or PhoneNumber is already exist");
+          return;
+        }
+  
+        const apiErrors = error.response.data;
+        
+        // Xử lý validation errors cho từng field
+        if (apiErrors.errors) {
+          const newErrors: FormError = {};
+          Object.entries(apiErrors.errors).forEach(([key, messages]: [string, any]) => {
+            newErrors[key.toLowerCase() as keyof FormError] = Array.isArray(messages) ? messages[0] : messages;
+          });
+          setErrors(newErrors);
+        }
+  
+        // Hiển thị message lỗi từ API
+        toast.error(apiErrors.message || 'Failed to update kiosk');
+      } else {
+        toast.error('Name or Email or PhoneNumber is already exist');
+      }
     } finally {
       setIsSubmitting(false);
     }
