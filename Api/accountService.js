@@ -5,30 +5,46 @@ export const useAccountService = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   // Fetch accounts by RoleID
-  const fetchAccountByRole = async (roleID, username = "", pageIndex = 1) => {
+  const fetchAccountByRole = async (roleID, username, pageIndex, status, phoneNumber) => {
     try {
       const token = getToken();
+      const params = {
+        RoleID: roleID,
+        PageIndex: pageIndex,
+        PageSize: 10, // Match with itemsPerPage in component
+        Descending: true
+      };
+
+      // Only add optional params if they have values
+      if (username) params.Username = username;
+      if (status !== undefined) params.Status = status;
+      if (phoneNumber) params.PhoneNumber = phoneNumber;
+
       const response = await axios.get(`${baseUrl}/api/accounts`, {
-        params: {
-          RoleID: roleID,
-          Username: username,
-          PageIndex: pageIndex,
-          PageSize: 10, // Số lượng items mỗi trang
-          Descending: true
-        },
+        params,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      return {
+        items: response.data.data || [],
+        totalItems: response.data.totalCount || 0,
+        currentPage: pageIndex,
+      };
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+      throw error;
+    }
+  };
   const fetchAccounts = async (params) => {
     try {
       console.log("Fetching accounts with params:", params);
       const response = await axios.get(`${baseUrl}/api/accounts`, {
         params: params,
         headers: {
-          Authorization: `Bearer ${getToken()}`
-        }
+          Authorization: `Bearer ${getToken()}`,
+        },
       });
       console.log("Accounts fetched successfully:", response.data);
       return response.data;
@@ -76,6 +92,7 @@ export const useAccountService = () => {
       throw error;
     }
   };
+
   const fetchAccountById = async (accountId) => {
     try {
       const token = getToken();
@@ -114,6 +131,7 @@ export const useAccountService = () => {
   };
 
   return {
+    fetchAccountByRole,
     fetchAccounts,
     fetchAccountById,
     updateAccount,

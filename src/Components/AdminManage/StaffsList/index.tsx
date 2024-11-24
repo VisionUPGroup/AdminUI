@@ -36,7 +36,6 @@ interface ApiResponse {
   currentPage: number;
 }
 
-
 const StaffsList: React.FC = () => {
   const { fetchAccountByRole, deleteAccount } = useAccountService();
   const [staffData, setStaffData] = useState<StaffData[]>([]);
@@ -44,94 +43,110 @@ const StaffsList: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
   >("all");
-  const [filteredStaffData, setFilteredStaffData] = useState<StaffData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  const fetchStaffData = async (page: number, search: string) => {
+  // Main function to fetch staff data
+  const fetchStaffData = async (
+    page: number,
+    search: string,
+    status: "all" | "active" | "inactive"
+  ) => {
     setIsLoading(true);
     try {
-      const response = await fetchAccountByRole(2, search, page);
+      let apiStatus;
+      if (status === "active") apiStatus = true;
+      else if (status === "inactive") apiStatus = false;
+
+      const response = await fetchAccountByRole(
+        2, // roleID for staff
+        search || undefined,
+        page,
+        apiStatus,
+        undefined
+      );
+
       setStaffData(response.items);
       setTotalItems(response.totalItems);
       setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
     } catch (error) {
       console.error("Failed to load staff data:", error);
+      setStaffData([]);
+      setTotalItems(0);
+      setTotalPages(0);
     } finally {
       setIsLoading(false);
     }
   };
-  useEffect(() => {
-    let filtered = [...staffData];
 
-    // Filter theo status
-    if (filterStatus !== "all") {
-      filtered = filtered.filter((staff) =>
-        filterStatus === "active" ? staff.status : !staff.status
-      );
-    }
-
-    setFilteredStaffData(filtered);
-  }, [staffData, filterStatus]);
-
-  useEffect(() => {
-    fetchStaffData(currentPage, searchTerm);
-  }, [currentPage, searchTerm]);
-
+  // Search handler with debounce
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setCurrentPage(1); // Reset về trang 1 khi search
+    const value = event.target.value;
+    setSearchTerm(value);
   };
 
+  // Handle Enter key press for search
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      setCurrentPage(1);
+      fetchStaffData(1, searchTerm, filterStatus);
+    }
+  };
+
+  // Filter handler
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
-    setCurrentPage(1); // Reset về trang 1 khi filter
+    setCurrentPage(1);
+    fetchStaffData(1, searchTerm, status);
   };
 
+  // Pagination handler
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  // Delete handler
   const handleDelete = async (staff: StaffData) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
+        title: "Are you sure?",
         text: `Do you want to delete staff "${staff.username}"?`,
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#c79816',
-        cancelButtonColor: 'black',
-        confirmButtonText: 'Yes, delete it!',
-        cancelButtonText: 'Cancel'
+        confirmButtonColor: "#c79816",
+        cancelButtonColor: "black",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
       });
 
       if (result.isConfirmed) {
-
-
         await deleteAccount(staff.id);
-        
-        // Show success message
         await Swal.fire({
-          title: 'Deleted!',
-          text: 'Staff has been deleted successfully.',
-          icon: 'success',
-          confirmButtonColor: '#c79816',
+          title: "Deleted!",
+          text: "Staff has been deleted successfully.",
+          icon: "success",
+          confirmButtonColor: "#c79816",
         });
-
-        // Refresh data
-        fetchStaffData(currentPage, searchTerm);
+        fetchStaffData(currentPage, searchTerm, filterStatus);
       }
     } catch (error) {
       console.error("Failed to delete staff:", error);
       Swal.fire({
-        title: 'Error!',
-        text: 'Failed to delete staff. Please try again.',
-        icon: 'error'
+        title: "Error!",
+        text: "Failed to delete staff. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#c79816",
       });
     }
   };
+
+  // Effect for page changes
+  useEffect(() => {
+    fetchStaffData(currentPage, searchTerm, filterStatus);
+  }, [currentPage]);
 
   return (
     <div className="staff-management">
@@ -144,12 +159,12 @@ const StaffsList: React.FC = () => {
               <p>Manage and monitor your staff accounts</p>
             </div>
           </div>
-          {/* <div className="header-actions">
+          <div className="header-actions">
             <button className="create-btn">
               <FaPlus className="btn-icon" />
               Add New Staff
             </button>
-          </div> */}
+          </div>
         </div>
 
         {/* Stats Section */}
@@ -184,6 +199,7 @@ const StaffsList: React.FC = () => {
         {/* Main Content Section */}
         <div className="content-section">
           <div className="content-header">
+            {/* Search Box */}
             <div className="search-box">
               <FaSearch className="search-icon" />
               <input
@@ -191,29 +207,26 @@ const StaffsList: React.FC = () => {
                 placeholder="Search staff..."
                 value={searchTerm}
                 onChange={handleSearch}
+                onKeyPress={handleKeyPress}
               />
             </div>
+
+            {/* Filter Buttons */}
             <div className="filters">
               <button
-                className={`filter-btn ${
-                  filterStatus === "all" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
                 onClick={() => handleFilter("all")}
               >
                 All Staff
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "active" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "active" ? "active" : ""}`}
                 onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "inactive" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "inactive" ? "active" : ""}`}
                 onClick={() => handleFilter("inactive")}
               >
                 Inactive
@@ -221,73 +234,90 @@ const StaffsList: React.FC = () => {
             </div>
           </div>
 
+          {/* Table Content */}
           {isLoading ? (
-            <div className="loading-spinner">Loading...</div>
+            <div className="loading-spinner">
+              <div className="spinner-ring"></div>
+              <div className="loading-text">Loading...</div>
+            </div>
           ) : (
-            <>
+            <div className="table-wrapper">
               <div className="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Staff Information</th>
-                      <th>Role</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredStaffData.map((staff) => (
-                      <tr key={staff.id}>
-                        <td>
-                          <div className="staff-info">
-                            <div className="staff-icon">
-                              <FaRegUserCircle />
-                            </div>
-                            <div className="staff-details">
-                              <div className="name">{staff.username}</div>
-                              <div className="email">{staff.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{staff.role.name}</td>
-                        <td>
-                          <span
-                            className={`status-badge ${
-                              staff.status ? "active" : "inactive"
-                            }`}
-                          >
-                            {staff.status ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="actions">
-                            <button className="edit-btn">
-                              <FaPen />
-                            </button>
-                            <button 
-                  className={`delete-btn ${!staff.status ? 'disabled' : ''}`}
-                  disabled={!staff.status}
-                  onClick={() => staff.status && handleDelete(staff)}
-                  title={!staff.status ? "Cannot delete inactive staff" : "Delete staff"}
-                >
-                  <FaTrash />
-                </button>
-                          </div>
-                        </td>
+                {staffData.length > 0 ? (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Staff Information</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {staffData.map((staff) => (
+                        <tr key={staff.id}>
+                          <td>
+                            <div className="staff-info">
+                              <div className="staff-icon">
+                                <FaRegUserCircle />
+                              </div>
+                              <div className="staff-details">
+                                <div className="name">{staff.username}</div>
+                                <div className="email">{staff.email}</div>
+                                <div className="phone">{staff.phoneNumber}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{staff.role.name}</td>
+                          <td>
+                            <span
+                              className={`status-badge ${
+                                staff.status ? "active" : "inactive"
+                              }`}
+                            >
+                              {staff.status ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="actions">
+                              <button className="edit-btn">
+                                <FaPen />
+                              </button>
+                              <button 
+                                className={`delete-btn ${!staff.status ? 'disabled' : ''}`}
+                                disabled={!staff.status}
+                                onClick={() => staff.status && handleDelete(staff)}
+                                title={!staff.status ? "Cannot delete inactive staff" : "Delete staff"}
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="not-found">
+                    <FaSearch className="not-found-icon" />
+                    <h3>No Results Found</h3>
+                    <p>
+                      We couldn't find any staff matching your search criteria
+                    </p>
+                  </div>
+                )}
               </div>
 
-              <div className="pagination-wrapper">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            </>
+              {staffData.length > 0 && (
+                <div className="pagination-wrapper">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

@@ -145,27 +145,29 @@ const SalesOrders: React.FC = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-  
-      const data = await fetchStaffOrder("", statusFilter, currentPage);
+      
+      // Gọi API với các params filter
+      const data = await fetchStaffOrder(searchTerm, statusFilter, currentPage);
+      
+      // Cập nhật tổng số items và set lại data
       setTotalItems(data.totalItems);
+      
       const formattedData = await Promise.all(
         data.items.map(async (order: any) => {
-          // Fetch voucher information
           const voucherResponse = order.voucherID
             ? await fetchVoucherById(order.voucherID)
             : null;
           const voucherName = voucherResponse ? voucherResponse.name : null;
   
-          // Fetch account information
-          let username = "Unknown"; // Giá trị mặc định
+          let username = "Unknown";
           try {
             const accountResponse = await fetchAccountById(order.accountID);
-            // Kiểm tra và lấy username từ response
             username = accountResponse?.username || "Unknown";
           } catch (error) {
             console.error(`Error fetching username for account ${order.accountID}:`, error);
           }
   
+     
           return {
             id: order.id,
             accountID: order.accountID,
@@ -220,12 +222,11 @@ const SalesOrders: React.FC = () => {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const searchValue = event.target.value;
     setSearchTerm(searchValue);
+    setCurrentPage(1); // Reset về trang 1 khi search
   };
-
-  const handleStatusFilterChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleStatusFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(event.target.value);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi status
   };
   const handleDeleteOrder = async (orderId: number) => {
     try {
@@ -266,37 +267,24 @@ const SalesOrders: React.FC = () => {
   // Filter orders based on search and status
   useEffect(() => {
     let filtered = orderData;
-
+  
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (order) =>
           order.code.toLowerCase().includes(searchLower) ||
-        order.username?.toLowerCase().includes(searchLower) ||
+          order.username?.toLowerCase().includes(searchLower) ||
           order.id.toString().includes(searchLower) ||
           order.receiverAddress?.toLowerCase().includes(searchLower)
       );
     }
-
+  
     if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => {
-        switch (statusFilter) {
-          case "pending":
-            return order.process === 0;
-          case "processing":
-            return order.process === 1 || order.process === 2;
-          case "completed":
-            return order.process === 4;
-          case "cancelled":
-            return order.process === 5;
-          default:
-            return true;
-        }
-      });
+      filtered = filtered.filter((order) => order.process.toString() === statusFilter);
     }
-
+  
     setFilteredOrders(filtered);
-    // Khi filter thay đổi, reset về trang 1
+    setTotalItems(filtered.length);
   }, [searchTerm, statusFilter, orderData]);
 
   const handleOrderSelect = async (

@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import ProfileManagementModal from "./ProfileManagementModal";
 import {
   FaPlus,
@@ -27,7 +27,7 @@ import { useProfileService } from "../../../../Api/profileService";
 import ExpandableUserRow from "./ExpandableUserRow";
 import RefractionModal from "./RefractionRecordsModal";
 import UserUpdateModal from "./UserUpdateModal";
-
+import EnhancedSearch from "./EnhancedSearch";
 interface Role {
   id: number;
   name: string;
@@ -99,34 +99,35 @@ const UsersList: React.FC = () => {
   const [profileTotalPages, setProfileTotalPages] = useState(1);
   const [profileItemsPerPage] = useState(6); // Số profiles trên mỗi trang
 
-  const getUserData = async (page: number, search: string, status?: string) => {
+  const getUserData = async (
+    page: number,
+    searchTerm: string,
+    status?: "all" | "active" | "inactive"
+  ) => {
     setIsLoading(true);
     try {
-      const response = await fetchAccountByRole(1, search, page);
-      let filteredData = response.items;
-      if (filterStatus === null) {
-        filteredData = response.items;
-      }
-      if (filterStatus === "active") {
-        filteredData = response.items.filter(
-          (user: { status: any }) => user.status
-        );
-      } else if (filterStatus === "inactive") {
-        filteredData = response.items.filter(
-          (user: { status: any }) => !user.status
-        );
-      }
+      let apiStatus;
+      if (status === "active") apiStatus = true;
+      else if (status === "inactive") apiStatus = false;
 
-      setUserData(filteredData);
-      setTotalItems(response.totalItems);
-      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
+      const response = await fetchAccountByRole(
+        1,
+        searchTerm || undefined,
+        page,
+        apiStatus,
+        undefined
+      );
+
+      if (response?.items) {
+        setUserData(response.items);
+        setTotalItems(response.totalItems);
+        setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
+      }
     } catch (error) {
       console.error("Failed to load user data:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to load user data. Please try again.",
-      });
+      setUserData([]);
+      setTotalItems(0);
+      setTotalPages(0);
     } finally {
       setIsLoading(false);
     }
@@ -316,10 +317,13 @@ const UsersList: React.FC = () => {
     setUserProfiles([]);
   };
 
-  useEffect(() => {
-    getUserData(currentPage, searchTerm);
-  }, [currentPage, searchTerm, filterStatus]);
+  // useEffect(() => {
+  //   getUserData(currentPage, searchTerm);
+  // }, [currentPage, searchTerm, filterStatus]);
 
+  useEffect(() => {
+    getUserData(currentPage, searchTerm, filterStatus);
+  }, [currentPage]);
   const handleCreateUser = () => {
     setEditingUser(null);
     setModalOpen(true);
@@ -371,8 +375,19 @@ const UsersList: React.FC = () => {
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
-    setCurrentPage(1); // Reset to first page when searching
   };
+
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      setCurrentPage(1);
+      getUserData(1, searchTerm, filterStatus);
+    }
+  };
+  const handleSearchSubmit = () => {
+    setCurrentPage(1); // Reset về trang 1 khi search
+    getUserData(1, searchTerm, filterStatus);
+  };
+ 
 
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
@@ -469,15 +484,12 @@ const UsersList: React.FC = () => {
         {/* Main Content Section */}
         <div className="content-section">
           <div className="content-header">
-            <div className="search-box">
-              <FaSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search users..."
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-            </div>
+          <EnhancedSearch
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
+        onKeyPress={handleKeyPress}
+        placeholderText="Search by username, email, phone..."
+      />
             <div className="filters">
               <button
                 className={`filter-btn ${
@@ -513,76 +525,86 @@ const UsersList: React.FC = () => {
               <div className="table-wrapper">
                 {" "}
                 <div className="table-container">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>User Information</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userData.map((user) => (
-                        <tr
-                          key={user.id}
-                          className={`user-row ${
-                            selectedUserId === user.id ? "selected" : ""
-                          }`}
-                        >
-                          <td>
-                            <div className="user-info">
-                              <div className="user-icon">
-                                <FaRegUserCircle />
-                              </div>
-                              <div className="user-details">
-                                <div className="name">{user.username}</div>
-                                <div className="email">{user.email}</div>
-                                <div className="phone">{user.phoneNumber}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td>{user.role.name}</td>
-                          <td>
-                            <span
-                              className={`status-badge ${
-                                user.status ? "active" : "inactive"
-                              }`}
-                            >
-                              {user.status ? "Active" : "Inactive"}
-                            </span>
-                          </td>
-                          <td>
-                            <div className="actions">
-                              <button
-                                className="view-btn"
-                                onClick={() => handleUserSelect(user)}
-                              >
-                                <FaIdCard />
-                              </button>
-                              <button
-                                className="edit-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingUser(user);
-                                  setUpdateModalOpen(true);
-                                }}
-                              >
-                                <FaPen />
-                              </button>
-                              <button
-                                className="delete-btn"
-                                onClick={() => handleUserDelete(user.id)}
-                                disabled={!user.status}
-                              >
-                                <FaTrash />
-                              </button>
-                            </div>
-                          </td>
+                  {userData.length > 0 ? (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>User Information</th>
+                          <th>Role</th>
+                          <th>Status</th>
+                          <th>Actions</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {userData.map((user) => (
+                          <tr
+                            key={user.id}
+                            className={`user-row ${
+                              selectedUserId === user.id ? "selected" : ""
+                            }`}
+                          >
+                            <td>
+                              <div className="user-info">
+                                <div className="user-icon">
+                                  <FaRegUserCircle />
+                                </div>
+                                <div className="user-details">
+                                  <div className="name">{user.username}</div>
+                                  <div className="email">{user.email}</div>
+                                  <div className="phone">
+                                    {user.phoneNumber}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td>{user.role.name}</td>
+                            <td>
+                              <span
+                                className={`status-badge ${
+                                  user.status ? "active" : "inactive"
+                                }`}
+                              >
+                                {user.status ? "Active" : "Inactive"}
+                              </span>
+                            </td>
+                            <td>
+                              <div className="actions">
+                                <button
+                                  className="view-btn"
+                                  onClick={() => handleUserSelect(user)}
+                                >
+                                  <FaIdCard />
+                                </button>
+                                <button
+                                  className="edit-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingUser(user);
+                                    setUpdateModalOpen(true);
+                                  }}
+                                >
+                                  <FaPen />
+                                </button>
+                                <button
+                                  className="delete-btn"
+                                  onClick={() => handleUserDelete(user.id)}
+                                  disabled={!user.status}
+                                >
+                                  <FaTrash />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="not-found">
+                      <FaSearch className="not-found-icon" />
+                      <h3>No Results Found</h3>
+                      <p>We couldn't find any users matching your search</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -722,12 +744,19 @@ const UsersList: React.FC = () => {
                             </div>
                           </div>
                         </div>
-
                         <div className="profile-actions">
                           <button
-                            className="view-records-btn"
+                            className={`view-records-btn ${
+                              !profile.status ? "disabled" : ""
+                            }`}
                             onClick={(e) =>
                               handleViewRefractionRecords(profile, e)
+                            }
+                            disabled={!profile.status}
+                            title={
+                              !profile.status
+                                ? "Cannot view inactive profile"
+                                : "View records"
                             }
                           >
                             <FaClinicMedical />
@@ -742,15 +771,33 @@ const UsersList: React.FC = () => {
                             <FaPen />
                           </button>
                           <button
-                            className="delete-btn"
+                            className={`delete-btn ${
+                              !profile.status ? "disabled" : ""
+                            }`}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteProfile(profile.id);
                             }}
+                            disabled={!profile.status}
+                            title={
+                              !profile.status
+                                ? "Cannot delete inactive profile"
+                                : "Delete profile"
+                            }
                           >
                             <FaTrash />
                           </button>
                         </div>
+
+                        {/* Thêm thông báo cho profile không active */}
+                        {!profile.status && (
+                          <div className="inactive-profile-notice">
+                            <span>
+                              Profile is inactive. View and delete actions are
+                              disabled.
+                            </span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

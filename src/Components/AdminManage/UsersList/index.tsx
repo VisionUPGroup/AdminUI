@@ -56,137 +56,96 @@ const UsersList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 10;
 
-  const getUserData = async (page: number, search: string) => {
+  const getUserData = async (
+    page: number,
+    search: string,
+    status: "all" | "active" | "inactive"
+  ) => {
     setIsLoading(true);
     try {
-      const response = await fetchAccountByRole(1, search, page);
+      let apiStatus;
+      if (status === "active") apiStatus = true;
+      else if (status === "inactive") apiStatus = false;
 
-      // Lọc dữ liệu theo trạng thái
-      let filteredData = response.items;
-      if (filterStatus === "active") {
-        filteredData = response.items.filter(
-          (user: { status: any }) => user.status
-        );
-      } else if (filterStatus === "inactive") {
-        filteredData = response.items.filter(
-          (user: { status: any }) => !user.status
-        );
-      }
-
-      setUserData(filteredData);
-      setTotalItems(response.totalItems);
-      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
-    } catch (error) {
-      console.error("Failed to load user data:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to load user data. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getUserData(currentPage, searchTerm);
-  }, [currentPage, searchTerm, filterStatus]);
-
-  const handleCreateUser = () => {
-    setEditingUser(null);
-    setModalOpen(true);
-  };
-
-  const handleEdit = (user: UserData) => {
-    setEditingUser(user);
-    setUpdateModalOpen(true); // Mở modal update thay vì modal create
-  };
-
-  const handleSaveUser = async (userData: {
-    username: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-  }) => {
-    try {
-      setIsLoading(true);
-      const response = await register(
-        userData.username,
-        userData.password,
-        userData.email,
-        userData.phoneNumber
+      const response = await fetchAccountByRole(
+        1,
+        search || undefined,
+        page,
+        apiStatus,
+        undefined
       );
 
       if (response) {
-        await Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "User has been registered successfully!",
-          confirmButtonText: "OK",
-        });
-        
-        // Refresh data after successful creation
-        await getUserData(currentPage, searchTerm);
-        setModalOpen(false);
+        setUserData(response.items);
+        setTotalItems(response.totalItems);
+        setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
       }
-    } catch (error: any) {
-      console.error("Error registering user:", error);
-      let errorMessage = "Failed to register user. Please try again.";
-
-      if (error.response?.status === 400) {
-        errorMessage = error.response.data?.message || 
-          Object.values(error.response.data.errors || {}).flat().join("\n");
-      }
-
-      await Swal.fire({
-        icon: "error",
-        title: "Registration Failed",
-        html: errorMessage.replace(/\n/g, "<br>"),
-        confirmButtonColor: "#d33",
-      });
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+      setUserData([]);
+      setTotalItems(0);
+      setTotalPages(0);
+    
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Effect for fetching data
+  useEffect(() => {
+    getUserData(currentPage, searchTerm, filterStatus);
+  }, [currentPage]);
+
+  // Search handlers
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
-    setCurrentPage(1);
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      setCurrentPage(1);
+      getUserData(1, searchTerm, filterStatus);
+    }
+  };
+
+  // Filter handler
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
     setCurrentPage(1);
+    getUserData(1, searchTerm, status);
   };
 
+  // Pagination handler
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  // Delete handler
   const handleDelete = async (userId: number) => {
     try {
       const result = await Swal.fire({
         title: "Are you sure?",
-        text: `Do you want to delete user ?`,
+        text: "Do you want to delete this user?",
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c79816",
-        cancelButtonColor: "Black",
+        cancelButtonColor: "black",
         confirmButtonText: "Yes, delete it!",
       });
 
       if (result.isConfirmed) {
         setIsLoading(true);
         await deleteAccount(userId);
-        await getUserData(currentPage, searchTerm);
-
+        
         await Swal.fire({
           icon: "success",
           title: "Deleted!",
           text: "User has been deleted successfully.",
           confirmButtonColor: "#c79816",
         });
+        
+        getUserData(currentPage, searchTerm, filterStatus);
       }
     } catch (error: any) {
       console.error("Error deleting user:", error);
@@ -262,29 +221,24 @@ const UsersList: React.FC = () => {
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={handleSearch}
+                onKeyPress={handleKeyPress}
               />
             </div>
             <div className="filters">
               <button
-                className={`filter-btn ${
-                  filterStatus === "all" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
                 onClick={() => handleFilter("all")}
               >
                 All Users
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "active" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "active" ? "active" : ""}`}
                 onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${
-                  filterStatus === "inactive" ? "active" : ""
-                }`}
+                className={`filter-btn ${filterStatus === "inactive" ? "active" : ""}`}
                 onClick={() => handleFilter("inactive")}
               >
                 Inactive
@@ -293,96 +247,101 @@ const UsersList: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="loading-spinner">Loading...</div>
+            <div className="loading-spinner">
+              <div className="spinner-ring"></div>
+              <div className="loading-text">Loading...</div>
+            </div>
           ) : (
-            <>
+            <div className="table-wrapper">
               <div className="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>User Information</th>
-                      <th>Role</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {userData.map((user) => (
-                      <tr key={user.id}>
-                        <td>
-                          <div className="user-info">
-                            <div className="user-icon">
-                              <FaRegUserCircle />
-                            </div>
-                            <div className="user-details">
-                              <div className="name">{user.username}</div>
-                              <div className="email">{user.email}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{user.role.name}</td>
-                        <td>
-                          <span
-                            className={`status-badge ${
-                              user.status ? "active" : "inactive"
-                            }`}
-                          >
-                            {user.status ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="actions">
-                            <button
-                              className="edit-btn"
-                              onClick={() => handleEdit(user)}
-                            >
-                              <FaPen />
-                            </button>
-                            <button
-                              className={`delete-btn ${
-                                !user.status ? "disabled" : ""
-                              }`}
-                              onClick={() => handleDelete(user.id)}
-                              disabled={!user.status}
-                              title={
-                                !user.status
-                                  ? "Cannot delete inactive user"
-                                  : "Delete user"
-                              }
-                            >
-                              <FaTrash />
-                            </button>
-                          </div>
-                        </td>
+                {userData.length > 0 ? (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>User Information</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {userData.map((user) => (
+                        <tr key={user.id}>
+                          <td>
+                            <div className="user-info">
+                              <div className="user-icon">
+                                <FaRegUserCircle />
+                              </div>
+                              <div className="user-details">
+                                <div className="name">{user.username}</div>
+                                <div className="email">{user.email}</div>
+                                <div className="phone">{user.phoneNumber}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{user.role.name}</td>
+                          <td>
+                            <span
+                              className={`status-badge ${
+                                user.status ? "active" : "inactive"
+                              }`}
+                            >
+                              {user.status ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="actions">
+                              <button
+                                className="edit-btn"
+                                onClick={() => {
+                                  setEditingUser(user);
+                                  setUpdateModalOpen(true);
+                                }}
+                              >
+                                <FaPen />
+                              </button>
+                              <button
+                                className={`delete-btn ${!user.status ? "disabled" : ""}`}
+                                onClick={() => user.status && handleDelete(user.id)}
+                                disabled={!user.status}
+                                title={!user.status ? "Cannot delete inactive user" : "Delete user"}
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="not-found">
+                    <FaSearch className="not-found-icon" />
+                    <h3>No Results Found</h3>
+                    <p>We couldn't find any users matching your search criteria</p>
+                  </div>
+                )}
               </div>
 
-              <div className="pagination-wrapper">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            </>
+              {userData.length > 0 && (
+                <div className="pagination-wrapper">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      {/* <UserModal
-        isOpen={modalOpen}
-        toggle={toggleModal}
-        onSave={handleSaveUser}
-        // editingUser={editingUser}
-      /> */}
-          <UserUpdateModal
+      <UserUpdateModal
         isOpen={updateModalOpen}
         toggle={() => setUpdateModalOpen(false)}
         onSave={() => {
-          getUserData(currentPage, searchTerm);
+          getUserData(currentPage, searchTerm, filterStatus);
           setUpdateModalOpen(false);
         }}
         editingUser={editingUser}

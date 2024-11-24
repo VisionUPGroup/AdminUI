@@ -2,6 +2,7 @@
   "name": "multikart-next",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://visionup.azurewebsites.net",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -255,6 +255,38 @@
 
     .table-container {
       padding: 1.5rem;
+      .not-found {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 16px;
+        min-height: 300px; // Thêm chiều cao tối thiểu
+        
+        .not-found-icon {
+          font-size: 4rem;
+          color: #c79816; // Sử dụng mã màu trực tiếp
+          opacity: 0.3; // Điều chỉnh độ trong suốt riêng
+          margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: #000000; // Sử dụng primary-dark
+          margin: 0 0 0.5rem;
+        }
+        
+        p {
+          font-size: 1rem;
+          color: rgba(0, 0, 0, 0.6); // Sử dụng primary-dark với opacity
+          margin: 0;
+          max-width: 300px;
+        }
+      }
 
       table {
         width: 100%;
@@ -557,6 +589,18 @@
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
+    .inactive-profile-notice {
+      padding: 8px 12px;
+      background: rgba(#000, 0.05);
+      color: rgba(#000, 0.6);
+      font-size: 0.85rem;
+      text-align: center;
+      border-radius: 4px;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     .profile-header {
       background: linear-gradient(
@@ -679,12 +723,53 @@
         }
 
         &.delete-btn {
-          background: rgba(#ff4444, 0.1);
-          color: #ff4444;
-
-          &:hover {
-            background: #ff4444;
-            color: white;
+          &.disabled {
+            background: rgba(#ff4444, 0.05) !important;
+            color: rgba(#ff4444, 0.3) !important;
+            cursor: not-allowed !important;
+            position: relative;
+    
+            &:hover {
+              background: rgba(#ff4444, 0.05) !important;
+              color: rgba(#ff4444, 0.3) !important;
+    
+              &::after {
+                content: "Cannot delete inactive profile";
+                position: absolute;
+                bottom: calc(100% + 10px);
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                pointer-events: none;
+                z-index: 1000;
+              }
+    
+              &::before {
+                content: "";
+                position: absolute;
+                bottom: calc(100% + 4px);
+                left: 50%;
+                transform: translateX(-50%);
+                border: 6px solid transparent;
+                border-top-color: rgba(0, 0, 0, 0.8);
+                z-index: 1000;
+              }
+            }
+          }
+    
+          &:not(.disabled) {
+            background: rgba(#ff4444, 0.1);
+            color: #ff4444;
+    
+            &:hover {
+              background: #ff4444;
+              color: white;
+            }
           }
         }
 
@@ -1146,4 +1231,5 @@
   .loading-text {
     font-size: 0.9rem;
   }
+  
 }
