@@ -160,10 +160,10 @@ const StaffsList: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <button className="create-btn">
+            {/* <button className="create-btn">
               <FaPlus className="btn-icon" />
               Add New Staff
-            </button>
+            </button> */}
           </div>
         </div>
 

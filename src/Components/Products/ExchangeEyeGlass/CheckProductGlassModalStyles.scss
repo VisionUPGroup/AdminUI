@@ -1,71 +1,368 @@
+// Constants & Mixins
+$primary-gold: #c79816;
+$secondary-gold: #e5b012;
+$dark-gold: darken($primary-gold, 15%);
+$light-gold: #f4d03f;
+$primary-black: #1a1a1a;
+$secondary-black: #2c2c2c;
+$primary-white: #ffffff;
+$off-white: #f9f9f9;
+
+// Mixins for reusable styles
+@mixin card-hover {
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  &:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 15px 30px rgba($primary-black, 0.15);
+  }
+}
+
+@mixin glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba($primary-white, 0.9);
+}
+
+@mixin gold-gradient {
+  background: linear-gradient(135deg, $primary-gold, $dark-gold);
+}
+
 .check-product-glass-modal {
-    .modal-header {
-      background-color: #007bff;
-      color: #fff;
-      font-weight: bold;
+  .modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba($primary-black, 0.2);
+    overflow: hidden;
+    background: $off-white;
+  }
+
+  .modal-header {
+    @include gold-gradient;
+    padding: 2rem;
+    border: none;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
-  
-    .modal-body {
-      .product-glass-id-input {
-        font-size: 16px;
-        padding: 8px 12px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+
+    .modal-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: $primary-white;
+      text-shadow: 2px 2px 4px rgba($primary-black, 0.2);
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      &::before {
+        content: '🔍';
+        font-size: 1.8rem;
       }
-  
-      .product-data-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-gap: 20px;
-  
-        .order-info-card,
-        .order-details-card,
-        .account-details-card,
-        .kiosk-details-card {
-          border: 1px solid #ccc;
-          border-radius: 4px;
-  
-          .card-header {
-            background-color: #f5f5f5;
-            font-weight: bold;
-            padding: 12px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: $primary-white;
+        border-radius: 2px;
+      }
+    }
+
+    .close {
+      position: absolute;
+      right: 1.5rem;
+      top: 1.5rem;
+      background: rgba($primary-white, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba($primary-white, 0.3);
+        transform: rotate(90deg);
+      }
+
+      span {
+        color: $primary-white;
+        font-size: 1.5rem;
+        font-weight: 300;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 2.5rem;
+    background: $primary-white;
+
+    .search-section {
+      position: relative;
+      margin-bottom: 2.5rem;
+
+      .product-glass-id-input {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        font-size: 1.1rem;
+        border: 2px solid rgba($primary-black, 0.08);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        background: $off-white;
+        padding-left: 3.5rem;
+
+        &:focus {
+          border-color: $primary-gold;
+          box-shadow: 0 0 0 4px rgba($primary-gold, 0.1);
+          background: $primary-white;
+        }
+
+        &::placeholder {
+          color: rgba($primary-black, 0.4);
+          font-weight: 500;
+        }
+      }
+
+      &::before {
+        content: '🔍';
+        position: absolute;
+        left: 1.2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+        opacity: 0.5;
+      }
+    }
+
+    .product-data-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      perspective: 1000px;
+
+      .order-info-card,
+      .order-details-card,
+      .account-details-card,
+      .kiosk-details-card {
+        @include card-hover;
+        border: none;
+        border-radius: 20px;
+        background: $primary-white;
+        box-shadow: 0 8px 20px rgba($primary-black, 0.08);
+        overflow: hidden;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 6px;
+          @include gold-gradient;
+        }
+
+        .card-header {
+          background: $secondary-black;
+          color: $primary-white;
+          padding: 1.5rem;
+          font-size: 1.2rem;
+          font-weight: 700;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+
+          &::before {
+            content: '📋';
+            font-size: 1.4rem;
           }
-  
-          .card-body {
-            padding: 16px;
-  
-            .info-item {
-              display: flex;
-              justify-content: space-between;
-              margin-bottom: 8px;
-  
-              .label {
-                font-weight: bold;
-              }
-  
-              .value {
-                color: #555;
-              }
+        }
+
+        .card-body {
+          padding: 1.5rem;
+
+          .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid rgba($primary-black, 0.06);
+            transition: all 0.3s ease;
+
+            &:hover {
+              background: rgba($primary-gold, 0.05);
+              transform: translateX(5px);
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .label {
+              font-weight: 600;
+              color: $secondary-black;
+              font-size: 0.95rem;
+            }
+
+            .value {
+              font-weight: 500;
+              color: $primary-gold;
+              font-size: 0.95rem;
+              background: rgba($primary-gold, 0.1);
+              padding: 0.4rem 0.8rem;
+              border-radius: 8px;
+              min-width: 100px;
+              text-align: center;
             }
           }
         }
       }
-  
-      .error-alert {
-        margin-top: 20px;
-        font-size: 16px;
-      }
     }
-  
-    .modal-footer {
-      .check-button {
-        font-size: 16px;
-        padding: 8px 16px;
-      }
-  
-      .close-button {
-        font-size: 16px;
-        padding: 8px 16px;
+
+    .error-alert {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border-radius: 15px;
+      background: rgba(#ff4444, 0.1);
+      border-left: 6px solid #ff4444;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      
+      &::before {
+        content: '⚠️';
+        font-size: 1.5rem;
       }
     }
   }
+
+  .modal-footer {
+    padding: 1.5rem 2rem;
+    background: $off-white;
+    border-top: 1px solid rgba($primary-black, 0.08);
+    display: flex;
+    gap: 1rem;
+
+    .check-button,
+    .close-button {
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      min-width: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .check-button {
+      @include gold-gradient;
+      color: $primary-white;
+      border: none;
+      box-shadow: 0 8px 15px rgba($primary-gold, 0.3);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px rgba($primary-gold, 0.4);
+      }
+
+      &::before {
+        content: '✓';
+        font-weight: bold;
+      }
+    }
+
+    .close-button {
+      background: transparent;
+      border: 2px solid rgba($primary-black, 0.1);
+      color: $secondary-black;
+
+      &:hover {
+        background: rgba($primary-black, 0.05);
+        border-color: $secondary-black;
+      }
+
+      &::before {
+        content: '×';
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 992px) {
+  .check-product-glass-modal {
+    .modal-body {
+      padding: 1.5rem;
+
+      .product-data-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .check-product-glass-modal {
+    .modal-header {
+      padding: 1.5rem;
+      
+      .modal-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    .modal-body {
+      padding: 1.25rem;
+    }
+
+    .modal-footer {
+      flex-direction: column;
+      
+      .check-button,
+      .close-button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Custom Scrollbar
+.modal-body {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba($primary-gold, 0.1);
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $primary-gold;
+    border-radius: 5px;
+    border: 3px solid $primary-white;
+
+    &:hover {
+      background: $dark-gold;
+    }
+  }
+}

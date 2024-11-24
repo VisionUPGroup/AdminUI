@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input, Alert, Card, CardBody, CardHeader } from "reactstrap";
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Input,
+  Alert,
+  Card,
+  CardBody,
+  CardHeader,
+} from "reactstrap";
 import { useExchangeEyeGlassService } from "../../../../Api/exchangeEyeGlassService";
 import "./CheckProductGlassModalStyles.scss";
 
@@ -8,7 +19,10 @@ interface CheckProductGlassModalProps {
   toggle: () => void;
 }
 
-const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen, toggle }) => {
+const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({
+  isOpen,
+  toggle,
+}) => {
   const { checkProductGlass } = useExchangeEyeGlassService();
   const [productGlassID, setProductGlassID] = useState<number | null>(null);
   const [productData, setProductData] = useState<any | null>(null);
@@ -20,7 +34,7 @@ const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen,
     2: "Shipping",
     3: "Delivered",
     4: "Completed",
-    5: "Cancelled"
+    5: "Cancelled",
   };
 
   const getProcessStatusString = (status: number | undefined): string => {
@@ -57,16 +71,31 @@ const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen,
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} className="check-product-glass-modal">
-      <ModalHeader toggle={toggle} className="modal-header">Check Product Glass</ModalHeader>
+    <Modal
+      isOpen={isOpen}
+      toggle={toggle}
+      className="check-product-glass-modal"
+    >
+      <ModalHeader toggle={toggle} className="modal-header">
+        Check Product Glass
+      </ModalHeader>
       <ModalBody className="modal-body">
         <Input
           type="number"
+          min="0" // Thêm min="0" để ngăn số âm
           placeholder="Enter Product Glass ID"
           value={productGlassID ?? ""}
-          onChange={(e) => setProductGlassID(e.target.value ? parseInt(e.target.value, 10) : null)}
-          min={-2147483648}
-          max={2147483647}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === "" || parseInt(value) >= 0) {
+              setProductGlassID(value ? parseInt(value, 10) : null);
+            }
+          }}
+          onKeyPress={(e) => {
+            if (e.key === "-") {
+              e.preventDefault();
+            }
+          }}
           className="product-glass-id-input mb-3"
         />
 
@@ -81,35 +110,53 @@ const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen,
                 </div>
                 <div className="info-item">
                   <span className="label">Order Time:</span>
-                  <span className="value">{productData.orderTime ? new Date(productData.orderTime).toLocaleString() : "undefined"}</span>
+                  <span className="value">
+                    {productData.orderTime
+                      ? new Date(productData.orderTime).toLocaleString()
+                      : "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Status:</span>
-                  <span className="value">{productData.status ? "Active" : "Inactive"}</span>
+                  <span className="value">
+                    {productData.status ? "Active" : "Inactive"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Receiver Address:</span>
-                  <span className="value">{productData.receiverAddress ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.receiverAddress ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Total:</span>
-                  <span className="value">{productData.total ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.total ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Voucher ID:</span>
-                  <span className="value">{productData.voucherID ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.voucherID ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Is Deposit:</span>
-                  <span className="value">{productData.isDeposit ? "Yes" : "No"}</span>
+                  <span className="value">
+                    {productData.isDeposit ? "Yes" : "No"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Code:</span>
-                  <span className="value">{productData.code ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.code ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Process Status:</span>
-                  <span className="value">{getProcessStatusString(productData.process)}</span>
+                  <span className="value">
+                    {getProcessStatusString(productData.process)}
+                  </span>
                 </div>
               </CardBody>
             </Card>
@@ -121,43 +168,72 @@ const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen,
                   <>
                     <div className="info-item">
                       <span className="label">Order Detail ID:</span>
-                      <span className="value">{productData.orderDetails.id ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.id ?? "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Status:</span>
-                      <span className="value">{productData.orderDetails.status ? "Active" : "Inactive"}</span>
+                      <span className="value">
+                        {productData.orderDetails.status
+                          ? "Active"
+                          : "Inactive"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Quantity:</span>
-                      <span className="value">{productData.orderDetails.quantity ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.quantity ?? "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Product Glass ID:</span>
-                      <span className="value">{productData.orderDetails.productGlass.id ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.id ??
+                          "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Eye Glass:</span>
-                      <span className="value">{productData.orderDetails.productGlass.eyeGlass?.name ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.eyeGlass?.name ??
+                          "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Price:</span>
-                      <span className="value">{productData.orderDetails.productGlass.eyeGlass?.price ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.eyeGlass
+                          ?.price ?? "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Left Lens Name:</span>
-                      <span className="value">{productData.orderDetails.productGlass.leftLen?.lensName ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.leftLen
+                          ?.lensName ?? "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Left Lens Price:</span>
-                      <span className="value">{productData.orderDetails.productGlass.leftLen?.lensPrice ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.leftLen
+                          ?.lensPrice ?? "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Right Lens Name:</span>
-                      <span className="value">{productData.orderDetails.productGlass.rightLen?.lensName ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.rightLen
+                          ?.lensName ?? "undefined"}
+                      </span>
                     </div>
                     <div className="info-item">
                       <span className="label">Right Lens Price:</span>
-                      <span className="value">{productData.orderDetails.productGlass.rightLen?.lensPrice ?? "undefined"}</span>
+                      <span className="value">
+                        {productData.orderDetails.productGlass.rightLen
+                          ?.lensPrice ?? "undefined"}
+                      </span>
                     </div>
                   </>
                 ) : (
@@ -171,19 +247,27 @@ const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen,
               <CardBody className="card-body">
                 <div className="info-item">
                   <span className="label">Account ID:</span>
-                  <span className="value">{productData.account?.id ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.account?.id ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Username:</span>
-                  <span className="value">{productData.account?.username ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.account?.username ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Phone Number:</span>
-                  <span className="value">{productData.account?.phoneNumber ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.account?.phoneNumber ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Status:</span>
-                  <span className="value">{productData.account?.status ? "Active" : "Inactive"}</span>
+                  <span className="value">
+                    {productData.account?.status ? "Active" : "Inactive"}
+                  </span>
                 </div>
               </CardBody>
             </Card>
@@ -193,21 +277,31 @@ const CheckProductGlassModal: React.FC<CheckProductGlassModalProps> = ({ isOpen,
               <CardBody className="card-body">
                 <div className="info-item">
                   <span className="label">Kiosk ID:</span>
-                  <span className="value">{productData.kiosk?.id ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.kiosk?.id ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Name:</span>
-                  <span className="value">{productData.kiosk?.name ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.kiosk?.name ?? "undefined"}
+                  </span>
                 </div>
                 <div className="info-item">
                   <span className="label">Address:</span>
-                  <span className="value">{productData.kiosk?.address ?? "undefined"}</span>
+                  <span className="value">
+                    {productData.kiosk?.address ?? "undefined"}
+                  </span>
                 </div>
               </CardBody>
             </Card>
           </div>
-        ) : error && (
-          <Alert color="danger" className="error-alert">{error}</Alert>
+        ) : (
+          error && (
+            <Alert color="danger" className="error-alert">
+              {error}
+            </Alert>
+          )
         )}
       </ModalBody>
       <ModalFooter className="modal-footer">

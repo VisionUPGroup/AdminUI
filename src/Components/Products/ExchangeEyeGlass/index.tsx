@@ -225,9 +225,20 @@ const ExchangeEyeGlass: React.FC = () => {
                       <label>Account ID</label>
                       <Input
                         type="number"
+                        min="0"
                         placeholder="Enter Account ID"
                         value={accountID || ""}
-                        onChange={(e) => setAccountID(e.target.value || null)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || parseInt(value) >= 0) {
+                            setAccountID(value || null);
+                          }
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "-") {
+                            e.preventDefault();
+                          }
+                        }}
                         className="search-input"
                       />
                     </div>
@@ -238,11 +249,20 @@ const ExchangeEyeGlass: React.FC = () => {
                       <label>Product Glass ID</label>
                       <Input
                         type="number"
+                        min="0"
                         placeholder="Enter Product Glass ID"
                         value={productGlassID || ""}
-                        onChange={(e) =>
-                          setProductGlassID(e.target.value || null)
-                        }
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || parseInt(value) >= 0) {
+                            setProductGlassID(value || null);
+                          }
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "-") {
+                            e.preventDefault();
+                          }
+                        }}
                         className="search-input"
                       />
                     </div>
@@ -253,9 +273,20 @@ const ExchangeEyeGlass: React.FC = () => {
                       <label>Staff ID</label>
                       <Input
                         type="number"
+                        min="0"
                         placeholder="Enter Staff ID"
                         value={staffID || ""}
-                        onChange={(e) => setStaffID(e.target.value || null)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || parseInt(value) >= 0) {
+                            setStaffID(value || null);
+                          }
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "-") {
+                            e.preventDefault();
+                          }
+                        }}
                         className="search-input"
                       />
                     </div>
@@ -266,9 +297,20 @@ const ExchangeEyeGlass: React.FC = () => {
                       <label>Order ID</label>
                       <Input
                         type="number"
+                        min="0"
                         placeholder="Enter Order ID"
                         value={orderID || ""}
-                        onChange={(e) => setOrderID(e.target.value || null)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || parseInt(value) >= 0) {
+                            setOrderID(value || null);
+                          }
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "-") {
+                            e.preventDefault();
+                          }
+                        }}
                         className="search-input"
                       />
                     </div>

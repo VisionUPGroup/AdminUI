@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input, Label, FormGroup, FormFeedback } from "reactstrap";
-import { Package, MapPin, Home, FileText, Hash, AlertTriangle } from "react-feather";
+import { Package, MapPin, Home, FileText, AlertTriangle } from "react-feather";
 import "./ExchangeRequestModalStyles.scss";
 
 interface AddExchangeRequestModalProps {
@@ -14,6 +14,9 @@ interface AddExchangeRequestModalProps {
     quantity: number;
   }) => void;
 }
+
+// Thêm type cho input
+type InputType = "text" | "textarea" | "number" | "password" | "email" | "select" | "file" | "radio" | "checkbox" | "hidden";
 
 const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
   isOpen,
@@ -46,13 +49,18 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Prevent negative numbers for specific fields
+    if ((name === 'productGlassID' || name === 'kioskID') && value.startsWith('-')) {
+      return;
+    }
 
     setFormData((prevData) => ({
       ...prevData,
       [name]:
         name === "quantity" || name === "kioskID" || name === "productGlassID"
           ? value
-            ? parseInt(value)
+            ? Math.max(0, parseInt(value)) // Ensure non-negative values
             : null
           : value,
       ...(name === "kioskID" && parseInt(value) > 0
@@ -66,11 +74,14 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (formData.productGlassID === null)
-      newErrors.productGlassID = "Product Glass ID is required";
+    if (formData.productGlassID === null || formData.productGlassID < 0)
+      newErrors.productGlassID = "Product Glass ID must be a positive number";
     if (!formData.receiverAddress && formData.kioskID === null)
       newErrors.receiverAddress = "Either Receiver Address or Kiosk ID is required";
-    if (!formData.reason) newErrors.reason = "Reason is required";
+    if (formData.kioskID !== null && formData.kioskID < 0)
+      newErrors.kioskID = "Kiosk ID must be a positive number";
+    if (!formData.reason) 
+      newErrors.reason = "Reason is required";
     if (formData.quantity <= 0)
       newErrors.quantity = "Quantity must be greater than 0";
     setErrors(newErrors);
@@ -92,127 +103,120 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
     }
   };
 
+  const renderFormGroup = (
+    label: string,
+    name: string,
+    icon: React.ReactNode,
+    inputType: InputType,  // Thay đổi type thành inputType
+    placeholder: string,
+    disabled: boolean = false,
+    min?: string
+  ) => (
+    <FormGroup>
+      <Label for={name} className="form-label">
+        {label}
+      </Label>
+      <div className="input-wrapper">
+        <div className="input-group">
+          <div className="input-icon-wrapper">
+            {icon}
+          </div>
+          <Input
+            type={inputType}  // Sử dụng inputType
+            name={name}
+            id={name}
+            value={formData[name as keyof typeof formData] ?? ""}
+            onChange={handleChange}
+            disabled={disabled}
+            invalid={!!errors[name]}
+            placeholder={placeholder}
+            min={min}
+            className="custom-input"
+          />
+        </div>
+        {errors[name] && (
+          <FormFeedback className="error-feedback">
+            <AlertTriangle size={14} /> {errors[name]}
+          </FormFeedback>
+        )}
+      </div>
+    </FormGroup>
+  );
+
   return (
     <Modal isOpen={isOpen} toggle={toggle} className="exchange-request-modal">
-      <ModalHeader toggle={toggle}>Create Exchange Request</ModalHeader>
+      <ModalHeader toggle={toggle}>
+        <span className="modal-title-icon"><Package /></span>
+        Create Exchange Request
+      </ModalHeader>
       <ModalBody>
-        <FormGroup>
-          <Label for="productGlassID">
-            <Package size={16} /> Product Glass ID
-          </Label>
-          <div className="input-group">
-            <Input
-              type="number"
-              name="productGlassID"
-              id="productGlassID"
-              value={formData.productGlassID ?? ""}
-              onChange={handleChange}
-              invalid={!!errors.productGlassID}
-              placeholder="Enter Product Glass ID"
-            />
-            <Hash className="input-icon" size={18} />
-          </div>
-          {errors.productGlassID && (
-            <FormFeedback className="d-flex">
-              <AlertTriangle size={14} className="mr-1" /> {errors.productGlassID}
-            </FormFeedback>
-          )}
-        </FormGroup>
+        {renderFormGroup(
+          "Product Glass ID",
+          "productGlassID",
+          <Package size={18} />,
+          "number",
+          "Enter Product Glass ID",
+          false,
+          "0"
+        )}
+
+        {renderFormGroup(
+          "Receiver Address",
+          "receiverAddress",
+          <MapPin size={18} />,
+          "text",
+          "Enter delivery address",
+          !!formData.kioskID
+        )}
+
+        {renderFormGroup(
+          "Kiosk ID",
+          "kioskID",
+          <Home size={18} />,
+          "number",
+          "Enter Kiosk ID",
+          !!formData.receiverAddress,
+          "0"
+        )}
 
         <FormGroup>
-          <Label for="receiverAddress">
-            <MapPin size={16} /> Receiver Address
+          <Label for="reason" className="form-label">
+            Reason
           </Label>
-          <div className="input-group">
-            <Input
-              type="text"
-              name="receiverAddress"
-              id="receiverAddress"
-              value={formData.receiverAddress}
-              onChange={handleChange}
-              disabled={!!formData.kioskID}
-              invalid={!!errors.receiverAddress}
-              placeholder="Enter delivery address"
-            />
-            <MapPin className="input-icon" size={18} />
+          <div className="input-wrapper">
+            <div className="input-group">
+              <div className="input-icon-wrapper">
+                <FileText size={18} />
+              </div>
+              <Input
+                type="textarea"
+                name="reason"
+                id="reason"
+                value={formData.reason}
+                onChange={handleChange}
+                invalid={!!errors.reason}
+                placeholder="Please provide reason for exchange"
+                rows={3}
+                className="custom-textarea"
+              />
+            </div>
+            {errors.reason && (
+              <FormFeedback className="error-feedback">
+                <AlertTriangle size={14} /> {errors.reason}
+              </FormFeedback>
+            )}
           </div>
-          {errors.receiverAddress && (
-            <FormFeedback className="d-flex">
-              <AlertTriangle size={14} className="mr-1" /> {errors.receiverAddress}
-            </FormFeedback>
-          )}
         </FormGroup>
 
-        <FormGroup>
-          <Label for="kioskID">
-            <Home size={16} /> Kiosk ID
-          </Label>
-          <div className="input-group">
-            <Input
-              type="number"
-              name="kioskID"
-              id="kioskID"
-              value={formData.kioskID ?? ""}
-              onChange={handleChange}
-              disabled={!!formData.receiverAddress}
-              invalid={!!errors.kioskID}
-              placeholder="Enter Kiosk ID"
-            />
-            <Hash className="input-icon" size={18} />
-          </div>
-          {errors.kioskID && (
-            <FormFeedback className="d-flex">
-              <AlertTriangle size={14} className="mr-1" /> {errors.kioskID}
-            </FormFeedback>
-          )}
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="reason">
-            <FileText size={16} /> Reason
-          </Label>
-          <div className="input-group">
-            <Input
-              type="textarea"
-              name="reason"
-              id="reason"
-              value={formData.reason}
-              onChange={handleChange}
-              invalid={!!errors.reason}
-              placeholder="Please provide reason for exchange"
-              rows={3}
-            />
-          </div>
-          {errors.reason && (
-            <FormFeedback className="d-flex">
-              <AlertTriangle size={14} className="mr-1" /> {errors.reason}
-            </FormFeedback>
-          )}
-        </FormGroup>
-
-        <FormGroup>
-          <Label for="quantity">
-            <Package size={16} /> Quantity
-          </Label>
-          <div className="input-group">
-            <Input
-              type="number"
-              name="quantity"
-              id="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              invalid={!!errors.quantity}
-              placeholder="Enter quantity"
-              min="1"
-            />
-            <Hash className="input-icon" size={18} />
-          </div>
-          {errors.quantity && (
-            <FormFeedback className="d-flex">
-              <AlertTriangle size={14} className="mr-1" /> {errors.quantity}
-            </FormFeedback>
-          )}
-        </FormGroup>
+        {renderFormGroup(
+          "Quantity",
+          "quantity",
+          <Package size={18} />,
+          "number",
+          "Enter quantity",
+          false,
+          "1"
+        )}
       </ModalBody>
       
       <ModalFooter>
@@ -220,6 +224,7 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
           color="primary"
           onClick={handleSubmit}
           disabled={isSubmitting}
+          className={`submit-btn ${isSubmitting ? 'loading' : ''}`}
         >
           {isSubmitting ? "Submitting..." : "Submit"}
         </Button>
@@ -230,6 +235,7 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
             resetForm();
           }}
           disabled={isSubmitting}
+          className="cancel-btn"
         >
           Cancel
         </Button>
