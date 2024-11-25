@@ -97,7 +97,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
       newErrors.username = "Username is required";
       isValid = false;
     } else if (!validateUsername(formData.username)) {
-      newErrors.username = "Username must be 3-20 characters and can only contain letters, numbers, and underscores";
+      newErrors.username = "Username must be 3-20 characters and can only contain letters, numbers";
       isValid = false;
     }
 
@@ -200,6 +200,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
 
       <ModalBody>
         <div className="modal-form">
+          {/* Kiosk Name Field */}
           <div className="form-group">
             <label>
               <FaStore className="field-icon" />
@@ -216,7 +217,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
             {errors.name && <div className="invalid-feedback">{errors.name}</div>}
           </div>
 
-          {/* Thêm field Username mới */}
+          {/* Username Field */}
           <div className="form-group">
             <label>
               <FaUser className="field-icon" />
@@ -226,16 +227,83 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
               type="text"
               name="username"
               className={`form-control ${errors.username ? 'is-invalid' : ''}`}
-              placeholder="Enter username"
+              placeholder="Enter username (3-20 characters, letters, numbers, underscore)"
               value={formData.username}
               onChange={handleInputChange}
             />
             {errors.username && <div className="invalid-feedback">{errors.username}</div>}
           </div>
 
-          {/* Các field còn lại giữ nguyên */}
-          {/* ... Rest of the form fields ... */}
+          {/* Address Field */}
+          <div className="form-group">
+            <label>
+              <FaMapMarkerAlt className="field-icon" />
+              Address <span className="required">*</span>
+            </label>
+            <textarea
+              name="address"
+              className={`form-control ${errors.address ? 'is-invalid' : ''}`}
+              placeholder="Enter kiosk address"
+              value={formData.address}
+              onChange={handleInputChange}
+              rows={3}
+            />
+            {errors.address && <div className="invalid-feedback">{errors.address}</div>}
+          </div>
 
+          {/* Phone Number and Email Row */}
+          <div className="form-row">
+            <div className="form-group col-md-6">
+              <label>
+                <FaPhone className="field-icon" />
+                Phone Number <span className="required">*</span>
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                className={`form-control ${errors.phoneNumber ? 'is-invalid' : ''}`}
+                placeholder="Enter phone number"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+              />
+              {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
+            </div>
+
+            <div className="form-group col-md-6">
+              <label>
+                <FaEnvelope className="field-icon" />
+                Email <span className="required">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+            </div>
+          </div>
+
+          {/* Opening Hours Field */}
+          <div className="form-group">
+            <label>
+              <FaClock className="field-icon" />
+              Opening Hours <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="openingHours"
+              className={`form-control ${errors.openingHours ? 'is-invalid' : ''}`}
+              placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
+              value={formData.openingHours}
+              onChange={handleInputChange}
+            />
+            {errors.openingHours && (
+              <div className="invalid-feedback">{errors.openingHours}</div>
+            )}
+          </div>
         </div>
       </ModalBody>
 
