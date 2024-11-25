@@ -81,6 +81,7 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
         
         if (isActive) {
           setCustomers(response?.data || []);
+          console.log('Search results:', response?.data);
           setError(null);
         }
       } catch (error: any) {

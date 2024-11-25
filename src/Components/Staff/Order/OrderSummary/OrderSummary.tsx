@@ -115,8 +115,8 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
     try {
       const voucherData = await fetchVoucherByCode(voucherCode);
-      if (voucherData && voucherData.length > 0) {
-        const voucher = voucherData[0];
+      if (voucherData) {
+        const voucher = voucherData;
         
         // Check voucher quantity
         if (voucher.quantity === 0) {
