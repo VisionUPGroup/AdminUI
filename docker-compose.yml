@@ -1,0 +1,14 @@
+version: '2.30.3'
+
+services:
+  app:
+    image: adminui
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      
+networks:
+  app-network:
+    driver: bridge
