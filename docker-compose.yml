@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  adminui1:
+    image: nminhdangit/adminui:latest
+    container_name: adminui
+    networks:
+      - shared-network
+    restart: always
+
+networks:
+  shared-network:
+    external: true
