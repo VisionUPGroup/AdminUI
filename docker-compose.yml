@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  adminui1:
+  adminui:
     image: nminhdangit/adminui:latest
     container_name: adminui
     networks:
-      - shared-network
+      - nginx-proxy
     restart: always
 
 networks:
-  shared-network:
+  nginx-proxy:
     external: true
