@@ -74,7 +74,6 @@ Dockerfile
 .dockerignore
 
 # CI/CD
-.github/
 .gitlab-ci.yml
 
 # Server build output
