@@ -13,8 +13,8 @@ RUN npm install
 # Copy toàn bộ mã nguồn vào container
 COPY . .
 
-ENV NEXT_PUBLIC_API_URL = https://visionup.azurewebsites.net
-# Build ứng dụng Next.js
+ENV NEXT_PUBLIC_API_URL=https://visionup.azurewebsites.net
+
 RUN npm run build
 
 # Expose cổng mặc định của Next.js
