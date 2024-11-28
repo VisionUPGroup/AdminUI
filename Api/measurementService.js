@@ -10,6 +10,7 @@ export const useMeasurementService = () => {
       const response = await axios.get(`${baseUrl}/api/measurement-results`, {
         params: {
             RecordID: recordId,
+            Descending:true
         },
         headers: {
           Authorization: `Bearer ${token}`,

@@ -12,6 +12,7 @@ import { useAccountService } from "../../../../Api/accountService";
 import Pagination from "./Pagination"; // Import Pagination component
 import "./StaffStyle.scss";
 import Swal from "sweetalert2";
+import StaffUpdateModal from './StaffUpdateModal';
 
 interface Role {
   id: number;
@@ -48,6 +49,8 @@ const StaffsList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
 
   // Main function to fetch staff data
   const fetchStaffData = async (
@@ -87,6 +90,14 @@ const StaffsList: React.FC = () => {
     const value = event.target.value;
     setSearchTerm(value);
   };
+  const handleOpenUpdateModal = (staff: StaffData) => {
+    setSelectedStaff(staff);
+    setIsUpdateModalOpen(true);
+  };
+  const handleUpdateSuccess = () => {
+    fetchStaffData(currentPage, searchTerm, filterStatus);
+  };
+  
 
   // Handle Enter key press for search
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -280,9 +291,12 @@ const StaffsList: React.FC = () => {
                           </td>
                           <td>
                             <div className="actions">
-                              <button className="edit-btn">
-                                <FaPen />
-                              </button>
+                            <button 
+  className="edit-btn"
+  onClick={() => handleOpenUpdateModal(staff)}
+>
+  <FaPen />
+</button>
                               <button 
                                 className={`delete-btn ${!staff.status ? 'disabled' : ''}`}
                                 disabled={!staff.status}
@@ -321,6 +335,12 @@ const StaffsList: React.FC = () => {
           )}
         </div>
       </div>
+      <StaffUpdateModal
+  isOpen={isUpdateModalOpen}
+  toggle={() => setIsUpdateModalOpen(false)}
+  onSuccess={handleUpdateSuccess}
+  staffData={selectedStaff}
+/>
     </div>
   );
 };

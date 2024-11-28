@@ -10,6 +10,7 @@ export const useRefractionRecordsService = () => {
       const response = await axios.get(`${baseUrl}/api/refraction-records`, {
         params: {
           ProfileID: profileId,
+          Descending:true
         },
         headers: {
           Authorization: `Bearer ${token}`,

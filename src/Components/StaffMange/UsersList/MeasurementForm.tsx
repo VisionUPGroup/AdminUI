@@ -8,13 +8,13 @@ interface MeasurementFormProps {
   onSave: (data: Measurement[]) => void;
   editingMeasurement?: Measurement | Measurement[];
   recordId: number;
-  employeeId: number;
+  
 }
 
 interface Measurement {
   id?: number;
   recordID: number;
-  employeeID: number;
+  
   testType: number;
   spherical: number;
   cylindrical: number;
@@ -33,11 +33,10 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
   onSave,
   editingMeasurement,
   recordId,
-  employeeId
+
 }) => {
   const initialFormState = {
     recordID: recordId,
-    employeeID: employeeId,
     testType: 0,
     spherical: 0,
     cylindrical: 0,
