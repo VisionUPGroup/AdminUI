@@ -73,28 +73,7 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
       },
     ],
   },
-  {
-    path: "/reports",
-    title: "Reports",
-    icon: BarChart,
-    type: "link",
-    active: false,
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    type: "sub",
-    active: false,
-    children: [
-      {
-        path: "/settings/profile",
-        title: "Profile",
-        type: "link",
-        icon: Circle,
-        active: false,
-      },
-    ],
-  },
+
 
 ];
 
