@@ -1,17 +1,17 @@
 // KioskModal.tsx
 import React, { useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
-import { 
-  FaStore, 
-  FaMapMarkerAlt, 
-  FaPhone, 
-  FaEnvelope, 
-  FaClock, 
+import {
+  FaStore,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaEnvelope,
+  FaClock,
   FaTimes,
-  FaUser 
+  FaUser,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import "./ModalStyle.scss"
+import "./ModalStyle.scss";
 import { useKioskService } from "../../../../Api/kioskService";
 
 interface KioskModalProps {
@@ -46,7 +46,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
     phoneNumber: "",
     email: "",
     openingHours: "",
-    status: true
+    status: true,
   });
 
   const [errors, setErrors] = useState<FormError>({});
@@ -65,15 +65,17 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
     return /^[a-zA-Z0-9_]{3,20}$/.test(username);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      [name]: ""
+      [name]: "",
     }));
   };
 
@@ -85,7 +87,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
       address: "",
       phoneNumber: "",
       email: "",
-      openingHours: ""
+      openingHours: "",
     };
 
     if (!formData.name.trim()) {
@@ -97,7 +99,8 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
       newErrors.username = "Username is required";
       isValid = false;
     } else if (!validateUsername(formData.username)) {
-      newErrors.username = "Username must be 3-20 characters and can only contain letters, numbers, and underscores";
+      newErrors.username =
+        "Username must be 3-20 characters and can only contain letters, numbers, and underscores";
       isValid = false;
     }
 
@@ -140,7 +143,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
     try {
       setIsSubmitting(true);
       const result = await createKiosk(formData);
-      
+
       if (!result) {
         throw new Error("Failed to create kiosk");
       }
@@ -153,14 +156,25 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
         const apiErrors = error.response.data;
         if (apiErrors.errors) {
           const newErrors: FormError = {};
-          Object.entries(apiErrors.errors).forEach(([key, messages]: [string, any]) => {
-            newErrors[key.toLowerCase() as keyof FormError] = Array.isArray(messages) ? messages[0] : messages;
-          });
+          Object.entries(apiErrors.errors).forEach(
+            ([key, messages]: [string, any]) => {
+              newErrors[key.toLowerCase() as keyof FormError] = Array.isArray(
+                messages
+              )
+                ? messages[0]
+                : messages;
+            }
+          );
           setErrors(newErrors);
         }
-        toast.error(apiErrors.message || "Username, Name, Email or PhoneNumber is already exist");
+        toast.error(
+          apiErrors.message ||
+            "Username, Name, Email or PhoneNumber is already exist"
+        );
       } else {
-        toast.error(error.message || "Failed to create kiosk. Please try again.");
+        toast.error(
+          error.message || "Failed to create kiosk. Please try again."
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -175,7 +189,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
       phoneNumber: "",
       email: "",
       openingHours: "",
-      status: true
+      status: true,
     });
     setErrors({});
     toggle();
@@ -200,21 +214,6 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
 
       <ModalBody>
         <div className="modal-form">
-          <div className="form-group">
-            <label>
-              <FaStore className="field-icon" />
-              Kiosk Name <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              name="name"
-              className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-              placeholder="Enter kiosk name"
-              value={formData.name}
-              onChange={handleInputChange}
-            />
-            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-          </div>
 
           {/* Thêm field Username mới */}
           <div className="form-group">
@@ -225,17 +224,111 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
             <input
               type="text"
               name="username"
-              className={`form-control ${errors.username ? 'is-invalid' : ''}`}
+              className={`form-control ${errors.username ? "is-invalid" : ""}`}
               placeholder="Enter username"
               value={formData.username}
               onChange={handleInputChange}
             />
-            {errors.username && <div className="invalid-feedback">{errors.username}</div>}
+            {errors.username && (
+              <div className="invalid-feedback">{errors.username}</div>
+            )}
           </div>
 
-          {/* Các field còn lại giữ nguyên */}
-          {/* ... Rest of the form fields ... */}
+          <div className="form-group">
+            <label>
+              <FaStore className="field-icon" />
+              Kiosk Name <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="name"
+              className={`form-control ${errors.name ? "is-invalid" : ""}`}
+              placeholder="Enter kiosk name"
+              value={formData.name}
+              onChange={handleInputChange}
+            />
+            {errors.name && (
+              <div className="invalid-feedback">{errors.name}</div>
+            )}
+          </div>
 
+          <div className="form-group">
+            <label>
+              <FaMapMarkerAlt className="field-icon" />
+              Address <span className="required">*</span>
+            </label>
+            <textarea
+              name="address"
+              className={`form-control ${errors.address ? "is-invalid" : ""}`}
+              placeholder="Enter kiosk address"
+              value={formData.address}
+              onChange={handleInputChange}
+              rows={3}
+            />
+            {errors.address && (
+              <div className="invalid-feedback">{errors.address}</div>
+            )}
+          </div>
+
+          <div className="form-row">
+            <div className="form-group col-md-6">
+              <label>
+                <FaPhone className="field-icon" />
+                Phone Number <span className="required">*</span>
+              </label>
+              <input
+                type="tel"
+                name="phoneNumber"
+                className={`form-control ${
+                  errors.phoneNumber ? "is-invalid" : ""
+                }`}
+                placeholder="Enter phone number"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+              />
+              {errors.phoneNumber && (
+                <div className="invalid-feedback">{errors.phoneNumber}</div>
+              )}
+            </div>
+
+            <div className="form-group col-md-6">
+              <label>
+                <FaEnvelope className="field-icon" />
+                Email <span className="required">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                placeholder="Enter email address"
+                value={formData.email}
+                onChange={handleInputChange}
+              />
+              {errors.email && (
+                <div className="invalid-feedback">{errors.email}</div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label>
+              <FaClock className="field-icon" />
+              Opening Hours <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="openingHours"
+              className={`form-control ${
+                errors.openingHours ? "is-invalid" : ""
+              }`}
+              placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
+              value={formData.openingHours}
+              onChange={handleInputChange}
+            />
+            {errors.openingHours && (
+              <div className="invalid-feedback">{errors.openingHours}</div>
+            )}
+          </div>
         </div>
       </ModalBody>
 

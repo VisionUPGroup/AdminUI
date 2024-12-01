@@ -35,6 +35,7 @@ import "./OrderStyle.scss";
 import "./FilterStyle.scss";
 import Pagination from "./Pagination";
 import FilterSelects from "./FilterSelect";
+import ReportManagement from "./ReportManagement";
 
 const SalesOrders: React.FC = () => {
   // States
@@ -94,6 +95,7 @@ const SalesOrders: React.FC = () => {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<
     OrderDetail[]
   >([]);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>();
   const [selectedOrderInfo, setSelectedOrderInfo] = useState<{
     orderId: number;
     voucherName: string | null;
@@ -121,6 +123,7 @@ const SalesOrders: React.FC = () => {
   const [revenueCompleted, setRevenueCompleted] = useState(0);
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
   const [kioskFilter, setKioskFilter] = useState("");
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   // Services
   const { fetchAllOrder, countOrder, deleteOrder, updateOrderProcess } =
     useOrderService();
@@ -152,7 +155,7 @@ const SalesOrders: React.FC = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-  
+
       // Gọi API với các params filter
       const data = await fetchAllOrder(
         searchTerm,
@@ -161,29 +164,32 @@ const SalesOrders: React.FC = () => {
         "",
         kioskFilter
       );
-  
+
       // Cập nhật tổng số items và set lại data
       setTotalItems(data.totalItems || 0); // Đảm bảo cập nhật tổng số items từ API
-      
+
       const formattedData = await Promise.all(
         data.items.map(async (order: any) => {
           const voucherResponse = order.voucherID
             ? await fetchVoucherById(order.voucherID)
             : null;
           const voucherName = voucherResponse ? voucherResponse.name : null;
-  
+
           let username = "Unknown";
           try {
             const accountResponse = await fetchAccountById(order.accountID);
             username = accountResponse?.username || "Unknown";
           } catch (error) {
-            console.error(`Error fetching username for account ${order.accountID}:`, error);
+            console.error(
+              `Error fetching username for account ${order.accountID}:`,
+              error
+            );
           }
-  
+
           return {
             id: order.id,
             accountID: order.accountID,
-            username,  
+            username,
             orderTime: new Date(order.orderTime).toLocaleString(),
             status: order.status,
             receiverAddress: order.receiverAddress,
@@ -203,7 +209,7 @@ const SalesOrders: React.FC = () => {
           };
         })
       );
-  
+
       setOrderData(formattedData);
       setFilteredOrders(formattedData);
     } catch (error) {
@@ -236,7 +242,9 @@ const SalesOrders: React.FC = () => {
     setSearchTerm(searchValue);
     setCurrentPage(1); // Reset về trang 1 khi search
   };
-  const handleStatusFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setStatusFilter(event.target.value);
     setCurrentPage(1); // Reset về trang 1 khi thay đổi status
   };
@@ -414,26 +422,26 @@ const SalesOrders: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-          <div className="search-box">
-  <FaSearch className="search-icon" />
-  <input
-    type="text"
-    placeholder="Search by username"
-    value={searchTerm}
-    onChange={handleSearch}
-    className="search-input"
-  />
-</div>
-  <FilterSelects 
-    onKioskSelect={handleKioskSelect} 
-    selectedKiosk={kioskFilter} 
-    onReset={() => {
-      setKioskFilter("");
-      setCurrentPage(1);
-      toast.success("Filter has been reset");
-    }} 
-  />
-</div>
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search by username"
+                value={searchTerm}
+                onChange={handleSearch}
+                className="search-input"
+              />
+            </div>
+            <FilterSelects
+              onKioskSelect={handleKioskSelect}
+              selectedKiosk={kioskFilter}
+              onReset={() => {
+                setKioskFilter("");
+                setCurrentPage(1);
+                toast.success("Filter has been reset");
+              }}
+            />
+          </div>
         </div>
 
         {/* Stats Section */}
@@ -477,9 +485,20 @@ const SalesOrders: React.FC = () => {
           </div>
         </div>
 
+        {selectedOrderId && (
+        <ReportManagement
+          orderId={selectedOrderId}
+          isOpen={isReportModalOpen}
+          onClose={() => {
+            setIsReportModalOpen(false);
+            setSelectedOrderId(0);
+          }}
+        />
+      )}
         {/* Content Grid */}
         <div className="content-grid">
           {/* Orders Table */}
+
           <div className="content-section orders-table">
             <div className="content-header">
               <h2>Recent Orders</h2>
@@ -529,11 +548,13 @@ const SalesOrders: React.FC = () => {
                     <tbody>
                       {orderData.map((order) => (
                         <tr key={order.id}>
-                          
                           <td>
                             <div className="order-id">
                               <span className="code">{order.code}</span>
-                              <span className="order-number">ID: {order.id}</span>  {/* Thêm dòng này */}
+                              <span className="order-number">
+                                ID: {order.id}
+                              </span>{" "}
+                              {/* Thêm dòng này */}
                               <span className="username">
                                 <FaUser /> {order.username}
                               </span>
@@ -604,6 +625,16 @@ const SalesOrders: React.FC = () => {
                               >
                                 View Details
                               </button>
+                              <button
+                                className="report-btn"
+                                onClick={() => {
+                                  console.log("Opening reports for order:", order.id);
+                                  setSelectedOrderId(order.id); // Thêm state này
+                                  setIsReportModalOpen(true);
+                                }}
+                              >
+                                View Reports
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -626,7 +657,6 @@ const SalesOrders: React.FC = () => {
                       ? "No orders match your search criteria"
                       : "There are no orders to display"}
                   </p>
-             
                 </div>
               )}
             </div>
@@ -781,7 +811,7 @@ const SalesOrders: React.FC = () => {
                                 <span className="quantity">
                                   Qantity: {detail.quantity}
                                 </span>
-                                <span
+                                {/* <span
                                   className={`stock-status ${
                                     detail.status ? "success" : "pending"
                                   }`}
@@ -795,7 +825,7 @@ const SalesOrders: React.FC = () => {
                                       <FaTimesCircle /> Out of Stock
                                     </>
                                   )}
-                                </span>
+                                </span> */}
                               </div>
                             </div>
                           </div>
@@ -855,6 +885,7 @@ const SalesOrders: React.FC = () => {
         pauseOnHover
         theme="light"
       />
+   
     </div>
   );
 };

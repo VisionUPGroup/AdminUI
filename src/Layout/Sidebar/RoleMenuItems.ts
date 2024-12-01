@@ -71,8 +71,35 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
         icon: Circle,
         active: false,
       },
+   
     ],
+    
   },
+  {
+    title: "Report",
+    icon: Clipboard,
+    type: "sub",
+    active: false,
+    children: [
+      {
+        path: "/reports/",
+        title: "Orders",
+        type: "link",
+        icon: Circle,
+        active: false,
+      },
+      {
+        path: "/sales/staff-orders/create",
+        title: "Create",
+        type: "link",
+        icon: Circle,
+        active: false,
+      },
+   
+    ],
+    
+  },
+
 
 
 ];
@@ -166,13 +193,7 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
         icon: Circle,
         active: false,
       },
-      {
-        path: "/sales/transactions",
-        title: "Transactions",
-        type: "link",
-        icon: Circle,
-        active: false,
-      },
+  
     ],
   },
   {

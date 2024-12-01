@@ -33,6 +33,7 @@ import LensInformation from "./LensInformation";
 import PaymentInfo from "./PaymentInfomation";
 import "./OrderStyle.scss";
 import Pagination from "./Pagination";
+import ReportManagement from "./ReportManagement";
 
 const SalesOrders: React.FC = () => {
   // States
@@ -92,6 +93,7 @@ const SalesOrders: React.FC = () => {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<
     OrderDetail[]
   >([]);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedOrderInfo, setSelectedOrderInfo] = useState<{
     orderId: number;
     voucherName: string | null;
@@ -118,6 +120,7 @@ const SalesOrders: React.FC = () => {
   const [totalItemsCompleted, setTotalItemsCompleted] = useState(0);
   const [revenueCompleted, setRevenueCompleted] = useState(0);
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
+  const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>();
 
   // Services
   const { fetchStaffOrder, countOrder, deleteOrder, updateOrderProcess } =
@@ -441,6 +444,16 @@ const SalesOrders: React.FC = () => {
             <FaCheckCircle className="stat-icon" />
           </div>
         </div>
+        {selectedOrderId && (
+        <ReportManagement
+          orderId={selectedOrderId}
+          isOpen={isReportModalOpen}
+          onClose={() => {
+            setIsReportModalOpen(false);
+            setSelectedOrderId(0);
+          }}
+        />
+      )}
 
         {/* Content Grid */}
         <div className="content-grid">
@@ -568,6 +581,16 @@ const SalesOrders: React.FC = () => {
                               >
                                 View Details
                               </button>
+                              <button
+                                className="report-btn"
+                                onClick={() => {
+                                  console.log("Opening reports for order:", order.id);
+                                  setSelectedOrderId(order.id); // Thêm state này
+                                  setIsReportModalOpen(true);
+                                }}
+                              >
+                                View Reports
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -590,11 +613,11 @@ const SalesOrders: React.FC = () => {
                       ? "No orders match your search criteria"
                       : "There are no orders to display"}
                   </p>
-                  <Pagination
+                  {/* <Pagination
                     currentPage={currentPage}
                     totalPages={Math.ceil(totalItems / 20)}
                     onPageChange={handlePageChange}
-                  />
+                  /> */}
                 </div>
               )}
             </div>
@@ -749,7 +772,7 @@ const SalesOrders: React.FC = () => {
                                 <span className="quantity">
                                   Qantity: {detail.quantity}
                                 </span>
-                                <span
+                                {/* <span
                                   className={`stock-status ${
                                     detail.status ? "success" : "pending"
                                   }`}
@@ -763,7 +786,7 @@ const SalesOrders: React.FC = () => {
                                       <FaTimesCircle /> Out of Stock
                                     </>
                                   )}
-                                </span>
+                                </span> */}
                               </div>
                             </div>
                           </div>

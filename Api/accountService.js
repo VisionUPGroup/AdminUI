@@ -44,6 +44,7 @@ export const useAccountService = () => {
         params: params,
         headers: {
           Authorization: `Bearer ${getToken()}`,
+          "Content-Type": "application/json",
         },
       });
       console.log("Accounts fetched successfully:", response.data);

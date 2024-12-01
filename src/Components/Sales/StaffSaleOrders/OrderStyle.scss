@@ -171,7 +171,7 @@
   // Content Grid
   .content-grid {
     display: grid;
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 450px;
     gap: 2rem;
 
     .content-section {
@@ -334,17 +334,34 @@
             }
 
             .actions {
-              .view-btn {
+              display: flex;
+              gap: 0.5rem;
+            
+              .view-btn, .report-btn {
                 padding: 0.625rem 1.25rem;
-                background: rgba($primary-gold, 0.1);
-                color: $primary-gold;
                 border: none;
                 border-radius: 8px;
                 font-weight: 500;
                 transition: all 0.2s;
-
+                cursor: pointer;
+              }
+            
+              .view-btn {
+                background: rgba($primary-gold, 0.1);
+                color: $primary-gold;
+            
                 &:hover {
                   background: $primary-gold;
+                  color: white;
+                }
+              }
+            
+              .report-btn {
+                background: rgba($info, 0.1);
+                color: $info;
+            
+                &:hover {
+                  background: $info;
                   color: white;
                 }
               }

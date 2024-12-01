@@ -688,10 +688,10 @@ const OrderStatisticsChart: React.FC = () => {
             </div>
             <div className="stat-value">{totals.totalCompleted}</div>
             <div className="stat-footer">
-              <TrendingUp size={16} />
-              <span className="completion-rate">
+              {/* <TrendingUp size={16} /> */}
+              {/* <span className="completion-rate">
                 {`${totals.completionRate.toFixed(1)}% completion rate`}
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
@@ -704,12 +704,12 @@ const OrderStatisticsChart: React.FC = () => {
             </div>
             <div className="stat-value">{totals.totalCancelled}</div>
             <div className="stat-footer">
-              <TrendingDown size={16} />
-              <span className="cancellation-rate">
+              {/* <TrendingDown size={16} /> */}
+              {/* <span className="cancellation-rate">
                 {`${(100 - totals.completionRate).toFixed(
                   1
                 )}% cancellation rate`}
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
@@ -718,17 +718,17 @@ const OrderStatisticsChart: React.FC = () => {
           <div className="stat-content">
             <div className="stat-header">
               <span className="stat-title">Completed Revenue</span>
-              <div className="stat-icon">
+              {/* <div className="stat-icon">
                 <DollarSign size={18} />
-              </div>
+              </div> */}
             </div>
             <div className="stat-value">{formatVND(totals.totalRevenue)}</div>
             <div className="stat-footer">
-              <span className="daily-average">
+              {/* <span className="daily-average">
                 {`Monthly avg: ${formatVND(
                   totals.totalRevenue / yearlyData.length
                 )}`}
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
@@ -744,13 +744,13 @@ const OrderStatisticsChart: React.FC = () => {
             <div className="stat-value">
               {formatVND(totals.totalCancelledRevenue)}
             </div>
-            <div className="stat-footer">
+            {/* <div className="stat-footer">
               <span className="daily-average">
                 {`Monthly avg: ${formatVND(
                   totals.totalCancelledRevenue / yearlyData.length
                 )}`}
               </span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
