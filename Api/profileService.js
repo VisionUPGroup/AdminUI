@@ -4,7 +4,7 @@ import { getToken } from "./tokenHelper";
 export const useProfileService = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  const fetchProfilesByAccountId = async (accountId, pageIndex, pageSize) => {
+  const fetchProfilesByAccountId = async (accountId, pageIndex, pageSize, username) => {
     try {
       const token = getToken();
       const response = await axios.get(`${baseUrl}/api/profiles`, {
@@ -12,7 +12,8 @@ export const useProfileService = () => {
           AccountID: accountId,
           PageIndex: pageIndex,
           PageSize: pageSize,
-          Descending: true
+          Descending: true,
+          Username: username,
           
         },
         headers: {

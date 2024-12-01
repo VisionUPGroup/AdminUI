@@ -38,6 +38,7 @@ const MeasurementModal: React.FC<MeasurementFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMeasurement, setEditingMeasurement] = useState<Measurement[] | undefined>(undefined);  // Thay null bằng undefined
+ 
 
   const {
     fetchMeasurementsRecordId,
@@ -274,7 +275,7 @@ const MeasurementModal: React.FC<MeasurementFormProps> = ({
           onClose={() => setIsFormOpen(false)}
           onSave={handleSaveMeasurement}
           editingMeasurement={editingMeasurement}
-          recordId={recordId} employeeId={205}        />
+          recordId={recordId}/>
       )}
     </div>
   );

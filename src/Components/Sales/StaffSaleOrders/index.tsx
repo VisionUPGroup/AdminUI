@@ -393,7 +393,7 @@ const SalesOrders: React.FC = () => {
               <FaSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search by order code, address, customer..."
+                placeholder="Search by order customer"
                 value={searchTerm}
                 onChange={handleSearch}
               />
@@ -494,12 +494,13 @@ const SalesOrders: React.FC = () => {
                     <tbody>
                       {orderData.map((order) => (
                         <tr key={order.id}>
-                          <td>
+                             <td>
                             <div className="order-id">
                               <span className="code">{order.code}</span>
+                              <span className="order-number">ID: {order.id}</span>  {/* Thêm dòng này */}
                               <span className="username">
-            <FaUser /> {order.username}
-          </span>
+                                <FaUser /> {order.username}
+                              </span>
                               <span className="time">
                                 {new Date(order.orderTime).toLocaleString()}
                               </span>

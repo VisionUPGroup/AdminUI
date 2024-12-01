@@ -792,10 +792,10 @@ const UsersList: React.FC = () => {
                         {/* Thêm thông báo cho profile không active */}
                         {!profile.status && (
                           <div className="inactive-profile-notice">
-                            <span>
+                            {/* <span>
                               Profile is inactive. View and delete actions are
                               disabled.
-                            </span>
+                            </span> */}
                           </div>
                         )}
                       </div>
