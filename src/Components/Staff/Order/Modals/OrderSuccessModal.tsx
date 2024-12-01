@@ -1,175 +1,266 @@
-// components/OrderSuccessModal/OrderSuccessModal.tsx
-
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { QRCodeCanvas } from 'qrcode.react';
+import { useReactToPrint } from 'react-to-print';
 import { 
   Check, 
   Printer, 
-  FileText, 
   ArrowRight, 
   CreditCard,
-  Clock
+  Clock,
+  Package
 } from 'lucide-react';
-import { OrderSuccessData } from '../types/orderSuccess';
-import { formatCurrency, formatDate, getOrderStatus } from '../utils/formatters';
+import { formatCurrency, formatDate } from '../utils/formatters';
 import styles from '../styles/OrderSuccessModal.module.scss';
-import { CompanyInfo } from '../types/company';
+import PrintReceipt from './PrintReceipt';
+
+interface OrderProduct {
+  productGlassID: number;
+  eyeGlass: {
+    id: number;
+    name: string;
+    eyeGlassImage: string;
+  };
+  leftLen: {
+    id: number;
+    lensName: string;
+    lensDescription: string;
+    leftLensImage: string | null;
+  };
+  rightLen: {
+    id: number;
+    lensName: string;
+    lensDescription: string;
+    rightLensImage: string | null;
+  };
+}
+
+interface OrderSuccessData {
+  orderID: number;
+  code: string;
+  orderTime: string;
+  totalAmount: number;
+  isDeposit: boolean;
+  receiverAddress: string | null;
+  kioskID?: number;
+  process: number;
+  productGlass: OrderProduct[];
+  totalPaid: number;
+  remainingAmount: number;
+  voucher: null | {
+    id: number;
+    code: string;
+    discountValue: number;
+  };
+  payments: Array<{
+    id: number;
+    totalAmount: number;
+    date: string;
+    paymentMethod: string;
+  }>;
+}
+
+interface CompanyInfo {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  logo: string;
+  taxId: string;
+  website: string;
+}
 
 interface OrderSuccessModalProps {
   isOpen: boolean;
-  orderData: OrderSuccessData;
+  orderData: OrderSuccessData | null;
   onClose: () => void;
-  onPrint: () => void;
-  onViewDetails: () => void;
   onNewOrder: () => void;
-  companyInfo: CompanyInfo; // Add companyInfo prop
+  companyInfo: CompanyInfo;
 }
 
 const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
   isOpen,
   orderData,
   onClose,
-  onPrint,
-  onViewDetails,
   onNewOrder,
-  companyInfo // Destructure companyInfo
+  companyInfo
 }) => {
-  if (!isOpen) return null;
+  const printComponentRef = useRef<HTMLDivElement>(null);
+
+  const getOrderStatus = useCallback((process: number) => {
+    switch (process) {
+      case 1: return { label: 'Processing', className: 'processing' };
+      case 2: return { label: 'Ready for Pickup', className: 'ready' };
+      case 3: return { label: 'Completed', className: 'completed' };
+      default: return { label: 'Unknown', className: 'unknown' };
+    }
+  }, []);
+
+  const handlePrint = useReactToPrint({
+    contentRef: printComponentRef,  // Sử dụng contentRef thay vì content
+    documentTitle: `Receipt-${orderData?.code || 'receipt'}`,
+    bodyClass: 'print-receipt',
+    onBeforePrint: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    },
+    onAfterPrint: () => {
+      console.log('Print completed');
+    },
+    onPrintError: (errorLocation, error) => {
+      console.error(`Print failed during ${errorLocation}:`, error);
+    },
+    pageStyle: `
+      @media print {
+        @page {
+          size: 80mm 297mm;
+          margin: 0;
+        }
+        body {
+          margin: 10mm;
+        }
+      }
+    `,
+  });
+  
+  const printReceipt = useCallback(() => {
+    handlePrint();
+  }, [handlePrint]);
+
+  if (!isOpen || !orderData) return null;
 
   const status = getOrderStatus(orderData.process);
 
   return (
-    <div className={styles.modalOverlay}>
+    <div className={styles.modalOverlay} onClick={onClose}>
       <motion.div 
         className={styles.modalContent}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
+        onClick={e => e.stopPropagation()}
       >
-        {/* Header Section */}
-        <div className={styles.header}>
-          <motion.div 
-            className={styles.successIcon}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Check />
-          </motion.div>
-          <h2>Order Completed!</h2>
-          <p className={styles.orderId}>Order #{orderData.orderID}</p>
-          <div className={`${styles.orderStatus} ${styles[status.className]}`}>
-            <Clock size={16} />
-            <span>{status.label}</span>
-          </div>
-        </div>
-
-        {/* Company Information */}
-        {/* <div className={styles.companyInfo}>
-          <img src={companyInfo.logo} alt="Company Logo" className={styles.companyLogo} />
-          <div className={styles.companyDetails}>
-            <h1>{companyInfo.name}</h1>
-            <p>{companyInfo.address}</p>
-            <p>Tel: {companyInfo.phone}</p>
-            <p>Email: {companyInfo.email}</p>
-            <p>Tax ID: {companyInfo.taxId}</p>
-            <p>Website: <a href={companyInfo.website} target="_blank" rel="noopener noreferrer">{companyInfo.website}</a></p>
-          </div>
-        </div> */}
-
-        {/* Payment Summary */}
-        <div className={styles.paymentSummary}>
-          <div className={styles.totalAmount}>
-            <span>Total Amount</span>
-            <h3>{formatCurrency(orderData.totalAmount)}</h3>
-          </div>
-          
-          {orderData.isDeposit && (
-            <div className={styles.paymentDetails}>
-              <div className={styles.paid}>
-                <span>Paid Amount</span>
-                <p>{formatCurrency(orderData.totalPaid)}</p>
-              </div>
-              <div className={styles.remaining}>
-                <span>Remaining</span>
-                <p>{formatCurrency(orderData.remainingAmount)}</p>
-              </div>
+        {/* Visible Content */}
+        <div className={styles.visibleContent}>
+          {/* Header Section */}
+          <div className={styles.header}>
+            <motion.div 
+              className={styles.successIcon}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Check />
+            </motion.div>
+            <h2>Order Completed!</h2>
+            <p className={styles.orderId}>Order #{orderData.code}</p>
+            <div className={`${styles.orderStatus} ${styles[status.className]}`}>
+              <Clock size={16} />
+              <span>{status.label}</span>
             </div>
-          )}
-        </div>
+            <p className={styles.orderTime}>
+              {formatDate(orderData.orderTime)}
+            </p>
+          </div>
 
-        {/* Product List */}
-        <div className={styles.productList}>
-          <h3>Product Details</h3>
-          {orderData.productGlass.map((item, index) => (
-            <div key={index} className={styles.productCard}>
-              <img 
-                src={item.eyeGlass.eyeGlassImage} 
-                alt={item.eyeGlass.name}
-                className={styles.productImage}
-              />
-              <div className={styles.productInfo}>
-                <h4>{item.eyeGlass.name}</h4>
-                <div className={styles.lensDetails}>
-                  <div className={styles.lens}>
-                    <span>Left Lens</span>
-                    <p>{item.leftLen.lensName}</p>
-                    <small>{item.leftLen.lensDescription}</small>
-                  </div>
-                  <div className={styles.lens}>
-                    <span>Right Lens</span>
-                    <p>{item.rightLen.lensName}</p>
-                    <small>{item.rightLen.lensDescription}</small>
+          {/* Payment Summary */}
+          <div className={styles.paymentSummary}>
+            <div className={styles.totalAmount}>
+              <span>Total Amount</span>
+              <h3>{formatCurrency(orderData.totalAmount)}</h3>
+            </div>
+            
+            {orderData.isDeposit && (
+              <div className={styles.paymentDetails}>
+                <div className={styles.paid}>
+                  <span>Deposit Paid (30%)</span>
+                  <p>{formatCurrency(orderData.totalPaid)}</p>
+                </div>
+                <div className={styles.remaining}>
+                  <span>Remaining Balance</span>
+                  <p>{formatCurrency(orderData.remainingAmount)}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Product List */}
+          <div className={styles.productList}>
+            <div className={styles.sectionHeader}>
+              <Package size={20} />
+              <h3>Products ({orderData.productGlass.length})</h3>
+            </div>
+            
+            {orderData.productGlass.map((item, index) => (
+              <div key={index} className={styles.productCard}>
+                <img 
+                  src={item.eyeGlass.eyeGlassImage} 
+                  alt={item.eyeGlass.name}
+                  className={styles.productImage}
+                />
+                <div className={styles.productInfo}>
+                  <h4>{item.eyeGlass.name}</h4>
+                  <div className={styles.lensDetails}>
+                    <div className={styles.lens}>
+                      <span>Lens Type</span>
+                      <p>{item.leftLen.lensName}</p>
+                      <small>{item.leftLen.lensDescription}</small>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Payment History */}
-        <div className={styles.paymentHistory}>
-          <h3>Payment History</h3>
-          {orderData.payments.map((payment, index) => (
-            <div key={index} className={styles.paymentItem}>
-              <div className={styles.paymentInfo}>
-                <CreditCard size={16} />
-                <span>{payment.paymentMethod}</span>
-                <span className={styles.separator}>•</span>
-                <span>{formatDate(payment.date)}</span>
+          {/* Payment History */}
+          {orderData.payments.length > 0 && (
+            <div className={styles.paymentHistory}>
+              <div className={styles.sectionHeader}>
+                <CreditCard size={20} />
+                <h3>Payment History</h3>
               </div>
-              <span className={styles.amount}>
-                {formatCurrency(payment.totalAmount)}
-              </span>
+              {orderData.payments.map((payment, index) => (
+                <div key={index} className={styles.paymentItem}>
+                  <div className={styles.paymentInfo}>
+                    <CreditCard size={16} />
+                    <span>{payment.paymentMethod}</span>
+                    <span className={styles.separator}>•</span>
+                    <span>{formatDate(payment.date)}</span>
+                  </div>
+                  <span className={styles.amount}>
+                    {formatCurrency(payment.totalAmount)}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          <div className={styles.actions}>
+            <button 
+              onClick={printReceipt}
+              className={styles.secondaryButton}
+            >
+              <Printer size={18} />
+              <span>Print Receipt</span>
+            </button>
+            <button 
+              onClick={onNewOrder}
+              className={styles.primaryButton}
+            >
+              <ArrowRight size={18} />
+              <span>New Order</span>
+            </button>
+          </div>
         </div>
 
-        {/* QR Code */}
-        <div className={styles.qrCode}>
-          <QRCodeCanvas
-            value={`VISION_STORE_ORDER_${orderData.orderID}`}
-            size={120}
-            level="H"
-          />
-          <p>Scan to view digital receipt</p>
-        </div>
-
-        {/* Actions */}
-        <div className={styles.actions}>
-          <button onClick={onPrint} className={styles.secondaryButton}>
-            <Printer size={18} />
-            <span>Print</span>
-          </button>
-          {/* <button onClick={onViewDetails} className={styles.secondaryButton}>
-            <FileText size={18} />
-            <span>Details</span>
-          </button> */}
-          <button onClick={onNewOrder} className={styles.primaryButton}>
-            <ArrowRight size={18} />
-            <span>New Order</span>
-          </button>
+        {/* Hidden Print Content */}
+        <div style={{ display: 'none' }}>
+          <div ref={printComponentRef}>
+            <PrintReceipt
+              orderData={orderData}
+              companyInfo={companyInfo}
+              staffName="Staff Member"
+            />
+          </div>
         </div>
       </motion.div>
     </div>

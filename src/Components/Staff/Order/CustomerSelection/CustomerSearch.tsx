@@ -8,7 +8,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useDebounce } from 'use-debounce';
 import { useAccountService } from '../../../../../Api/accountService';
-import styles from '../styles/CustomerSelection.module.scss';
+import styles from '../styles/CustomerSearch.module.scss';
 
 interface CustomerSectionProps {
   onCustomerSelect: (customer: any) => void;
@@ -372,16 +372,18 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
                 </div>
 
                 <div className={styles.formField}>
-                  <label>Ngày sinh</label>
-                  <input
-                    type="date"
-                    {...formik.getFieldProps('birthday')}
-                    className={formik.errors.birthday && formik.touched.birthday ? styles.error : ''}
-                  />
-                  {formik.touched.birthday && formik.errors.birthday && (
-                    <span className={styles.errorText}>{formik.errors.birthday}</span>
-                  )}
-                </div>
+  <label>Ngày sinh</label>
+  <input
+    type="date"
+    {...formik.getFieldProps('birthday')}
+    className={`${styles.dateInput} ${
+      formik.errors.birthday && formik.touched.birthday ? styles.error : ''
+    }`}
+  />
+  {formik.touched.birthday && formik.errors.birthday && (
+    <span className={styles.errorText}>{formik.errors.birthday}</span>
+  )}
+</div>
 
                 <div className={styles.modalActions}>
                   <button 

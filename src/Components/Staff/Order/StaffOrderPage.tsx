@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { Camera, Plus, Search, ShoppingCart } from 'lucide-react';
+import { useCart } from './context/CartContext';
 import { useEyeGlassService } from '../../../../Api/eyeGlassService';
-import { useLensService } from '../../../../Api/lensService';
 import { useOrderService } from '../../../../Api/orderService';
 import { usePaymentService } from '../../../../Api/paymentService';
 import { useProductGlassService } from '../../../../Api/productGlassService';
-import { EyeGlass } from './types/product';
-import { Lens } from './types/lens';
-import styles from './styles/StaffOrder.module.scss';
+import { EyeGlass, Lens } from './types/product';
 import ProductGrid from './ProductSelection/ProductGrid';
 import LensSelection from './LensSelection/index';
 import CustomerSearch from './CustomerSelection/CustomerSearch';
 import OrderSummary from './OrderSummary/OrderSummary';
 import OrderSuccessModal from './Modals/OrderSuccessModal';
+import CartModal from './cart/CartModal';
 import { toast } from 'react-hot-toast';
+import styles from './styles/StaffOrder.module.scss';
 
 interface Customer {
   id: number;
@@ -34,16 +33,6 @@ interface VoucherInfo {
   discountValue: number;
   status: boolean;
   quantity: number;
-}
-
-interface PrescriptionData {
-  sphereOD?: number;
-  cylinderOD?: number;
-  axisOD?: number;
-  sphereOS?: number;
-  cylinderOS?: number;
-  axisOS?: number;
-  pd?: number;
 }
 
 const steps = [
@@ -67,64 +56,85 @@ const StaffOrderPage: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // const router = useRouter();
+  const { state: cartState, dispatch: cartDispatch } = useCart();
 
   // Modal states
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'vnpay'>('cash');
 
-  // Order states
+  // Selection states
   const [selectedProduct, setSelectedProduct] = useState<EyeGlass | null>(null);
-  const [selectedLens, setSelectedLens] = useState<Lens | null>(null);
-  const [prescriptionData, setPrescriptionData] = useState<PrescriptionData | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [orderId, setOrderId] = useState<string>('');
-  const [selectedVoucher, setSelectedVoucher] = useState<VoucherInfo | null>(null);
-  const userInfoString = localStorage.getItem('UserInfo');
-  const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
-  const accountID = userInfo?.user?.id || 0;
+
+   // Order states
+   const [selectedLens, setSelectedLens] = useState<Lens | null>(null);
+   const [orderId, setOrderId] = useState<string>('');
+   const [selectedVoucher, setSelectedVoucher] = useState<VoucherInfo | null>(null);
+   const userInfoString = localStorage.getItem('UserInfo');
+   const userInfo = userInfoString ? JSON.parse(userInfoString) : null;
+   const accountID = userInfo?.user?.id || 0;
 
   // Services
-  const eyeGlassService = useEyeGlassService();
-  const lensService = useLensService();
   const { createOrderNow } = useOrderService();
   const { createPaymentUrl, fetchPaymentByOrderId } = usePaymentService();
-  const productGlassService = useProductGlassService();
+  const { createProductGlass } = useProductGlassService();
+
+  const handleAddToCart = async (productData: any) => {
+    const cartItemId = `${Date.now()}-${Math.random()}`;
+    cartDispatch({
+      type: 'ADD_ITEM',
+      payload: {
+        id: cartItemId,
+        ...productData,
+        quantity: 1
+      }
+    });
+    toast.success('Added to cart');
+    setSelectedProduct(null);
+    setCurrentStep(1);
+  };
 
   const handleCreateOrder = async (method: 'cash' | 'vnpay') => {
-    if (!selectedProduct || !selectedLens || !selectedCustomer || !prescriptionData) {
+    if (!selectedCustomer || cartState.items.length === 0) {
       setError('Missing required order information');
       return;
     }
 
     setLoading(true);
     try {
-      const orderData = {
-        accountID: selectedCustomer.id,
-        receiverAddress: selectedCustomer.profiles[0]?.address || null,
-        isDeposit: true,
-        voucherID: selectedVoucher?.id || null,
-        orderDetails: [{
-          quantity: 1,
-          productGlassRequest: {
-            eyeGlassID: selectedProduct.id,
-            leftLenID: selectedLens.id,
-            rightLenID: selectedLens.id,
+      // Create ProductGlass entries first
+      const productGlassIds = await Promise.all(
+        cartState.items.map(async (item) => {
+          const productGlassData = {
+            eyeGlassID: item.eyeGlass.id,
+            leftLenID: item.leftLens.id,
+            rightLenID: item.rightLens.id,
             accountID: selectedCustomer.id,
-            sphereOD: prescriptionData.sphereOD || 0,
-            cylinderOD: prescriptionData.cylinderOD || 0,
-            axisOD: prescriptionData.axisOD || 0,
-            sphereOS: prescriptionData.sphereOS || 0,
-            cylinderOS: prescriptionData.cylinderOS || 0,
-            axisOS: prescriptionData.axisOS || 0,
+            sphereOD: item.prescriptionData.sphereOD || 0,
+            cylinderOD: item.prescriptionData.cylinderOD || 0,
+            axisOD: item.prescriptionData.axisOD || 0,
+            sphereOS: item.prescriptionData.sphereOS || 0,
+            cylinderOS: item.prescriptionData.cylinderOS || 0,
+            axisOS: item.prescriptionData.axisOS || 0,
             addOD: 0,
             addOS: 0,
-            pd: prescriptionData.pd || 0
-          }
-        }]
+            pd: item.prescriptionData.pd || 0
+          };
+
+          const response = await createProductGlass(productGlassData);
+          return response.id;
+        })
+      );
+
+      // Create the order
+      const orderData = {
+        accountID: selectedCustomer.id,
+        receiverAddress: selectedCustomer.profiles[0]?.address || '',
+        isDeposit: true,
+        listProductGlassID: productGlassIds
       };
-      console.log("Oder",orderData);
 
       const orderResponse = await createOrderNow(orderData);
 
@@ -133,20 +143,19 @@ const StaffOrderPage: React.FC = () => {
 
         if (method === 'vnpay') {
           const paymentResponse = await createPaymentUrl(orderResponse.id);
-
           if (paymentResponse?.paymentUrl) {
             window.location.href = paymentResponse.paymentUrl;
           } else {
             throw new Error('Invalid payment URL');
           }
         } else {
-          // Xử lý thanh toán tiền mặt
           const paymentDetails = await fetchPaymentByOrderId(orderResponse.id);
           setCreatedOrder({
             ...orderResponse,
             ...paymentDetails
           });
           setShowSuccessModal(true);
+          cartDispatch({ type: 'CLEAR_CART' });
           toast.success('Order created successfully');
         }
       }
@@ -159,46 +168,44 @@ const StaffOrderPage: React.FC = () => {
     }
   };
 
-  const handlePrintReceipt = () => {
-    window.print();
-  };
-
-  const handleViewOrderDetails = () => {
-    // router.push(`/staff/orders/${createdOrder?.id}`);
-  };
-
   const handleStartNewOrder = () => {
     setSelectedProduct(null);
-    setSelectedLens(null);
-    setPrescriptionData(null);
     setSelectedCustomer(null);
     setCurrentStep(1);
     setShowSuccessModal(false);
     setCreatedOrder(null);
     setPaymentMethod('cash');
-    setOrderId(`VIS-${new Date().getTime().toString().slice(-6)}`);
+    cartDispatch({ type: 'CLEAR_CART' });
   };
 
-  useEffect(() => {
-    setOrderId(`VIS-${new Date().getTime().toString().slice(-6)}`);
-  }, []);
+  const handlePrintReceipt = () => {
+    window.print();
+  };
 
-  const StepHeader: React.FC = () => (
-    <div className={styles.header}>
-      <div className={styles.headerTop}>
-        <h1>Create New Order</h1>
-        <div className={styles.orderNumber}>
-          Order #{orderId}
+  return (
+    <div className={styles.staffOrderPage}>
+      <header className={styles.header}>
+        <div className={styles.headerLeft}>
+          <h1>Create New Order</h1>
         </div>
-      </div>
+        <div className={styles.headerRight}>
+          <button
+            className={styles.cartButton}
+            onClick={() => setShowCartModal(true)}
+          >
+            <ShoppingCart />
+            <span className={styles.cartCount}>{cartState.items.length}</span>
+          </button>
+        </div>
+      </header>
 
       <div className={styles.stepProgress}>
         {steps.map((step) => {
           const Icon = step.icon;
           const isCompleted = (() => {
             switch (step.id) {
-              case 1: return !!selectedProduct;
-              case 2: return !!selectedLens;
+              case 1: return cartState.items.length > 0;
+              case 2: return !!selectedProduct;
               case 3: return !!selectedCustomer;
               case 4: return false;
               default: return false;
@@ -223,23 +230,10 @@ const StaffOrderPage: React.FC = () => {
           );
         })}
       </div>
-    </div>
-  );
-
-  return (
-    <div className={styles.staffOrderPage}>
-      <StepHeader />
 
       {error && (
         <div className={styles.error} onClick={() => setError(null)}>
           {error}
-        </div>
-      )}
-
-      {loading && (
-        <div className={styles.loading}>
-          <div className={styles.spinner} />
-          Processing...
         </div>
       )}
 
@@ -256,12 +250,16 @@ const StaffOrderPage: React.FC = () => {
         {currentStep === 2 && selectedProduct && (
           <LensSelection
             selectedProduct={selectedProduct}
-            onLensSelect={(lens: Lens, prescription: PrescriptionData) => {
-              setSelectedLens(lens);
-              setPrescriptionData(prescription);
-              setCurrentStep(3);
+            onLensSelect={(lensData) => {
+              handleAddToCart({
+                eyeGlass: selectedProduct,
+                ...lensData
+              });
             }}
-            onBack={() => setCurrentStep(1)}
+            onBack={() => {
+              setSelectedProduct(null);
+              setCurrentStep(1);
+            }}
           />
         )}
 
@@ -271,16 +269,14 @@ const StaffOrderPage: React.FC = () => {
               setSelectedCustomer(customer);
               setCurrentStep(4);
             }}
-            onBack={() => setCurrentStep(2)}
+            onBack={() => setCurrentStep(cartState.items.length > 0 ? 1 : 2)}
           />
         )}
 
-        {currentStep === 4 && selectedProduct && selectedLens && selectedCustomer && prescriptionData && (
+        {currentStep === 4 && selectedCustomer && cartState.items.length > 0 && (
           <OrderSummary
-            product={selectedProduct}
-            lens={selectedLens}
+            cartItems={cartState.items}
             customer={selectedCustomer}
-            prescriptionData={prescriptionData}
             onBack={() => setCurrentStep(3)}
             onCreateOrder={handleCreateOrder}
             loading={loading}
@@ -289,47 +285,22 @@ const StaffOrderPage: React.FC = () => {
         )}
       </div>
 
+      <CartModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        onCheckout={() => {
+          setShowCartModal(false);
+          setCurrentStep(3);
+        }}
+      />
+
       <OrderSuccessModal
         isOpen={showSuccessModal}
         onClose={handleStartNewOrder}
-        orderData={{
-          orderID: createdOrder?.id || 0,
-          code: createdOrder?.code || '',
-          orderTime: createdOrder?.orderTime || new Date().toISOString(),
-          totalAmount: createdOrder?.totalAmount || 0,
-          isDeposit: createdOrder?.isDeposit || false,
-          receiverAddress: createdOrder?.receiverAddress || null,
-          kioskID: createdOrder?.kioskID,
-          process: createdOrder?.process || 1,
-          productGlass: createdOrder?.productGlass.map((item: any) => ({
-            productGlassID: item.productGlassID,
-            eyeGlass: {
-              id: item.eyeGlass.id,
-              name: item.eyeGlass.name,
-              eyeGlassImage: item.eyeGlass.eyeGlassImage,
-            },
-            leftLen: {
-              id: item.leftLen.id,
-              lensName: item.leftLen.lensName,
-              lensDescription: item.leftLen.lensDescription,
-              leftLensImage: item.leftLen.leftLensImage || null,
-            },
-            rightLen: {
-              id: item.rightLen.id,
-              lensName: item.rightLen.lensName,
-              lensDescription: item.rightLen.lensDescription,
-              rightLensImage: item.rightLen.rightLensImage || null,
-            },
-          })) || [],
-          totalPaid: createdOrder?.totalPaid || 0,
-          remainingAmount: createdOrder?.remainingAmount || 0,
-          voucher: createdOrder?.voucher || null,
-          payments: createdOrder?.payments || [],
-        }}
-        onPrint={handlePrintReceipt}
-        onViewDetails={handleViewOrderDetails}
+        orderData={createdOrder}
+        // onPrint={handlePrintReceipt}
         onNewOrder={handleStartNewOrder}
-        companyInfo={COMPANY_INFO} // Pass companyInfo prop
+        companyInfo={COMPANY_INFO}
       />
     </div>
   );

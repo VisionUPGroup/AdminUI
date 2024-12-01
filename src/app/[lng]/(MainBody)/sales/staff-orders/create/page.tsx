@@ -1,8 +1,13 @@
 "use client";
-import SalesOrders from "@/Components/Staff/Order/StaffOrderPage";
+import StaffOrderPage from "@/Components/Staff/Order/StaffOrderPage";
+import { CartProvider } from '../../../../../../Components/Staff/Order/context/CartContext';
 
 const SaleOrdersContainer = () => {
-  return <SalesOrders />;
+  return (
+    <CartProvider>
+      <StaffOrderPage />
+    </CartProvider>
+  );
 };
 
 export default SaleOrdersContainer;

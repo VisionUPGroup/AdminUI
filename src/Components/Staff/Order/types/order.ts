@@ -92,3 +92,4 @@ export interface PaymentDetailsResponse {
     remainingAmount: number;
     payments: any[];
 }
+

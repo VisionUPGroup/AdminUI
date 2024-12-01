@@ -1,935 +1,451 @@
-@import './_variables';
+@import './variables';
+@import './mixins';
 
 .container {
-  background: $background;
   min-height: 100vh;
-  padding: $container-padding;
-}
+  background: $background;
+  padding: $spacing-xl;
 
-.header {
-  margin-bottom: $spacing-unit * 8;
+  .header {
+    margin-bottom: $spacing-2xl;
 
-  .backButton {
-    display: flex;
-    align-items: center;
-    gap: $spacing-unit * 2;
-    color: $text-secondary;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: $spacing-unit * 2;
-    transition: $transition-base;
-
-    &:hover {
-      color: $text-primary;
-    }
-  }
-
-  .productPreview {
-    margin-top: $spacing-unit * 4;
-    display: flex;
-    align-items: center;
-    gap: $spacing-unit * 4;
-    padding: $spacing-unit * 4;
-    background: $surface;
-    border-radius: $border-radius-lg;
-    box-shadow: $shadow-sm;
-
-    .productImage {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: $border-radius;
-    }
-
-    .productInfo {
-      h2 {
-        margin-bottom: $spacing-unit * 2;
-        font-family: $font-heading;
-      }
-
-      .price {
-        color: $primary;
-        font-weight: 600;
-        font-size: 1.125rem;
-      }
-    }
-  }
-}
-
-.mainContent {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: $spacing-unit * 6;
-}
-
-.typeSelection {
-  h2 {
-    margin-bottom: $spacing-unit * 6;
-    font-family: $font-heading;
-    color: $text-primary;
-  }
-
-  .typeGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-unit * 4;
-  }
-}
-
-.typeCard {
-  display: flex;
-  align-items: flex-start;
-  gap: $spacing-unit * 4;
-  padding: $spacing-unit * 6;
-  background: $surface;
-  border: none;
-  border-radius: $border-radius-lg;
-  text-align: left;
-  cursor: pointer;
-  transition: $transition-smooth;
-  box-shadow: $shadow-sm;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: $shadow-lg;
-  }
-
-  .iconWrapper {
-    color: $primary;
-    background: rgba($primary, 0.1);
-    padding: $spacing-unit * 3;
-    border-radius: $border-radius;
-  }
-
-  .typeContent {
-    flex: 1;
-
-    h3 {
-      color: $text-primary;
-      margin-bottom: $spacing-unit * 2;
-      font-family: $font-heading;
-    }
-
-    p {
-      color: $text-secondary;
-      font-size: 0.875rem;
-      line-height: 1.5;
-    }
-  }
-}
-
-.leftSection {
-  .typeHeader {
-    margin-bottom: $spacing-unit * 6;
-
-    .backToTypes {
-      display: flex;
-      align-items: center;
-      gap: $spacing-unit * 2;
-      color: $text-secondary;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: $spacing-unit * 2;
-      margin-bottom: $spacing-unit * 2;
+    .backButton {
+      @include button-secondary;
+      gap: $spacing-sm;
+      margin-bottom: $spacing-lg;
 
       &:hover {
-        color: $text-primary;
+        transform: translateX(-4px);
       }
     }
 
-    h2 {
-      color: $primary;
-      font-family: $font-heading;
-    }
-  }
-
-  .filters {
-    background: $surface;
-    padding: $spacing-unit * 4;
-    border-radius: $border-radius;
-    margin-bottom: $spacing-unit * 4;
-    display: flex;
-    gap: $spacing-unit * 4;
-
-    select {
-      flex: 1;
-      padding: $spacing-unit * 2;
-      border: 1px solid rgba($text-secondary, 0.2);
-      border-radius: $border-radius;
-      background: $surface;
-    }
-
-    .priceRange {
+    .productPreview {
+      @include card;
       display: flex;
       align-items: center;
-      gap: $spacing-unit * 2;
-      flex: 1;
+      gap: $spacing-lg;
+      padding: $spacing-lg;
+      background: $gradient-surface;
 
-      input {
-        width: 100%;
-        padding: $spacing-unit * 2;
-        border: 1px solid rgba($text-secondary, 0.2);
+      .productImage {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
         border-radius: $border-radius;
+        transition: transform 0.3s ease;
 
-        &::placeholder {
-          color: rgba($text-secondary, 0.5);
+        &:hover {
+          transform: scale(1.05);
         }
       }
 
-      span {
-        color: $text-secondary;
-      }
-    }
-  }
-}
+      .productInfo {
+        h2 {
+          @include heading-2;
+          margin-bottom: $spacing-sm;
+        }
 
-.lensGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: $spacing-unit * 4;
-}
-
-.lensCard {
-  position: relative;
-  background: $surface;
-  border-radius: $border-radius-lg;
-  overflow: hidden;
-  cursor: pointer;
-  transition: $transition-smooth;
-  border: 2px solid transparent;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: $shadow-lg;
-  }
-
-  &.selected {
-    border-color: $primary;
-  }
-
-  .imageSection {
-    position: relative;
-    height: 200px;
-    background: $background;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .outOfStock {
-      position: absolute;
-      top: $spacing-unit * 3;
-      right: $spacing-unit * 3;
-      padding: $spacing-unit * 2 $spacing-unit * 3;
-      background: rgba(#dc3545, 0.9);
-      color: $surface;
-      border-radius: $border-radius-full;
-      font-size: 0.75rem;
-    }
-  }
-
-  .content {
-    padding: $spacing-unit * 4;
-
-    h3 {
-      margin-bottom: $spacing-unit * 2;
-      font-family: $font-heading;
-    }
-
-    p {
-      color: $text-secondary;
-      font-size: 0.875rem;
-      margin-bottom: $spacing-unit * 3;
-      line-height: 1.5;
-    }
-
-    .features {
-      display: flex;
-      flex-wrap: wrap;
-      gap: $spacing-unit * 2;
-      margin-bottom: $spacing-unit * 3;
-
-      .feature {
-        padding: $spacing-unit $spacing-unit * 2;
-        background: $background;
-        border-radius: $border-radius-full;
-        font-size: 0.75rem;
-        color: $text-secondary;
-      }
-    }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .price {
-        color: $primary;
-        font-weight: 600;
-        font-size: 1.125rem;
-      }
-
-      .rating {
-        display: flex;
-        align-items: center;
-        gap: $spacing-unit;
-
-        span {
-          color: $text-secondary;
-          font-size: 0.875rem;
+        .price {
+          color: $primary;
+          font-weight: 600;
+          font-size: $font-size-lg;
         }
       }
     }
   }
 
-  .selectedCheck {
-    position: absolute;
-    top: $spacing-unit * 3;
-    right: $spacing-unit * 3;
-    width: 32px;
-    height: 32px;
-    background: $primary;
-    color: $surface;
-    border-radius: $border-radius-full;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
+  .mainContent {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: $spacing-xl;
 
-.rightSection {
-  position: sticky;
-  top: $spacing-unit * 4;
-  height: max-content;
-}
-
-.emptyState {
-  height: 100%;
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: $surface;
-  border-radius: $border-radius-lg;
-  padding: $spacing-unit * 6;
-  text-align: center;
-  border: 2px dashed rgba($text-secondary, 0.2);
-
-  .illustration {
-    font-size: 3rem;
-    margin-bottom: $spacing-unit * 4;
-    opacity: 0.5;
+    @include respond-to(lg) {
+      grid-template-columns: 2fr 1fr;
+    }
   }
 
-  h3 {
-    color: $text-primary;
-    margin-bottom: $spacing-unit * 2;
-    font-family: $font-heading;
-  }
-
-  p {
-    color: $text-secondary;
-    max-width: 280px;
-    line-height: 1.5;
-  }
-}
-
-.prescriptionForm {
-  background: $surface;
-  border-radius: $border-radius-lg;
-  padding: $spacing-unit * 6;
-
-  h3 {
-    margin-bottom: $spacing-unit * 6;
-    font-family: $font-heading;
-  }
-
-  .eyeSection {
-    .eye {
-      margin-bottom: $spacing-unit * 6;
-
-      h4 {
-        color: $text-secondary;
-        margin-bottom: $spacing-unit * 3;
+  .leftSection {
+    .typeSelection {
+      h2 {
+        @include heading-2;
+        margin-bottom: $spacing-xl;
       }
 
-      .inputs {
+      .typeGrid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: $spacing-unit * 3;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: $spacing-lg;
+      }
+
+      .typeCard {
+        @include card;
+        padding: $spacing-xl;
+        text-align: left;
+        @include interactive;
+        border: 2px solid transparent;
+
+        &:hover {
+          border-color: rgba($primary, 0.3);
+          background: $gradient-surface;
+        }
+
+        h3 {
+          @include heading-2;
+          font-size: $font-size-lg;
+          margin-bottom: $spacing-sm;
+          color: $text-primary;
+        }
+
+        p {
+          color: $text-secondary;
+          font-size: $font-size-sm;
+          line-height: 1.6;
+        }
       }
     }
 
-    .field {
-      label {
-        display: block;
-        color: $text-secondary;
-        font-size: 0.875rem;
-        margin-bottom: $spacing-unit * 2;
-      }
+    .lensGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: $spacing-lg;
 
-      input {
-        width: 100%;
-        padding: $spacing-unit * 2;
-        border: 1px solid rgba($text-secondary, 0.2);
-        border-radius: $border-radius;
-        transition: $transition-base;
+      .lensCard {
+        @include card;
+        position: relative;
+        overflow: hidden;
+        @include interactive;
+        border: 2px solid transparent;
 
-        &:focus {
+        &.selected {
           border-color: $primary;
-          outline: none;
-          box-shadow: 0 0 0 2px rgba($primary, 0.1);
+          background: linear-gradient(to bottom right, $surface, $primary-light);
+
+          .selectedCheck {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        img {
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+          transition: transform 0.6s ease;
+
+          &:hover {
+            transform: scale(1.05);
+          }
+        }
+
+        .content {
+          padding: $spacing-lg;
+
+          h3 {
+            @include heading-2;
+            font-size: $font-size-lg;
+            margin-bottom: $spacing-sm;
+          }
+
+          p {
+            color: $text-secondary;
+            font-size: $font-size-sm;
+            margin-bottom: $spacing-md;
+            line-height: 1.6;
+          }
+
+          .price {
+            color: $primary;
+            font-weight: 600;
+            font-size: $font-size-xl;
+          }
+
+          .rating {
+            @include flex-center;
+            gap: $spacing-xs;
+            margin-top: $spacing-sm;
+
+            svg {
+              width: 16px;
+              height: 16px;
+            }
+
+            span {
+              color: $text-secondary;
+              font-size: $font-size-sm;
+            }
+          }
+        }
+
+        .selectedCheck {
+          position: absolute;
+          top: $spacing-md;
+          right: $spacing-md;
+          width: 32px;
+          height: 32px;
+          background: $primary;
+          color: $surface;
+          border-radius: $border-radius-full;
+          @include flex-center;
+          opacity: 0;
+          transform: translateY(-10px);
+          transition: all 0.3s ease;
         }
       }
     }
+  }
 
-    .pdField {
-      position: relative;
-      margin-top: $spacing-unit * 4;
+  .rightSection {
+    position: sticky;
+    top: $spacing-lg;
+    height: max-content;
 
-      label {
-        display: block;
-        color: $text-secondary;
-        margin-bottom: $spacing-unit * 2;
+    .prescriptionForm {
+      @include card;
+      padding: $spacing-xl;
+
+      h3 {
+        @include heading-2;
+        margin-bottom: $spacing-xl;
       }
 
-      input {
-        width: 100%;
-        max-width: 200px;
-        padding: $spacing-unit * 2;
-        padding-right: $spacing-unit * 8;
-        border: 1px solid rgba($text-secondary, 0.2);
-        border-radius: $border-radius;
+      .eyeSection {
+        .eye {
+          margin-bottom: $spacing-xl;
 
-        &:focus {
-          border-color: $primary;
-          outline: none;
-          box-shadow: 0 0 0 2px rgba($primary, 0.1);
+          h4 {
+            color: $text-secondary;
+            margin-bottom: $spacing-md;
+            font-weight: 500;
+          }
+
+          .inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: $spacing-md;
+          }
         }
-      }
 
-      .unit {
-        position: absolute;
-        right: calc(100% - 180px);
-        top: 32px;
-        color: $text-secondary;
-        padding: $spacing-unit * 2;
-      }
-    }
-  }
-}
+        .field {
+          label {
+            display: block;
+            color: $text-secondary;
+            font-size: $font-size-sm;
+            margin-bottom: $spacing-sm;
+          }
 
-.nonPrescriptionDetails {
-  background: $surface;
-  border-radius: $border-radius-lg;
-  padding: $spacing-unit * 6;
+          .inputWrapper {
+            position: relative;
 
-  h3 {
-    margin-bottom: $spacing-unit * 4;
-    font-family: $font-heading;
-  }
+            input {
+              @include input-base;
+              text-align: right;
+              padding-right: $spacing-xl;
+              font-family: $font-mono;
+              
+              &.error {
+                border-color: $error;
+                background-color: $error-light;
+              }
+            }
 
-  .selectedLensInfo {
-    text-align: center;
-    margin-bottom: $spacing-unit * 6;
+            .unit {
+              position: absolute;
+              right: $spacing-md;
+              top: 50%;
+              transform: translateY(-50%);
+              color: $text-secondary;
+              font-size: $font-size-sm;
+              pointer-events: none;
+            }
+          }
 
-    img {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: $border-radius;
-      margin-bottom: $spacing-unit * 3;
-    }
-
-    h4 {
-      color: $primary;
-      margin-bottom: $spacing-unit * 2;
-    }
-
-    p {
-      color: $text-secondary;
-      font-size: 0.875rem;
-      margin-bottom: $spacing-unit * 3;
-    }
-
-    .price {
-      font-weight: 600;
-      font-size: 1.25rem;
-    }
-  }
-}
-
-
-// .prescriptionForm {
-//   background: $surface;
-//   border-radius: $border-radius-lg;
-//   padding: $spacing-unit * 6;
-
-//   h3 {
-//     margin-bottom: $spacing-unit * 3;
-//     font-family: $font-heading;
-//     color: $text-primary;
-//   }
-
-//   .instruction {
-//     color: $text-secondary;
-//     font-size: 0.875rem;
-//     margin-bottom: $spacing-unit * 4;
-//   }
-
-//   .eyeSection {
-//     .eye {
-//       background: $background;
-//       padding: $spacing-unit * 4;
-//       border-radius: $border-radius;
-//       margin-bottom: $spacing-unit * 4;
-
-//       h4 {
-//         color: $text-primary;
-//         margin-bottom: $spacing-unit * 3;
-//         display: flex;
-//         align-items: center;
-//         gap: $spacing-unit * 2;
-//         font-family: $font-heading;
-
-//         &::before {
-//           content: '';
-//           display: inline-block;
-//           width: 8px;
-//           height: 8px;
-//           border-radius: 50%;
-//           background: $primary;
-//         }
-//       }
-
-//       .inputs {
-//         display: grid;
-//         grid-template-columns: repeat(3, 1fr);
-//         gap: $spacing-unit * 3;
-//       }
-//     }
-
-//     .field {
-//       position: relative;
-
-//       label {
-//         display: block;
-//         color: $text-secondary;
-//         font-size: 0.875rem;
-//         margin-bottom: $spacing-unit * 2;
-//       }
-
-//       .inputWrapper {
-//         position: relative;
-
-//         input {
-//           width: 100%;
-//           padding: $spacing-unit * 2;
-//           padding-right: $spacing-unit * 8;
-//           border: 1.5px solid rgba($text-secondary, 0.2);
-//           border-radius: $border-radius;
-//           transition: $transition-base;
-//           text-align: right;
-//           font-size: 1rem;
-//           color: $text-primary;
-//           background: $surface;
-
-//           &:focus {
-//             border-color: $primary;
-//             outline: none;
-//             box-shadow: 0 0 0 2px rgba($primary, 0.1);
-//           }
-
-//           &.error {
-//             border-color: #dc3545;
-//             background-color: rgba(#dc3545, 0.05);
-//           }
-
-//           &::-webkit-inner-spin-button,
-//           &::-webkit-outer-spin-button {
-//             opacity: 0;
-//           }
-//         }
-
-//         .unit {
-//           position: absolute;
-//           right: $spacing-unit * 3;
-//           top: 50%;
-//           transform: translateY(-50%);
-//           color: $text-secondary;
-//           font-size: 0.875rem;
-//           pointer-events: none;
-//         }
-//       }
-
-//       .errorMessage {
-//         position: absolute;
-//         left: 0;
-//         bottom: -$spacing-unit * 4;
-//         font-size: 0.75rem;
-//         color: #dc3545;
-//       }
-//     }
-//   }
-
-//   .pdSection {
-//     margin-top: $spacing-unit * 6;
-//     background: $background;
-//     padding: $spacing-unit * 4;
-//     border-radius: $border-radius;
-
-//     .field {
-//       max-width: 200px;
-//       margin: 0 auto;
-
-//       label {
-//         text-align: center;
-//         display: block;
-//         margin-bottom: $spacing-unit * 2;
-//       }
-
-//       .inputWrapper {
-//         position: relative;
-
-//         input {
-//           width: 100%;
-//           padding: $spacing-unit * 2;
-//           padding-right: $spacing-unit * 8;
-//           border: 1.5px solid rgba($text-secondary, 0.2);
-//           border-radius: $border-radius;
-//           text-align: right;
-//           transition: $transition-base;
-
-//           &:focus {
-//             border-color: $primary;
-//             outline: none;
-//             box-shadow: 0 0 0 2px rgba($primary, 0.1);
-//           }
-//         }
-
-//         .unit {
-//           position: absolute;
-//           right: $spacing-unit * 3;
-//           top: 50%;
-//           transform: translateY(-50%);
-//           color: $text-secondary;
-//         }
-//       }
-//     }
-//   }
-
-.continueButton {
-  width: 100%;
-  padding: $spacing-unit * 3;
-  background: $gradient-primary;
-  color: $surface;
-  border: none;
-  border-radius: $border-radius;
-  font-weight: 600;
-  cursor: pointer;
-  transition: $transition-base;
-  margin-top: $spacing-unit * 6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $spacing-unit * 2;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: $shadow-md;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-.field {
-  .inputWrapper {
-    position: relative;
-
-    input.prescriptionInput {
-      width: 100%;
-      padding: $spacing-unit * 2;
-      padding-right: $spacing-unit * 10;
-      border: 1.5px solid rgba($text-secondary, 0.2);
-      border-radius: $border-radius;
-      transition: $transition-base;
-      text-align: right;
-      font-size: 1rem;
-      color: $text-primary;
-      background: $surface;
-      font-family: $font-mono; // Sử dụng font monospace cho số
-      letter-spacing: 0.5px;
-
-      // Ẩn arrows mặc định
-      &::-webkit-outer-spin-button,
-      &::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      // Firefox
-      &[type=number] {
-        -moz-appearance: textfield;
-      }
-
-      &::placeholder {
-        color: rgba($text-secondary, 0.5);
-        text-align: right;
-      }
-
-      &:focus {
-        border-color: $primary;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba($primary, 0.1);
-      }
-
-      &.error {
-        border-color: #dc3545;
-        background-color: rgba(#dc3545, 0.05);
-      }
-    }
-
-    .unit {
-      position: absolute;
-      right: $spacing-unit * 3;
-      top: 50%;
-      transform: translateY(-50%);
-      color: $text-secondary;
-      font-size: 0.875rem;
-      pointer-events: none;
-      user-select: none;
-    }
-  }
-}
-
-
-// Responsive Styles
-@media (max-width: 768px) {
-  .prescriptionForm {
-    padding: $spacing-unit * 4;
-
-    .eyeSection {
-      .eye {
-        padding: $spacing-unit * 3;
-
-        .inputs {
-          grid-template-columns: 1fr;
-          gap: $spacing-unit * 4;
+          .errorMessage {
+            color: $error;
+            font-size: $font-size-xs;
+            margin-top: $spacing-xs;
+          }
         }
-      }
 
-      .field {
-        .inputWrapper {
-          input {
-            font-size: 0.875rem;
-            padding: $spacing-unit * 1.5;
+        .pdField {
+          margin-top: $spacing-xl;
+          text-align: center;
+
+          label {
+            display: block;
+            color: $text-secondary;
+            margin-bottom: $spacing-md;
+          }
+
+          .inputWrapper {
+            position: relative;
+            max-width: 200px;
+            margin: 0 auto;
+
+            input {
+              @include input-base;
+              text-align: center;
+              font-family: $font-mono;
+            }
+
+            .unit {
+              position: absolute;
+              right: $spacing-md;
+              top: 50%;
+              transform: translateY(-50%);
+              color: $text-secondary;
+              font-size: $font-size-sm;
+            }
           }
         }
       }
     }
 
-    .pdSection {
-      padding: $spacing-unit * 3;
+    .nonPrescriptionDetails {
+      @include card;
+      padding: $spacing-xl;
+      text-align: center;
+
+      h3 {
+        @include heading-2;
+        margin-bottom: $spacing-lg;
+      }
+
+      .selectedLensInfo {
+        img {
+          width: 120px;
+          height: 120px;
+          object-fit: cover;
+          border-radius: $border-radius;
+          margin-bottom: $spacing-md;
+        }
+
+        h4 {
+          color: $primary;
+          margin-bottom: $spacing-sm;
+          font-weight: 600;
+        }
+
+        p {
+          color: $text-secondary;
+          font-size: $font-size-sm;
+          margin-bottom: $spacing-md;
+          line-height: 1.6;
+        }
+
+        .price {
+          font-size: $font-size-xl;
+          font-weight: 700;
+          color: $primary;
+        }
+      }
     }
 
-    .continueButton {
-      padding: $spacing-unit * 2.5;
+    .addToCartButton {
+      @include button-primary;
+      width: 100%;
+      margin-top: $spacing-xl;
+      padding: $spacing-lg;
+      font-weight: 600;
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .spinner {
+        @include loading-spinner;
+        margin-right: $spacing-sm;
+      }
     }
   }
-}
 
-.nonPrescriptionDetails {
-  background: $surface;
-  border-radius: $border-radius-lg;
-  padding: $spacing-unit * 6;
-
-  h3 {
-    margin-bottom: $spacing-unit * 4;
-    font-family: $font-heading;
-  }
-
-  .selectedLensInfo {
+  .emptyState {
+    @include flex-center;
+    flex-direction: column;
+    padding: $spacing-2xl;
+    min-height: 400px;
+    @include card;
+    background: linear-gradient(135deg, $surface, $background);
+    border: 2px dashed rgba($text-secondary, 0.2);
     text-align: center;
-    margin-bottom: $spacing-unit * 6;
 
-    img {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: $border-radius;
-      margin-bottom: $spacing-unit * 3;
+    .illustration {
+      font-size: $font-size-3xl;
+      margin-bottom: $spacing-lg;
+      opacity: 0.5;
     }
 
-    h4 {
-      color: $primary;
-      margin-bottom: $spacing-unit * 2;
+    h3 {
+      @include heading-2;
+      margin-bottom: $spacing-sm;
     }
 
     p {
       color: $text-secondary;
-      font-size: 0.875rem;
-      margin-bottom: $spacing-unit * 3;
+      max-width: 280px;
+      margin-bottom: $spacing-lg;
+      line-height: 1.6;
     }
 
-    .price {
-      font-weight: 600;
-      font-size: 1.25rem;
+    button {
+      @include button-primary;
     }
   }
-}
 
-.continueButton {
-  width: 100%;
-  padding: $spacing-unit * 3;
-  background: $gradient-primary;
-  color: $surface;
-  border: none;
-  border-radius: $border-radius;
-  font-weight: 600;
-  cursor: pointer;
-  transition: $transition-base;
-  margin-top: $spacing-unit * 6;
+  // Responsive Styles
+  @include respond-to(sm) {
+    .mainContent {
+      grid-template-columns: 1fr;
+    }
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: $shadow-md;
-  }
+    .rightSection {
+      position: static;
+      margin-top: $spacing-xl;
+    }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-}
-
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $spacing-unit * 3;
-  padding: $spacing-unit * 8;
-  color: $text-secondary;
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba($primary, 0.1);
-    border-top-color: $primary;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-}
-
-.noResults {
-  text-align: center;
-  padding: $spacing-unit * 8;
-  color: $text-secondary;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-// Responsive Styles
-@media (max-width: 1200px) {
-  .mainContent {
-    grid-template-columns: 1fr 350px;
-  }
-
-  .typeGrid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 992px) {
-  .mainContent {
-    grid-template-columns: 1fr;
-  }
-
-  .rightSection {
-    position: static;
-    margin-top: $spacing-unit * 6;
-  }
-
-  .filters {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 576px) {
-  .container {
-    padding: $spacing-unit * 2;
-  }
-
-  .productPreview {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
-  }
-
-  .lensGrid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .prescriptionForm {
-    .eye .inputs {
-      grid-template-columns: 1fr !important;
+    .prescriptionForm {
+      .eyeSection {
+        .eye {
+          .inputs {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
     }
   }
-}
 
-.error {
-  background: rgba(#dc3545, 0.1);
-  color: #dc3545;
-  padding: $spacing-unit * 4;
-  border-radius: $border-radius;
-  margin-bottom: $spacing-unit * 4;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  .retryButton {
-    background: #dc3545;
-    color: $surface;
-    border: none;
-    padding: $spacing-unit * 2 $spacing-unit * 4;
-    border-radius: $border-radius;
-    cursor: pointer;
-    transition: $transition-base;
-
-    &:hover {
-      background: darken(#dc3545, 10%);
+  @include respond-to(md) {
+    .mainContent {
+      grid-template-columns: 1.2fr 1fr;
     }
   }
-}
 
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $spacing-unit * 3;
-  padding: $spacing-unit * 8;
-  color: $text-secondary;
+  @include respond-to(lg) {
+    .mainContent {
+      grid-template-columns: 1.5fr 1fr;
+    }
 
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba($primary, 0.1);
-    border-top-color: $primary;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+    .lensGrid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @include respond-to(xl) {
+    .container {
+      padding: $spacing-2xl;
+    }
+
+    .lensGrid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  // Animations
+  .typeCard, .lensCard {
+    @include fade-in;
+  }
+
+  .selectedCheck {
+    @include slide-in;
   }
 }
