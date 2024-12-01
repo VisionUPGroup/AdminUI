@@ -5,7 +5,6 @@ import {
   Wallet,
   Check,
   ShoppingBag,
-  Eye,
   User,
   Receipt,
   Tag,
@@ -14,6 +13,7 @@ import {
   Loader
 } from 'lucide-react';
 import { useVoucherService } from '../../../../../Api/voucherService';
+import { CartItem } from '../context/CartContext';
 import styles from '../styles/OrderSummary.module.scss';
 
 interface Customer {
@@ -33,45 +33,21 @@ interface VoucherInfo {
   discountType: string;
   discountValue: number;
   status: boolean;
-  quantity: number; // Added quantity field
-}
-
-interface PrescriptionData {
-  sphereOD?: number;
-  cylinderOD?: number;
-  axisOD?: number;
-  sphereOS?: number;
-  cylinderOS?: number;
-  axisOS?: number;
-  pd?: number;
+  quantity: number;
 }
 
 interface OrderSummaryProps {
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    eyeGlassImages: Array<{ url: string }>;
-  };
-  lens: {
-    id: number;
-    lensName: string;
-    lensPrice: number;
-    lensImages: Array<{ url: string }>;
-  };
+  cartItems: CartItem[];
   customer: Customer;
-  prescriptionData: PrescriptionData;
   onBack: () => void;
   onCreateOrder: (method: 'cash' | 'vnpay') => Promise<void>;
   loading: boolean;
   onVoucherSelect: (voucher: VoucherInfo | null) => void;
 }
 
-const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
-  product,
-  lens,
+const OrderSummary: React.FC<OrderSummaryProps> = ({
+  cartItems,
   customer,
-  prescriptionData,
   onBack,
   onCreateOrder,
   loading,
@@ -89,7 +65,12 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
   const { fetchVoucherByCode } = useVoucherService();
 
-  const calculateSubtotal = () => product.price + lens.lensPrice;
+  const calculateSubtotal = () => {
+    return cartItems.reduce((total, item) => {
+      const itemTotal = (item.eyeGlass.price + item.leftLens.lensPrice + item.rightLens.lensPrice) * item.quantity;
+      return total + itemTotal;
+    }, 0);
+  };
 
   const calculateDiscount = () => {
     if (!voucherInfo || !voucherInfo.discountValue) return 0;
@@ -115,8 +96,8 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
     try {
       const voucherData = await fetchVoucherByCode(voucherCode);
-      if (voucherData && voucherData.length > 0) {
-        const voucher = voucherData[0];
+      if (voucherData) {
+        const voucher = voucherData;
         
         // Check voucher quantity
         if (voucher.quantity === 0) {
@@ -145,7 +126,6 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
         setVoucherInfo(mappedVoucher);
         onVoucherSelect(mappedVoucher);
-        console.log("Voucher", mappedVoucher);
       } else {
         setVoucherError('Invalid voucher code');
         setVoucherInfo(null);
@@ -176,97 +156,54 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
     }
   };
 
-  const formatPrice = (amount: number) => {
-    return amount.toLocaleString('vi-VN') + ' VND';
-  };
-
   return (
     <div className={styles.staffOrderSummary}>
-      {/* Header Section */}
       <div className={styles.header}>
         <button className={styles.backButton} onClick={onBack}>
           <ArrowLeft size={20} />
-          <span>Back to Customer Selection</span>
+          <span>Back</span>
         </button>
-        <div className={styles.orderInfo}>
-          <h2>Order Summary</h2>
-        </div>
+        <h2>Order Summary</h2>
       </div>
 
       <div className={styles.content}>
-        {/* Main Content */}
         <div className={styles.mainContent}>
           {/* Products Section */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <ShoppingBag size={20} />
-              <h3>Selected Products</h3>
+              <h3>Items ({cartItems.length})</h3>
             </div>
             <div className={styles.products}>
-              <div className={styles.productCard}>
-                <img src={product.eyeGlassImages[0]?.url} alt={product.name} />
-                <div className={styles.productInfo}>
-                  <h4>{product.name}</h4>
-                  <span className={styles.type}>Frame</span>
-                  <span className={styles.price}>{formatPrice(product.price)}</span>
-                </div>
-              </div>
-              <div className={styles.productCard}>
-                <img src={lens.lensImages[0]?.url} alt={lens.lensName} />
-                <div className={styles.productInfo}>
-                  <h4>{lens.lensName}</h4>
-                  <span className={styles.type}>Lens</span>
-                  <span className={styles.price}>{formatPrice(lens.lensPrice)}</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Prescription Section */}
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <Eye size={20} />
-              <h3>Prescription Details</h3>
-            </div>
-            <div className={styles.prescriptionGrid}>
-              <div className={styles.prescriptionColumn}>
-                <h4>Right Eye (OD)</h4>
-                <div className={styles.prescriptionDetails}>
-                  <div className={styles.prescriptionValue}>
-                    <span>Sphere</span>
-                    <strong>{prescriptionData.sphereOD}</strong>
-                  </div>
-                  <div className={styles.prescriptionValue}>
-                    <span>Cylinder</span>
-                    <strong>{prescriptionData.cylinderOD}</strong>
-                  </div>
-                  <div className={styles.prescriptionValue}>
-                    <span>Axis</span>
-                    <strong>{prescriptionData.axisOD}°</strong>
+              {cartItems.map((item) => (
+                <div key={item.id} className={styles.productCard}>
+                  <img src={item.eyeGlass.eyeGlassImages[0]?.url} alt={item.eyeGlass.name} />
+                  <div className={styles.productInfo}>
+                    <h4>{item.eyeGlass.name}</h4>
+                    <div className={styles.lensInfo}>
+                      <span>Lens: {item.leftLens.lensName}</span>
+                      <div className={styles.prescriptionDetails}>
+                        <div className={styles.prescriptionValue}>
+                          <span>Right Eye</span>
+                          <small>SPH: {item.prescriptionData.sphereOD}, CYL: {item.prescriptionData.cylinderOD}, AXIS: {item.prescriptionData.axisOD}°</small>
+                        </div>
+                        <div className={styles.prescriptionValue}>
+                          <span>Left Eye</span>
+                          <small>SPH: {item.prescriptionData.sphereOS}, CYL: {item.prescriptionData.cylinderOS}, AXIS: {item.prescriptionData.axisOS}°</small>
+                        </div>
+                        <div className={styles.prescriptionValue}>
+                          <span>PD: {item.prescriptionData.pd}mm</span>
+                          <span>Quantity: {item.quantity}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.price}>
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                        .format((item.eyeGlass.price + item.leftLens.lensPrice) * item.quantity)}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className={styles.prescriptionColumn}>
-                <h4>Left Eye (OS)</h4>
-                <div className={styles.prescriptionDetails}>
-                  <div className={styles.prescriptionValue}>
-                    <span>Sphere</span>
-                    <strong>{prescriptionData.sphereOS}</strong>
-                  </div>
-                  <div className={styles.prescriptionValue}>
-                    <span>Cylinder</span>
-                    <strong>{prescriptionData.cylinderOS}</strong>
-                  </div>
-                  <div className={styles.prescriptionValue}>
-                    <span>Axis</span>
-                    <strong>{prescriptionData.axisOS}°</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className={styles.pdValue}>
-              <span>Pupillary Distance (PD)</span>
-              <strong>{prescriptionData.pd}mm</strong>
+              ))}
             </div>
           </section>
 
@@ -299,7 +236,8 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
 
         {/* Checkout Sidebar */}
         <div className={styles.checkoutSidebar}>
-        <section className={styles.section}>
+          {/* Voucher Section */}
+          <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <Tag size={20} />
               <h3>Apply Voucher</h3>
@@ -349,7 +287,7 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
             )}
           </section>
 
-          {/* Deposit Toggle Section */}
+          {/* Deposit Toggle */}
           <section className={styles.section}>
             <div className={styles.depositToggle}>
               <div className={styles.depositInfo}>
@@ -369,6 +307,7 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
               </div>
             </div>
           </section>
+
           {/* Payment Method Selection */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
@@ -406,25 +345,28 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
           <section className={`${styles.section} ${styles.orderSummary}`}>
             <div className={styles.summaryRow}>
               <span>Subtotal</span>
-              <span>{formatPrice(calculateSubtotal())}</span>
+              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                .format(calculateSubtotal())}</span>
             </div>
+
             {voucherInfo && (
               <div className={`${styles.summaryRow} ${styles.discount}`}>
                 <span>Voucher Discount</span>
-                <span>-{formatPrice(calculateDiscount())}</span>
+                <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                  .format(calculateDiscount())}</span>
               </div>
             )}
-            {/* <div className={styles.summaryRow}>
-              <span>VAT (10%)</span>
-              <span>{formatPrice(calculateVAT())}</span>
-            </div> */}
+
             <div className={`${styles.summaryRow} ${styles.total}`}>
               <span>{isDeposit ? 'Deposit Amount (30%)' : 'Total Amount'}</span>
-              <span>{formatPrice(calculateTotal())}</span>
+              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                .format(calculateTotal())}</span>
             </div>
+
             {isDeposit && (
               <div className={styles.totalNote}>
-                Full payment: {formatPrice(calculateTotal() / 0.3)}
+                Full payment: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                  .format(calculateTotal() / 0.3)}
               </div>
             )}
           </section>
@@ -447,7 +389,10 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
                 Processing...
               </>
             ) : (
-              `Confirm ${isDeposit ? 'Deposit' : 'Full'} Payment • ${formatPrice(calculateTotal())}`
+              `Confirm ${isDeposit ? 'Deposit' : 'Full'} Payment • ${
+                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+                  .format(calculateTotal())
+              }`
             )}
           </button>
         </div>
@@ -456,4 +401,4 @@ const StaffOrderSummary: React.FC<OrderSummaryProps> = ({
   );
 };
 
-export default StaffOrderSummary;
+export default OrderSummary;

@@ -70,11 +70,8 @@ pnpm-debug.log*
 
 # Docker related files
 docker-compose.override.yml
-Dockerfile
-.dockerignore
 
 # CI/CD
-.github/
 .gitlab-ci.yml
 
 # Server build output

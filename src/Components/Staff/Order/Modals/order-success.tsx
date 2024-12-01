@@ -203,8 +203,7 @@ const OrderSuccessPage = () => {
         isOpen={showModal}
         orderData={orderData}
         onClose={handleCloseModal}
-        onPrint={handlePrintReceipt}
-        onViewDetails={handleViewOrderDetails}
+        // onViewDetails={handleViewOrderDetails}
         onNewOrder={handleNewOrder}
         companyInfo={COMPANY_INFO}
       />

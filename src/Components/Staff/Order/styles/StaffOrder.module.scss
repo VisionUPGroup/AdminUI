@@ -1,44 +1,71 @@
-// StaffOrder.module.scss
 @import './variables';
+@import './mixins';
 
-.container {
+.staffOrderPage {
   min-height: 100vh;
   background: $background;
-  padding: $spacing-unit * 8;
-}
+  padding: $spacing-xl;
 
-.header {
-  background: $surface;
-  border-radius: $border-radius-lg;
-  padding: $spacing-unit * 6;
-  margin-bottom: $spacing-unit * 8;
-  box-shadow: $shadow-sm;
+  .header {
+    @include card;
+    @include flex-between;
+    padding: $spacing-xl;
+    margin-bottom: $spacing-xl;
+    background: $gradient-surface;
 
-  .headerTop {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: $spacing-unit * 8;
-
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: $text-primary;
+    .headerLeft {
+      h1 {
+        @include heading-1;
+        color: $text-primary;
+      }
     }
 
-    .orderNumber {
-      font-size: 0.875rem;
-      color: $text-secondary;
+    .headerRight {
+      .cartButton {
+        @include button-secondary;
+        position: relative;
+        padding: $spacing-md;
+        border-radius: $border-radius-full;
+
+        &:hover {
+          transform: translateY(-2px);
+          background: $primary-light;
+          
+          .cartCount {
+            background: $primary;
+            color: $surface;
+          }
+        }
+
+        .cartCount {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: $secondary;
+          color: $surface;
+          width: 20px;
+          height: 20px;
+          border-radius: $border-radius-full;
+          @include flex-center;
+          font-size: $font-size-xs;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+      }
     }
   }
 
   .stepProgress {
+    @include glass-effect;
     display: flex;
     justify-content: space-between;
+    padding: $spacing-lg;
+    border-radius: $border-radius-xl;
+    margin-bottom: $spacing-xl;
 
     .stepContainer {
-      display: flex;
       flex: 1;
+      display: flex;
       align-items: center;
 
       .step {
@@ -46,244 +73,157 @@
         flex-direction: column;
         align-items: center;
         color: $text-secondary;
+        transition: $transition-base;
 
         .iconWrapper {
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 50%;
+          width: 48px;
+          height: 48px;
+          border-radius: $border-radius-full;
           background: rgba($text-secondary, 0.1);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: $spacing-unit * 2;
-          transition: $transition-base;
+          @include flex-center;
+          margin-bottom: $spacing-sm;
+          transition: all 0.3s ease;
 
           .icon {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 24px;
+            height: 24px;
           }
         }
 
         span {
-          font-size: 0.875rem;
+          font-size: $font-size-sm;
           font-weight: 500;
+          white-space: nowrap;
         }
 
         &.active {
           color: $primary;
 
           .iconWrapper {
-            background: rgba($primary, 0.1);
+            background: $primary-light;
+            transform: scale(1.1);
+
+            .icon {
+              color: $primary;
+            }
+          }
+        }
+
+        &.completed {
+          color: $success;
+
+          .iconWrapper {
+            background: $success-light;
+
+            .icon {
+              color: $success;
+            }
           }
         }
       }
 
       .stepLine {
         flex: 1;
-        height: 0.125rem;
+        height: 2px;
         background: rgba($text-secondary, 0.1);
-        margin: 0 $spacing-unit * 4;
-        transform: translateY(-$spacing-unit * 4);
+        margin: 0 $spacing-lg;
+        transform: translateY(-$spacing-xl);
+        transition: background 0.3s ease;
 
         &.completed {
-          background: $primary;
+          background: $success;
+        }
+      }
+
+      &:last-child {
+        .stepLine {
+          display: none;
         }
       }
     }
   }
-}
 
-.productSection {
-  background: $surface;
-  border-radius: $border-radius-lg;
-  padding: $spacing-unit * 6;
-  box-shadow: $shadow-sm;
-
-  .searchBar {
-    display: flex;
-    gap: $spacing-unit * 4;
-    margin-bottom: $spacing-unit * 6;
-
-    .searchInput {
-      flex: 1;
-      position: relative;
-
-      input {
-        width: 100%;
-        padding: $spacing-unit * 3 $spacing-unit * 3 $spacing-unit * 3 $spacing-unit * 10;
-        border: 1px solid rgba($text-secondary, 0.2);
-        border-radius: $border-radius;
-        transition: $transition-base;
-
-        &:focus {
-          outline: none;
-          border-color: $primary;
-          box-shadow: 0 0 0 2px rgba($primary, 0.1);
-        }
-      }
-
-      .searchIcon {
-        position: absolute;
-        left: $spacing-unit * 3;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 1.25rem;
-        height: 1.25rem;
-        color: $text-secondary;
-      }
-    }
-
-    .filterSelect {
-      padding: $spacing-unit * 3 $spacing-unit * 4;
-      border: 1px solid rgba($text-secondary, 0.2);
-      border-radius: $border-radius;
-      min-width: 10rem;
-      background: $surface;
-      transition: $transition-base;
-
-      &:focus {
-        outline: none;
-        border-color: $primary;
-        box-shadow: 0 0 0 2px rgba($primary, 0.1);
-      }
-    }
-  }
-
-  .productGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: $spacing-unit * 6;
-
-    .productCard {
-      background: $surface;
-      border-radius: $border-radius-xl;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-      transition: all 0.3s ease;
-
+  .error {
+    @include card;
+    background: $error-light;
+    color: $error;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-lg;
+    @include flex-between;
+    border-left: 4px solid $error;
+    
+    .closeError {
+      @include button-secondary;
+      padding: $spacing-xs;
+      color: $error;
+      
       &:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        background: rgba($error, 0.1);
+      }
+    }
+  }
 
-        .imageContainer {
-          .imageGallery {
-            opacity: 1;
+  .content {
+    position: relative;
+    min-height: 500px;
+
+    & > div {
+      @include fade-in;
+    }
+  }
+
+  // Responsive Styles
+  @include respond-to(sm) {
+    padding: $spacing-lg;
+
+    .stepProgress {
+      .stepContainer {
+        .step {
+          span {
+            display: none;
           }
         }
       }
+    }
+  }
 
-      .imageContainer {
-        position: relative;
-        aspect-ratio: 1;
-        background: linear-gradient(45deg, rgba($background, 0.5), rgba($background, 0.8));
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.5s ease;
-        }
-
-        .imageGallery {
-          position: absolute;
-          bottom: $spacing-unit * 4;
-          left: 50%;
-          transform: translateX(-50%);
-          display: flex;
-          gap: $spacing-unit * 2;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-
-          .thumbnailButton {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid $surface;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            &:hover {
-              transform: scale(1.1);
-            }
-
-            &.active {
-              border-color: $primary;
-            }
-
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
+  @include respond-to(md) {
+    .stepProgress {
+      .stepContainer {
+        .step {
+          span {
+            display: block;
           }
         }
       }
+    }
+  }
 
-      .productInfo {
-        padding: $spacing-unit * 6;
+  @include respond-to(lg) {
+    padding: $spacing-xl;
 
-        .title {
-          font-size: 1.25rem;
-          font-weight: 600;
-          margin-bottom: $spacing-unit * 3;
-          color: $text-primary;
-        }
+    .content {
+      max-width: $container-max-width;
+      margin: 0 auto;
+    }
+  }
 
-        .specs {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: $spacing-unit * 3;
-          margin-bottom: $spacing-unit * 4;
+  // Animations for step transitions
+  .step {
+    &.active {
+      animation: pulse 2s infinite;
+    }
+  }
 
-          .specItem {
-            display: flex;
-            align-items: center;
-            gap: $spacing-unit * 2;
-
-            .icon {
-              color: $primary;
-            }
-
-            .label {
-              font-size: 0.875rem;
-              color: $text-secondary;
-            }
-
-            .value {
-              font-weight: 500;
-              color: $text-primary;
-            }
-          }
-        }
-
-        .footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding-top: $spacing-unit * 4;
-          border-top: 1px solid rgba($text-secondary, 0.1);
-
-          .price {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: $primary;
-          }
-
-          .selectButton {
-            padding: $spacing-unit * 3 $spacing-unit * 6;
-            background: $primary;
-            color: $surface;
-            border-radius: $border-radius;
-            font-weight: 500;
-            transition: background 0.2s ease;
-
-            &:hover {
-              background: darken($primary, 5%);
-            }
-          }
-        }
-      }
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
     }
   }
 }

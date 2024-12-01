@@ -1,258 +1,169 @@
-// ProductSelection.module.scss
 @import './variables';
+@import './mixins';
 
 .productGridContainer {
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: $spacing-unit * 12;
-    color: $text-secondary;
-    gap: $spacing-unit * 4;
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba($primary, 0.1);
-      border-radius: 50%;
-      border-top-color: $primary;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  }
-
+  // Advanced Filter Section
   .filterSection {
-    background: linear-gradient(to right, $surface, rgba($surface, 0.95));
+    @include glass-effect;
+    position: sticky;
+    top: $spacing-lg;
+    z-index: 10;
+    margin-bottom: $spacing-xl;
     border-radius: $border-radius-xl;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-    backdrop-filter: blur(8px);
-    padding: $spacing-unit * 6;
-    margin-bottom: $spacing-unit * 8;
-
+    background: linear-gradient(to right, rgba($surface, 0.9), rgba($surface, 0.8));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($primary, 0.1);
+    
     .searchBar {
-      display: flex;
-      gap: $spacing-unit * 4;
-      align-items: center;
+      padding: $spacing-lg;
+      @include flex-between;
+      gap: $spacing-lg;
 
       .searchWrapper {
         flex: 1;
         position: relative;
-        display: flex;
-        align-items: center;
-
+        
         .searchIcon {
           position: absolute;
-          left: $spacing-unit * 4;
-          color: rgba($text-secondary, 0.6);
-          width: 20px;
-          height: 20px;
-          transition: color 0.2s ease;
+          left: $spacing-lg;
+          color: $primary;
+          transition: $transition-smooth;
         }
 
         input {
-          width: 100%;
-          padding: $spacing-unit * 4 $spacing-unit * 12;
-          border: 2px solid transparent;
-          border-radius: $border-radius-xl;
-          background: rgba($background, 0.5);
-          backdrop-filter: blur(4px);
-          font-size: 1rem;
-          transition: all 0.3s ease;
-
-          &:hover {
-            background: rgba($background, 0.7);
-          }
-
+          @include input-modern;
+          padding-left: $spacing-2xl;
+          background: rgba($surface, 0.8);
+          
           &:focus {
             background: $surface;
-            border-color: $primary;
-            box-shadow: 0 0 0 4px rgba($primary, 0.15);
-
             & + .searchIcon {
-              color: $primary;
+              transform: scale(1.1);
             }
           }
         }
 
         .clearSearch {
+          @include button-icon;
           position: absolute;
-          right: $spacing-unit * 4;
-          color: $text-secondary;
-          padding: $spacing-unit;
-          border-radius: 50%;
-          transition: $transition-base;
-
-          &:hover {
-            background: rgba($text-secondary, 0.1);
-          }
+          right: $spacing-sm;
+          top: 50%;
+          transform: translateY(-50%);
         }
       }
 
       .filterButton {
-        display: flex;
-        align-items: center;
-        gap: $spacing-unit * 2;
-        padding: $spacing-unit * 3.5 $spacing-unit * 5;
-        border: 2px solid transparent;
-        border-radius: $border-radius-xl;
-        background: rgba($background, 0.5);
-        color: $text-secondary;
-        font-weight: 500;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: rgba($background, 0.7);
-          transform: translateY(-1px);
-        }
-
+        @include button-secondary;
+        gap: $spacing-sm;
+        
         &.active {
-          background: rgba($primary, 0.1);
-          border-color: $primary;
+          background: $primary-light;
           color: $primary;
+          border-color: $primary;
+          
+          svg {
+            transform: rotate(180deg);
+          }
         }
       }
     }
 
     .advancedFilters {
-      margin-top: $spacing-unit * 6;
-      padding-top: $spacing-unit * 6;
-      border-top: 1px solid rgba($text-secondary, 0.1);
+      padding: $spacing-lg;
+      border-top: 1px solid rgba($primary, 0.1);
+      animation: slideDown 0.3s ease-out;
 
       .filterGrid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: $spacing-unit * 6;
+        gap: $spacing-lg;
 
         .filterItem {
           label {
             display: block;
-            margin-bottom: $spacing-unit * 2;
+            margin-bottom: $spacing-sm;
             color: $text-secondary;
-            font-size: 0.875rem;
+            font-size: $font-size-sm;
+            font-weight: 500;
           }
 
           select {
-            width: 100%;
-            padding: $spacing-unit * 3;
-            border: 1px solid rgba($text-secondary, 0.2);
-            border-radius: $border-radius;
-            background: $surface;
-            transition: $transition-base;
-
-            &:focus {
-              border-color: $primary;
-              outline: none;
-            }
+            @include input-modern;
           }
 
           .priceInputs {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: $spacing-sm;
             align-items: center;
-            gap: $spacing-unit * 2;
 
             input {
-              flex: 1;
-              padding: $spacing-unit * 3;
-              border: 1px solid rgba($text-secondary, 0.2);
-              border-radius: $border-radius;
-              transition: $transition-base;
-
-              &:focus {
-                border-color: $primary;
-                outline: none;
-              }
+              @include input-modern;
+              text-align: center;
             }
 
             span {
               color: $text-secondary;
+              font-weight: 500;
             }
           }
         }
       }
 
       .filterActions {
+        margin-top: $spacing-lg;
+        padding-top: $spacing-lg;
+        border-top: 1px solid rgba($text-secondary, 0.1);
         display: flex;
         justify-content: flex-end;
-        margin-top: $spacing-unit * 6;
+        gap: $spacing-md;
 
         .resetButton {
-          padding: $spacing-unit * 2 $spacing-unit * 4;
+          @include button-outline;
           color: $text-secondary;
-          border-radius: $border-radius;
-          transition: $transition-base;
-
+          
           &:hover {
-            background: rgba($text-secondary, 0.1);
+            color: $error;
+            border-color: $error;
           }
         }
       }
     }
   }
 
+  // Product Grid
   .grid {
     display: grid;
-    // Điều chỉnh kích thước grid
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: $spacing-unit * 4;
-    padding: $spacing-unit * 3;
+    gap: $spacing-lg;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    padding: $spacing-md;
 
     .productCard {
-      // Giảm kích thước card
-      position: relative;
+      @include card-interactive;
       background: $surface;
-      border-radius: $border-radius-lg;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba($primary, 0.1);
       overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-
+      
       &:hover {
-        transform: translateY(-8px) scale(1.01);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-      }
-
-      .imageContainer {
-        // Điều chỉnh chiều cao ảnh
-        position: relative;
-        height: 260px;
-        background: linear-gradient(45deg, rgba($background, 0.4), rgba($background, 0.2));
-        overflow: hidden;
-
-        &:hover {
+        border-color: $primary;
+        
+        .imageContainer {
+          img {
+            transform: scale(1.05);
+          }
+          
           .imageGallery {
             opacity: 1;
             transform: translateY(0);
           }
-
-          &::after {
-            opacity: 1;
-          }
-
-          img {
-            transform: scale(1.08);
-          }
         }
+      }
 
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          height: 160px;
-          background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-
-        &:hover::after {
-          opacity: 1;
-        }
+      .imageContainer {
+        position: relative;
+        height: 300px;
+        background: linear-gradient(45deg, $background, $surface);
+        overflow: hidden;
 
         img {
           width: 100%;
@@ -263,43 +174,27 @@
 
         .imageGallery {
           position: absolute;
-          bottom: $spacing-unit * 4;
+          bottom: $spacing-lg;
           left: 0;
           right: 0;
           display: flex;
           justify-content: center;
-          gap: $spacing-unit * 2;
-          padding: 0 $spacing-unit * 4;
+          gap: $spacing-sm;
+          padding: $spacing-md;
           opacity: 0;
-          transform: translateY(20px);
+          transform: translateY($spacing-lg);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 2;
-          pointer-events: none; // Thêm dòng này
+          background: linear-gradient(to top, rgba($surface, 0.9), transparent);
+          backdrop-filter: blur(4px);
 
-          &:hover {
-            pointer-events: auto; // Thêm dòng này
-          }
-
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-          
-          &::-webkit-scrollbar {
-            display: none; /* Chrome, Safari and Opera */
-          }
-
-          // Điều chỉnh kích thước thumbnails
           .thumbnailButton {
-            pointer-events: auto; // Thêm dòng này
-            flex: 0 0 40px; // Prevent shrinking and growing
-            width: 40px;
-            height: 40px;
-            min-width: 40px; // Ensure minimum width
-            border-radius: 12px;
+            width: 48px;
+            height: 48px;
+            border-radius: $border-radius;
             overflow: hidden;
-            border: 3px solid rgba($surface, 0.8);
-            cursor: pointer;
+            border: 2px solid rgba($surface, 0.5);
             transition: all 0.2s ease;
-
+            
             &:hover {
               transform: translateY(-4px);
               border-color: $surface;
@@ -320,104 +215,80 @@
       }
 
       .productInfo {
-        padding: $spacing-unit * 4;
+        padding: $spacing-xl;
 
         .title {
-          font-size: 1.125rem;
-          margin-bottom: $spacing-unit * 3;
-          font-weight: 600;
+          @include heading-2;
           color: $text-primary;
-          line-height: 1.4;
+          margin-bottom: $spacing-md;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
-          text-overflow: ellipsis;
         }
 
-        // Cập nhật layout specs
         .specs {
-          display: flex;
-          flex-direction: column;
-          gap: $spacing-unit * 2;
-          margin-bottom: $spacing-unit * 4;
+          display: grid;
+          gap: $spacing-sm;
+          margin-bottom: $spacing-lg;
 
           .specItem {
             display: flex;
             align-items: center;
-            padding: $spacing-unit * 1.5;
+            padding: $spacing-sm;
+            background: $background;
             border-radius: $border-radius;
-            background: rgba($background, 0.4);
-            transition: all 0.2s ease;
+            transition: $transition-base;
 
             &:hover {
-              background: rgba($background, 0.6);
+              background: $primary-light;
+
+              .icon {
+                color: $primary;
+                transform: scale(1.1);
+              }
             }
 
             .icon {
-              flex-shrink: 0;
-              width: 16px;
-              height: 16px;
-              margin-right: $spacing-unit * 2;
-              color: $primary;
+              width: 18px;
+              height: 18px;
+              color: $text-secondary;
+              margin-right: $spacing-sm;
+              transition: $transition-base;
             }
 
             .label {
-              flex-shrink: 0;
-              width: 80px; // Fixed width for labels
-              font-size: 0.813rem;
+              min-width: 80px;
+              font-size: $font-size-sm;
               color: $text-secondary;
+              font-weight: 500;
             }
 
             .value {
-              flex: 1;
-              font-size: 0.875rem;
-              font-weight: 500;
+              margin-left: auto;
+              font-weight: 600;
               color: $text-primary;
-              text-align: right;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
+              font-size: $font-size-sm;
             }
           }
         }
 
         .footer {
-          padding-top: $spacing-unit * 3;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-top: 1px solid rgba($text-secondary, 0.08);
+          @include flex-between;
+          padding-top: $spacing-md;
+          border-top: 1px solid rgba($text-secondary, 0.1);
 
           .price {
-            font-size: 1.25rem;
-            font-weight: 700;
             color: $primary;
-            text-shadow: 0 2px 4px rgba($primary, 0.1);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px;
+            font-weight: 700;
+            font-size: $font-size-xl;
           }
 
           .selectButton {
-            padding: $spacing-unit * 2 $spacing-unit * 4;
-            font-size: 0.875rem;
-            background: linear-gradient(45deg, $primary, adjust-hue($primary, 15deg));
-            color: $surface;
-            border-radius: $border-radius-lg;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+            @include button-primary;
             
             &:hover {
               transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba($primary, 0.3);
-            }
-
-            &:active {
-              transform: translateY(0);
             }
           }
         }
@@ -425,86 +296,106 @@
     }
   }
 
-  // Thêm media queries cho responsive
-  @media (max-width: 1366px) {
-    .grid {
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  // States
+  .loading, .noResults {
+    min-height: 400px;
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-lg;
+    text-align: center;
+    
+    svg {
+      color: $text-secondary;
+      opacity: 0.5;
     }
   }
 
-  @media (max-width: 768px) {
-    .grid {
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      
-      .productCard {
-        .imageContainer {
-          height: 220px;
-        }
-
-        .productInfo {
-          padding: $spacing-unit * 3;
-          
-          .specs {
-            gap: $spacing-unit;
-            
-            .specItem {
-              padding: $spacing-unit;
-              
-              .label {
-                width: 70px;
-                font-size: 0.75rem;
-              }
-              
-              .value {
-                font-size: 0.813rem;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  @media (max-width: 480px) {
-    .grid {
-      grid-template-columns: 1fr;
-      gap: $spacing-unit * 3;
+  .loading {
+    .spinner {
+      @include loading-spinner;
+      width: 40px;
+      height: 40px;
+      border-top-color: $primary;
     }
   }
 
   .noResults {
-    grid-column: 1 / -1;
-    padding: $spacing-unit * 12;
-    text-align: center;
+    @include card-base;
+    padding: $spacing-2xl;
+    
+    h3 {
+      @include heading-2;
+      color: $text-primary;
+      margin: $spacing-md 0;
+    }
 
-    .noResultsContent {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: $spacing-unit * 4;
+    p {
       color: $text-secondary;
+      margin-bottom: $spacing-lg;
+    }
 
-      h3 {
-        font-size: 1.25rem;
-        color: $text-primary;
+    .resetButton {
+      @include button-primary;
+    }
+  }
+}
+
+// Animations
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Styles
+@include respond-to(sm) {
+  .productGridContainer {
+    .filterSection {
+      margin: $spacing-md;
+      
+      .searchBar {
+        flex-direction: column;
       }
+    }
+    
+    .grid {
+      grid-template-columns: 1fr;
+      padding: $spacing-md;
+    }
+  }
+}
 
-      p {
-        color: $text-secondary;
+@include respond-to(md) {
+  .productGridContainer {
+    .filterSection {
+      .searchBar {
+        flex-direction: row;
       }
+    }
+    
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
 
-      .resetButton {
-        margin-top: $spacing-unit * 4;
-        padding: $spacing-unit * 3 $spacing-unit * 6;
-        background: $primary;
-        color: $surface;
-        border-radius: $border-radius;
-        transition: $transition-base;
+@include respond-to(lg) {
+  .productGridContainer {
+    .grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
 
-        &:hover {
-          background: darken($primary, 5%);
-        }
-      }
+@include respond-to(xl) {
+  .productGridContainer {
+    .grid {
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 }

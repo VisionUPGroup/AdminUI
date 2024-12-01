@@ -215,7 +215,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
       <ModalBody>
         <div className="modal-form">
 
-          {/* Thêm field Username mới */}
+          {/* Username Field */}
           <div className="form-group">
             <label>
               <FaUser className="field-icon" />
