@@ -15,14 +15,29 @@ import CartModal from './cart/CartModal';
 import { toast } from 'react-hot-toast';
 import styles from './styles/StaffOrder.module.scss';
 
+// interface Customer {
+//   id: number;
+//   email: string;
+//   phoneNumber: string;
+//   profiles: Array<{
+//     fullName: string;
+//     address: string;
+//   }>;
+// }
+
 interface Customer {
   id: number;
+  username: string;
   email: string;
+  status: boolean;
+  roleID: number;
   phoneNumber: string;
-  profiles: Array<{
-    fullName: string;
-    address: string;
-  }>;
+  role: {
+    id: number;
+    name: string;
+    description: string;
+    status: boolean;
+  };
 }
 
 interface VoucherInfo {
@@ -131,10 +146,14 @@ const StaffOrderPage: React.FC = () => {
       // Create the order
       const orderData = {
         accountID: selectedCustomer.id,
-        receiverAddress: selectedCustomer.profiles[0]?.address || '',
+        // receiverAddress: selectedCustomer.profiles[0]?.address || '',
+        receiverAddress: 'Kisok 1, 123 Vision Street, District 1, HCMC',
+        // kioskID: 19,
         isDeposit: true,
         listProductGlassID: productGlassIds
       };
+
+      console.log(orderData);
 
       const orderResponse = await createOrderNow(orderData);
 

@@ -18,12 +18,17 @@ import styles from '../styles/OrderSummary.module.scss';
 
 interface Customer {
   id: number;
+  username: string;
   email: string;
+  status: boolean;
+  roleID: number;
   phoneNumber: string;
-  profiles: Array<{
-    fullName: string;
-    address: string;
-  }>;
+  role: {
+    id: number;
+    name: string;
+    description: string;
+    status: boolean;
+  };
 }
 
 interface VoucherInfo {
@@ -215,20 +220,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
             <div className={styles.customerInfo}>
               <div className={styles.infoRow}>
-                <span>Full Name</span>
-                <strong>{customer.profiles[0]?.fullName}</strong>
+                <span>Username</span>
+                <strong>{customer.username}</strong>
               </div>
               <div className={styles.infoRow}>
                 <span>Phone</span>
-                <strong>{customer.phoneNumber}</strong>
+                <strong>{customer.phoneNumber || 'Not provided'}</strong>
               </div>
               <div className={styles.infoRow}>
                 <span>Email</span>
                 <strong>{customer.email}</strong>
               </div>
               <div className={styles.infoRow}>
-                <span>Address</span>
-                <strong>{customer.profiles[0]?.address}</strong>
+                <span>Status</span>
+                <strong>{customer.status ? 'Active' : 'Inactive'}</strong>
               </div>
             </div>
           </section>
