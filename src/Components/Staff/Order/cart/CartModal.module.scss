@@ -1,11 +1,30 @@
-@import './variables';
-@import './mixins';
+@import '../styles/variables';
+@import '../styles/mixins';
+
+// Custom button mixins
+@mixin button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-sm;
+  border-radius: $border-radius-full;
+  color: $text-secondary;
+  transition: $transition-base;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($text-secondary, 0.1);
+    color: $text-primary;
+  }
+}
 
 .modalOverlay {
   position: fixed;
   inset: 0;
   background: rgba($text-primary, 0.4);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: flex-end;
   z-index: $z-index-modal;
@@ -30,18 +49,21 @@
     top: 0;
     bottom: 0;
     width: 4px;
-    background: $gradient-primary;
+    background: linear-gradient($primary, darken($primary, 10%));
   }
 }
 
 .header {
-  @include flex-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: $spacing-lg $spacing-xl;
   background: linear-gradient(to right, $primary-light, $surface);
   border-bottom: 1px solid rgba($text-secondary, 0.1);
   
   .title {
-    @include flex-center;
+    display: flex;
+    align-items: center;
     gap: $spacing-sm;
     
     svg {
@@ -50,19 +72,18 @@
     }
     
     h2 {
-      @include heading-2;
+      font-size: $font-size-xl;
+      font-weight: 600;
       color: $text-primary;
     }
   }
   
   .closeButton {
     @include button-icon;
-    padding: $spacing-sm;
     transition: $transition-smooth;
     
     &:hover {
       transform: rotate(90deg);
-      background: rgba($text-secondary, 0.1);
     }
   }
 }
@@ -73,19 +94,39 @@
   padding: $spacing-lg;
   background: linear-gradient($background 0%, $surface 100%);
   
-  @include custom-scrollbar;
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba($text-secondary, 0.2);
+    border-radius: $border-radius-full;
+    
+    &:hover {
+      background: rgba($text-secondary, 0.3);
+    }
+  }
 }
 
 .cartItem {
-  @include card-base;
+  background: $surface;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: $spacing-lg;
   padding: $spacing-lg;
   margin-bottom: $spacing-md;
   border: 1px solid rgba($primary, 0.1);
+  transition: all 0.2s ease;
   
   &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
     border-color: $primary;
     
     .productImage img {
@@ -113,8 +154,8 @@
     flex-direction: column;
     
     h3 {
-      @include heading-2;
       font-size: $font-size-lg;
+      font-weight: 600;
       margin-bottom: $spacing-sm;
       color: $text-primary;
     }
@@ -128,12 +169,14 @@
       font-size: $font-size-sm;
       
       .prescription {
-        @include glass-effect;
+        background: rgba($surface, 0.8);
+        backdrop-filter: blur(8px);
         padding: $spacing-xs $spacing-sm;
         border-radius: $border-radius-full;
         font-size: $font-size-xs;
         color: $primary;
         font-weight: 500;
+        border: 1px solid rgba($primary, 0.2);
         
         &:hover {
           transform: translateY(-2px);
@@ -142,7 +185,9 @@
     }
     
     .priceQuantity {
-      @include flex-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: auto;
       
       .price {
@@ -152,13 +197,13 @@
       }
       
       .quantityControls {
-        @include flex-center;
+        display: flex;
+        align-items: center;
         gap: $spacing-sm;
         
         .quantityButton {
           @include button-icon;
-          padding: $spacing-xs;
-          color: $text-secondary;
+          background: $background;
           
           &:hover {
             background: $primary-light;
@@ -181,7 +226,6 @@
       .removeButton {
         @include button-icon;
         color: $error;
-        padding: $spacing-xs;
         
         &:hover {
           background: $error-light;
@@ -199,7 +243,9 @@
   background: $surface;
   
   .total {
-    @include flex-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: $spacing-lg;
     
     span {
@@ -209,39 +255,48 @@
       }
       
       &:last-child {
-        @include heading-2;
-        color: $primary;
         font-size: $font-size-2xl;
+        font-weight: 600;
+        color: $primary;
       }
     }
   }
   
   .checkoutButton {
-    @include button-primary;
     width: 100%;
     padding: $spacing-lg;
+    background: $primary;
+    color: $surface;
+    border: none;
+    border-radius: $border-radius;
+    font-weight: 600;
     font-size: $font-size-lg;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      background: darken($primary, 5%);
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+    }
     
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-    }
-    
-    &:not(:disabled):hover {
-      transform: translateY(-2px);
-      box-shadow: $shadow-lg;
     }
   }
 }
 
 .emptyCart {
   flex: 1;
-  @include flex-center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
   padding: $spacing-2xl;
   color: $text-secondary;
   gap: $spacing-lg;
-  background: $gradient-surface;
+  background: linear-gradient(to bottom right, $surface, $background);
   
   svg {
     color: $text-secondary;
@@ -289,7 +344,7 @@
 }
 
 // Responsive Styles
-@include respond-to(sm) {
+@media (max-width: $breakpoint-sm) {
   .modalContent {
     max-width: 100%;
   }
@@ -307,12 +362,13 @@
     .itemInfo {
       .lensInfo {
         justify-content: center;
+        flex-wrap: wrap;
       }
     }
   }
 }
 
-@include respond-to(md) {
+@media (min-width: $breakpoint-md) {
   .cartItem {
     grid-template-columns: auto 1fr;
     text-align: left;
@@ -327,26 +383,6 @@
       .lensInfo {
         justify-content: flex-start;
       }
-    }
-  }
-}
-
-// Custom Scrollbar Mixin
-@mixin custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba($text-secondary, 0.2);
-    border-radius: $border-radius-full;
-    
-    &:hover {
-      background: rgba($text-secondary, 0.3);
     }
   }
 }

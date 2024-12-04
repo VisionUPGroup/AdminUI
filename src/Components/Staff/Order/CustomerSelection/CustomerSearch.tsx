@@ -20,11 +20,15 @@ interface CustomerData {
   username: string;
   email: string;
   phoneNumber: string;
-  profiles: Array<{
-    fullName: string;
-    address: string;
-    birthday?: string;
-  }>;
+  status: boolean;
+  roleID: number;
+  role: {
+    id: number;
+    name: string;
+    description: string;
+    status: boolean;
+  };
+  profiles: null; // Updated to match new structure
 }
 
 // Validation schema remains the same
@@ -187,30 +191,22 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
       transition={{ duration: 0.2 }}
     >
       <div className={styles.customerInfo}>
-        <h3>
-          {customer.profiles[0]?.fullName || customer.username}
-          {customer.profiles[0]?.birthday && (
-            <span className={styles.birthday}>
-              <Calendar size={16} />
-              {formatDate(customer.profiles[0].birthday)}
+        <h3>{customer.username}</h3>
+        <div className={styles.details}>
+          {customer.phoneNumber && (
+            <span>
+              <Phone size={16} />
+              {customer.phoneNumber}
             </span>
           )}
-        </h3>
-        <div className={styles.details}>
-          <span>
-            <Phone size={16} />
-            {customer.phoneNumber}
-          </span>
           <span>
             <Mail size={16} />
             {customer.email}
           </span>
-          {customer.profiles[0]?.address && (
-            <span>
-              <MapPin size={16} />
-              {customer.profiles[0].address}
-            </span>
-          )}
+          <span>
+            <AlertCircle size={16} />
+            {customer.status ? 'Đang hoạt động' : 'Không hoạt động'}
+          </span>
         </div>
       </div>
       {selectedCustomer?.id === customer.id && (
@@ -219,7 +215,7 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
         </div>
       )}
     </motion.div>
-  ), [selectedCustomer, formatDate, handleCustomerSelect]);
+  ), [selectedCustomer, handleCustomerSelect]);
 
 
   return (
