@@ -76,27 +76,12 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
     
   },
   {
+    path: "/reports",
     title: "Report",
     icon: Clipboard,
-    type: "sub",
+    type: "link",
+    badgeType: "primary",
     active: false,
-    children: [
-      {
-        path: "/reports/",
-        title: "Orders",
-        type: "link",
-        icon: Circle,
-        active: false,
-      },
-      {
-        path: "/sales/staff-orders/create",
-        title: "Create",
-        type: "link",
-        icon: Circle,
-        active: false,
-      },
-   
-    ],
     
   },
 
@@ -165,6 +150,13 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
     active: false,
     children: [
       {
+        path: "/adminmanage/list-shipper",
+        title: "Shipper",
+        type: "link",
+        icon: Circle,
+        active: false,
+      },
+      {
         path: "/adminmanage/list-user",
         title: "User",
         type: "link",
@@ -195,6 +187,15 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
       },
   
     ],
+  },
+  {
+    path: "/reports",
+    title: "Report",
+    icon: Clipboard,
+    type: "link",
+    badgeType: "primary",
+    active: false,
+    
   },
   {
     title: "Kiosk",

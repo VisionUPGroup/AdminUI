@@ -57,7 +57,8 @@ export const useLensService = () => {
         try {
             const response = await axios.get(`${baseUrl}/api/lens/${id}`, {
                 headers: {
-                    Authorization: `Bearer ${getToken()}`
+                    Authorization: `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
                 }
             });
             return response.data;

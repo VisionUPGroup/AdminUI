@@ -8,11 +8,19 @@ export const useOrderService = () => {
   // Fetch all orders with optional query parameters
   // Trong orderService.js
   const fetchAllOrder = async (
+    fromDate = "",
+    toDate = "",
     username = "",
-    process,
-    pageIndex,
-    accountId,
-    kioskId
+    process = "",
+    pageIndex = 1,
+    accountId = "",
+    kioskId = "",
+    placedByKioskId = "",
+    shipperId,
+    isDeposit = "",
+    issueType = "",
+    orderId = "",
+
   ) => {
     try {
       const token = getToken();
@@ -22,12 +30,20 @@ export const useOrderService = () => {
         },
         params: {
           Username: username,
-          KioskID: kioskId || undefined, // Thêm điều kiện nếu không có giá trị
-          AccountID: accountId || undefined, // Thêm điều kiện nếu không có giá trị
+          KioskID: kioskId,
+          AccountID: accountId,
           Process: process,
           PageIndex: pageIndex,
           PageSize: 20,
           Descending: true,
+          FromDate: fromDate,
+          ToDate: toDate,
+          PlacedByKioskID: placedByKioskId,
+          isDeposit: isDeposit,
+          issueType: issueType,
+          ShipperID: shipperId,
+          ID: orderId
+        
         },
       });
       return {
@@ -41,7 +57,18 @@ export const useOrderService = () => {
       throw error;
     }
   };
-  const fetchStaffOrder = async (username = "", process, pageIndex) => {
+  const fetchStaffOrder = async (  fromDate = "",
+    toDate = "",
+    username = "",
+    process = "",
+    pageIndex = 1,
+    accountId = "",
+    kioskId = "",
+    placedByKioskId = "",
+    shipperId,
+    isDeposit = "",
+    issueType = "",
+    orderId = "",) => {
     try {
       const token = getToken();
       const response = await axios.get(`${baseUrl}/api/orders/my-kiosk`, {
@@ -50,10 +77,19 @@ export const useOrderService = () => {
         },
         params: {
           Username: username,
+          KioskID: kioskId,
+          AccountID: accountId,
           Process: process,
           PageIndex: pageIndex,
-          PageSize: 20, 
+          PageSize: 20,
           Descending: true,
+          FromDate: fromDate,
+          ToDate: toDate,
+          PlacedByKioskID: placedByKioskId,
+          isDeposit: isDeposit,
+          issueType: issueType,
+          ShipperID: shipperId,
+          ID: orderId
         },
       });
       return {
@@ -192,6 +228,20 @@ export const useOrderService = () => {
       throw error;
     }
   };
+  const fetchOrderById = async (orderId) => {
+    try {
+      const token = getToken(); // Retrieve the token
+      const response = await axios.get(`${baseUrl}/api/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data; // Return the order data
+    } catch (error) {
+      console.error("Error fetching order by ID:", error);
+      throw error;
+    }
+  };
 
   return {
     fetchAllOrder,
@@ -201,6 +251,7 @@ export const useOrderService = () => {
     deleteOrder,
     updateOrderProcess,
     countOrder,
-    createOrderNow
+    createOrderNow,
+    fetchOrderById
   };
 };

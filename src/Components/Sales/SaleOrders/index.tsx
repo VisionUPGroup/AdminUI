@@ -28,14 +28,14 @@ import { useKioskService } from "../../../../Api/kioskService";
 import { useLensService } from "../../../../Api/lensService";
 import { usePaymentService } from "../../../../Api/paymentService";
 import { useAccountService } from "../../../../Api/accountService";
-import OrderStatusTracker from "./OderTracker";
-import LensInformation from "./LensInformation";
-import PaymentInfo from "./PaymentInfomation";
+
 import "./OrderStyle.scss";
 import "./FilterStyle.scss";
 import Pagination from "./Pagination";
 import FilterSelects from "./FilterSelect";
 import ReportManagement from "./ReportManagement";
+
+import { useRouter } from "next/navigation";
 
 const SalesOrders: React.FC = () => {
   // States
@@ -90,6 +90,16 @@ const SalesOrders: React.FC = () => {
     remainingAmount: number; // Thêm thuộc tính mới
     orderDetails: OrderDetail[];
   }
+  interface FilterOptions {
+    fromDate: string;
+    toDate: string;
+    isDeposit: boolean | null;
+    issueType: string;
+    placedByKioskId?: string;
+    shipperId?: string;
+    kioskId?: string;
+    orderId?: string;
+  }
   const [orderData, setOrderData] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<
@@ -124,6 +134,18 @@ const SalesOrders: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
   const [kioskFilter, setKioskFilter] = useState("");
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    fromDate: "",
+    toDate: "",
+    isDeposit: null,
+    issueType: "",
+    placedByKioskId: "",
+    shipperId: "",
+    kioskId: "",
+  orderId: ""
+  });
+  
   // Services
   const { fetchAllOrder, countOrder, deleteOrder, updateOrderProcess } =
     useOrderService();
@@ -132,6 +154,7 @@ const SalesOrders: React.FC = () => {
   const { fetchLensById } = useLensService();
   const { fetchPaymentByOrderId } = usePaymentService();
   const { fetchAccountById } = useAccountService();
+  const router = useRouter();
 
   // Fetch Initial Data
   useEffect(() => {
@@ -155,26 +178,40 @@ const SalesOrders: React.FC = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-
+      let depositParam = undefined;
+      if (filterOptions.isDeposit !== null) {
+        depositParam = filterOptions.isDeposit ? "true" : "false";
+      }
       // Gọi API với các params filter
       const data = await fetchAllOrder(
-        searchTerm,
-        statusFilter,
+        filterOptions.fromDate, // Đã được format YYYY-MM-DD từ FilterSelects
+        filterOptions.toDate,   // Đã được format YYYY-MM-DD từ FilterSelects
+        searchTerm || '',
+        statusFilter || '',
         currentPage,
-        "",
-        kioskFilter
+        '', // accountId
+        filterOptions.kioskId || '',
+        filterOptions.placedByKioskId || '',
+        filterOptions.shipperId || '',
+        depositParam, // Sử dụng depositParam đã được xử lý
+        filterOptions.issueType || '',
+        filterOptions.orderId ||''
+        
       );
 
-      // Cập nhật tổng số items và set lại data
-      setTotalItems(data.totalItems || 0); // Đảm bảo cập nhật tổng số items từ API
+      // Cập nhật tổng số items
+      setTotalItems(data.totalItems || 0);
 
+      // Format và xử lý data từ API
       const formattedData = await Promise.all(
         data.items.map(async (order: any) => {
+          // Fetch thông tin voucher nếu có
           const voucherResponse = order.voucherID
             ? await fetchVoucherById(order.voucherID)
             : null;
           const voucherName = voucherResponse ? voucherResponse.name : null;
 
+          // Fetch thông tin username
           let username = "Unknown";
           try {
             const accountResponse = await fetchAccountById(order.accountID);
@@ -186,6 +223,7 @@ const SalesOrders: React.FC = () => {
             );
           }
 
+          // Format order data
           return {
             id: order.id,
             accountID: order.accountID,
@@ -203,18 +241,114 @@ const SalesOrders: React.FC = () => {
             totalPaid: order.totalPaid,
             remainingAmount: order.remainingAmount,
             orderDetails: order.orderDetails.map((detail: any) => ({
-              ...detail,
-              productGlass: detail.productGlass,
+              id: detail.id,
+              orderID: detail.orderID,
+              quantity: detail.quantity,
+              status: detail.status,
+              productGlass: detail.productGlass
+                ? {
+                    id: detail.productGlass.id,
+                    eyeGlassID: detail.productGlass.eyeGlassID,
+                    leftLenID: detail.productGlass.leftLenID,
+                    rightLenID: detail.productGlass.rightLenID,
+                    accountID: detail.productGlass.accountID,
+                    total: detail.productGlass.total,
+                    status: detail.productGlass.status,
+                    eyeGlass: detail.productGlass.eyeGlass
+                      ? {
+                          id: detail.productGlass.eyeGlass.id,
+                          eyeGlassTypeID:
+                            detail.productGlass.eyeGlass.eyeGlassTypeID,
+                          name: detail.productGlass.eyeGlass.name,
+                          price: detail.productGlass.eyeGlass.price,
+                          eyeGlassImages:
+                            detail.productGlass.eyeGlass.eyeGlassImages?.map(
+                              (image: any) => ({
+                                id: image.id,
+                                eyeGlassID: image.eyeGlassID,
+                                angleView: image.angleView,
+                                url: image.url,
+                              })
+                            ) || [],
+                        }
+                      : null,
+                  }
+                : null,
             })),
           };
         })
       );
 
+      // Cập nhật state với data đã format
       setOrderData(formattedData);
-      setFilteredOrders(formattedData);
+
+      // Apply filters
+      let filtered = formattedData;
+
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        filtered = filtered.filter(
+          (order) =>
+            (order.code?.toLowerCase().includes(searchLower)) ||  
+            order.username?.toLowerCase().includes(searchLower) ||
+            order.id.toString().includes(searchLower) ||
+            order.receiverAddress?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      if (statusFilter !== "all") {
+        filtered = filtered.filter((order) => {
+          switch (statusFilter) {
+            case "0":
+              return order.process === 0; // Pending
+            case "1":
+              return order.process === 1; // Processing
+            case "2":
+              return order.process === 2; // Shipping
+            case "3":
+              return order.process === 3; // Delivered
+            case "4":
+              return order.process === 4; // Completed
+            case "5":
+              return order.process === 5; // Cancelled
+            default:
+              return true;
+          }
+        });
+      }
+
+      if (filterOptions.isDeposit !== null) {
+        filtered = filtered.filter(
+          (order) => order.isDeposit === filterOptions.isDeposit
+        );
+      }
+
+      if (filterOptions.fromDate && filterOptions.toDate) {
+        filtered = filtered.filter((order) => {
+          const orderDate = new Date(order.orderTime);
+          const fromDate = new Date(filterOptions.fromDate);
+          const toDate = new Date(filterOptions.toDate);
+          return orderDate >= fromDate && orderDate <= toDate;
+        });
+      }
+
+      if (filterOptions.issueType) {
+        filtered = filtered.filter((order) =>
+          order.orderDetails.some(
+            (detail: { issueType: string; }) => detail.issueType === filterOptions.issueType
+          )
+        );
+      }
+
+      setFilteredOrders(filtered);
+
+      // Cập nhật revenue cho các đơn completed
+      if (data.revenueCompleted) {
+        setRevenueCompleted(data.revenueCompleted);
+      }
     } catch (error) {
+      console.error("Error fetching orders:", error);
       toast.error("Failed to fetch orders");
-      console.error("Error fetching data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -292,7 +426,7 @@ const SalesOrders: React.FC = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (order) =>
-          order.code.toLowerCase().includes(searchLower) ||
+          (order.code?.toLowerCase().includes(searchLower)) ||  // Thêm optional chaining
           order.username?.toLowerCase().includes(searchLower) ||
           order.id.toString().includes(searchLower) ||
           order.receiverAddress?.toLowerCase().includes(searchLower)
@@ -422,7 +556,7 @@ const SalesOrders: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <div className="search-box">
+            {/* <div className="search-box">
               <FaSearch className="search-icon" />
               <input
                 type="text"
@@ -440,7 +574,7 @@ const SalesOrders: React.FC = () => {
                 setCurrentPage(1);
                 toast.success("Filter has been reset");
               }}
-            />
+            /> */}
           </div>
         </div>
 
@@ -486,20 +620,53 @@ const SalesOrders: React.FC = () => {
         </div>
 
         {selectedOrderId && (
-        <ReportManagement
-          orderId={selectedOrderId}
-          isOpen={isReportModalOpen}
-          onClose={() => {
-            setIsReportModalOpen(false);
-            setSelectedOrderId(0);
-          }}
-        />
-      )}
+          <ReportManagement
+            orderId={selectedOrderId}
+            isOpen={isReportModalOpen}
+            onClose={() => {
+              setIsReportModalOpen(false);
+              setSelectedOrderId(0);
+            }}
+          />
+        )}
         {/* Content Grid */}
         <div className="content-grid">
           {/* Orders Table */}
 
           <div className="content-section orders-table">
+            <div className="search-filter-section">
+              <div className="search-box">
+                <FaSearch className="search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search by username"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="search-input"
+                />
+              </div>
+              <FilterSelects
+                onFilterChange={(newFilters) => {
+                  setFilterOptions({
+                    ...filterOptions,
+                    ...newFilters,
+                  });
+                  setCurrentPage(1); // Reset về trang 1 khi thay đổi filter
+                }}
+                selectedKiosk={kioskFilter}
+                onReset={() => {
+                  setKioskFilter("");
+                  setFilterOptions({
+                    fromDate: "",
+                    toDate: "",
+                    isDeposit: null,
+                    issueType: "",
+                  });
+                  setCurrentPage(1);
+                  toast.success("Filter has been reset");
+                }}
+              />
+            </div>
             <div className="content-header">
               <h2>Recent Orders</h2>
               <div className="order-stats">
@@ -550,7 +717,7 @@ const SalesOrders: React.FC = () => {
                         <tr key={order.id}>
                           <td>
                             <div className="order-id">
-                              <span className="code">{order.code}</span>
+                              {/* <span className="code">{order.code}</span> */}
                               <span className="order-number">
                                 ID: {order.id}
                               </span>{" "}
@@ -611,16 +778,7 @@ const SalesOrders: React.FC = () => {
                               <button
                                 className="view-btn"
                                 onClick={() =>
-                                  handleOrderSelect(
-                                    order.id,
-                                    order.orderDetails,
-                                    order.voucherName,
-                                    order.process,
-                                    order.isDeposit,
-                                    order.kiosks,
-                                    order.total,
-                                    order.receiverAddress
-                                  )
+                                  router.push(`/en/sales/${order.id}`)
                                 }
                               >
                                 View Details
@@ -628,8 +786,7 @@ const SalesOrders: React.FC = () => {
                               <button
                                 className="report-btn"
                                 onClick={() => {
-                                  console.log("Opening reports for order:", order.id);
-                                  setSelectedOrderId(order.id); // Thêm state này
+                                  setSelectedOrderId(order.id);
                                   setIsReportModalOpen(true);
                                 }}
                               >
@@ -663,186 +820,6 @@ const SalesOrders: React.FC = () => {
           </div>
 
           {/* Order Details Panel */}
-          <div className="content-section order-details">
-            {selectedOrderInfo ? (
-              <>
-                <div className="details-header">
-                  <h2>Order Details</h2>
-                  <div className="total-amount">
-                    {formatCurrency(selectedOrderInfo.total)}
-                  </div>
-                </div>
-
-                <div className="details-content">
-                  <div className="info-section">
-                    <div className="info-label">
-                      <FaMapMarkerAlt /> Delivery Address
-                    </div>
-                    <div className="info-value">
-                      {selectedOrderInfo.receiverAddress}
-                    </div>
-                  </div>
-
-                  <div className="info-section">
-                    <div className="info-label">
-                      <FaTag /> Voucher Applied
-                    </div>
-                    <div className="info-value">
-                      {selectedOrderInfo.voucherName || "No voucher applied"}
-                    </div>
-                  </div>
-
-                  <div className="info-section">
-                    <div className="info-label">
-                      <FaStore /> Kiosk Location
-                    </div>
-                    <div className="info-value">
-                      {selectedOrderInfo.kioskName}
-                    </div>
-                  </div>
-
-                  <div className="info-section">
-                    <div className="info-label">
-                      <FaClock /> Order Status
-                    </div>
-                    <OrderStatusTracker
-                      status={selectedOrderInfo.process}
-                      orderId={selectedOrderInfo.orderId}
-                      onStatusUpdate={(newStatus) => {
-                        setSelectedOrderInfo((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                process: newStatus,
-                              }
-                            : null
-                        );
-                        setOrderData((prevOrders) =>
-                          prevOrders.map((order) =>
-                            order.id === selectedOrderInfo.orderId
-                              ? { ...order, process: newStatus }
-                              : order
-                          )
-                        );
-                      }}
-                      onDeleteOrder={handleDeleteOrder}
-                    />
-                  </div>
-
-                  <div className="info-section">
-                    <div className="info-label">
-                      <FaMoneyBillWave /> Payment Status
-                    </div>
-                    <div className="status-wrapper">
-                      <span
-                        className={`status ${
-                          selectedOrderInfo.isDeposit ? "success" : "pending"
-                        }`}
-                      >
-                        {selectedOrderInfo.isDeposit ? (
-                          <>
-                            <FaCheckCircle /> Deposited
-                          </>
-                        ) : (
-                          <>
-                            <FaTimesCircle /> Not Deposited
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
-                  {selectedOrderInfo && paymentInfo && (
-                    <div className="info-section payment-details">
-                      <PaymentInfo
-                        totalAmount={selectedOrderInfo.total}
-                        totalPaid={paymentInfo.totalPaid}
-                        remainingAmount={paymentInfo.remainingAmount}
-                        isDeposit={selectedOrderInfo.isDeposit}
-                      />
-                    </div>
-                  )}
-
-                  <div className="info-section">
-                    <LensInformation
-                      leftLens={{
-                        name: lensInfo.leftLens?.lensName,
-                        price: lensInfo.leftLens?.lensPrice,
-                      }}
-                      rightLens={{
-                        name: lensInfo.rightLens?.lensName,
-                        price: lensInfo.rightLens?.lensPrice,
-                      }}
-                    />
-                  </div>
-
-                  <div className="products-section">
-                    <div className="section-header">
-                      <h3>Products</h3>
-                      <span className="item-count">
-                        {selectedOrderDetails.length} items
-                      </span>
-                    </div>
-                    <div className="product-list">
-                      {selectedOrderDetails.map((detail) => (
-                        // Trong phần product items
-                        <div className="product-item">
-                          <div className="product-content">
-                            <div className="product-image">
-                              <img
-                                src={
-                                  detail.productGlass?.eyeGlass
-                                    ?.eyeGlassImages[0]?.url ||
-                                  "/placeholder-image.jpg"
-                                }
-                                alt={detail.productGlass?.eyeGlass?.name}
-                              />
-                            </div>
-                            <div className="product-info">
-                              <h4 title={detail.productGlass?.eyeGlass?.name}>
-                                {detail.productGlass?.eyeGlass?.name}
-                              </h4>
-                              <div className="price">
-                                {formatCurrency(
-                                  detail.productGlass?.eyeGlass?.price || 0
-                                )}
-                              </div>
-                              <div className="product-meta">
-                                <span className="quantity">
-                                  Qantity: {detail.quantity}
-                                </span>
-                                {/* <span
-                                  className={`stock-status ${
-                                    detail.status ? "success" : "pending"
-                                  }`}
-                                >
-                                  {detail.status ? (
-                                    <>
-                                      <FaCheckCircle /> In Stock
-                                    </>
-                                  ) : (
-                                    <>
-                                      <FaTimesCircle /> Out of Stock
-                                    </>
-                                  )}
-                                </span> */}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="no-selection">
-                <FaShoppingCart className="icon" />
-                <h3>No Order Selected</h3>
-                <p>Select an order to view its details</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
@@ -885,7 +862,7 @@ const SalesOrders: React.FC = () => {
         pauseOnHover
         theme="light"
       />
-   
+ 
     </div>
   );
 };

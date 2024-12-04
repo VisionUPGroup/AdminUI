@@ -1,0 +1,465 @@
+.payment-details {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .loading {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .section-icon {
+      color: #2196f3;
+    }
+  }
+
+  // Payment Summary Styles
+  .payment-summary {
+    margin-bottom: 2rem;
+    
+    .summary-grid {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+
+      .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #e0e0e0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .label {
+          color: #666;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.95rem;
+        }
+
+        .value {
+          font-weight: 600;
+          font-size: 1.1rem;
+
+          &.success {
+            color: #27ae60;
+          }
+
+          &.warning {
+            color: #e74c3c;
+          }
+        }
+
+        &.voucher {
+          margin-top: 0.5rem;
+          padding-top: 1rem;
+          border-top: 1px dashed #e0e0e0;
+
+          .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+
+            .discount {
+              display: inline-flex;
+              align-items: center;
+              gap: 0.25rem;
+              padding-left: 0.5rem;
+              border-left: 1px solid #90caf9;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Product Section Styles
+  .product-section {
+    margin-bottom: 2rem;
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+
+      .product-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background-color: #fff;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image {
+          height: 200px;
+          overflow: hidden;
+          background-color: #f8f9fa;
+          border-bottom: 1px solid #e0e0e0;
+          
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+
+            &:hover {
+              transform: scale(1.05);
+            }
+          }
+        }
+
+        .product-info {
+          padding: 1.5rem;
+
+          .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+          }
+
+          .lens-prices {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+
+            .lens-info {
+              padding-bottom: 1rem;
+              margin-bottom: 1rem;
+              border-bottom: 1px solid #e0e0e0;
+
+              &:last-child {
+                padding-bottom: 0;
+                margin-bottom: 0;
+                border-bottom: none;
+              }
+
+              h4 {
+                font-size: 1rem;
+                font-weight: 500;
+                color: #34495e;
+                margin-bottom: 0.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              }
+
+              .lens-details {
+                .lens-name {
+                  display: block;
+                  font-weight: 500;
+                  color: #2c3e50;
+                  margin-bottom: 0.5rem;
+                }
+
+                .lens-price {
+                  font-size: 1.1rem;
+                  color: #2196f3;
+                  font-weight: 600;
+                }
+              }
+            }
+          }
+
+          .total-lens-price {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            span {
+              &:first-child {
+                color: #1976d2;
+                font-weight: 500;
+              }
+
+              &.price {
+                font-size: 1.2rem;
+                font-weight: 600;
+                color: #1976d2;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Payment History Styles
+  .payment-history {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+   
+    .history-list {
+      .history-item {
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        
+        .payment-info {
+          .code {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+            display: block;
+          }
+     
+          .date {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+          }
+     
+          .method {
+            font-size: 1rem;
+            padding: 0.5rem 1rem;
+          }
+        }
+     
+        .amount {
+          font-size: 1.25rem;
+          font-weight: 700;
+        }
+      }
+     }
+    .no-payments {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+      font-size: 0.875rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px dashed rgba(0,0,0,0.1);
+    }
+   }
+   
+   @media (max-width: 768px) {
+    .payment-history {
+      padding: 1rem;
+   
+      .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+   
+        .amount {
+          align-self: flex-end;
+        }
+      }
+    }
+   }
+}
+
+// Responsive Styles
+@media (max-width: 1024px) {
+  .payment-details {
+    .product-section {
+      .product-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-details {
+    padding: 1rem;
+
+    .section-title {
+      font-size: 1.3rem;
+    }
+
+    .payment-summary {
+      .summary-grid {
+        padding: 1rem;
+
+        .summary-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+
+          .value {
+            align-self: flex-end;
+          }
+
+          &.voucher {
+            .tag {
+              width: 100%;
+              justify-content: center;
+            }
+          }
+        }
+      }
+    }
+
+    .product-section {
+      .product-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+
+        .product-card {
+          .product-image {
+            height: 180px;
+          }
+        }
+      }
+    }
+
+    .payment-history {
+      .history-list {
+        .history-item {
+          padding: 1rem;
+          flex-direction: column;
+          gap: 0.5rem;
+          text-align: center;
+
+          .payment-info {
+            align-items: center;
+
+            .method {
+              justify-content: center;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-details {
+    .section-title {
+      font-size: 1.2rem;
+    }
+
+    .product-section {
+      .product-card {
+        .product-image {
+          height: 150px;
+        }
+
+        .product-info {
+          padding: 1rem;
+
+          .lens-prices {
+            padding: 0.75rem;
+          }
+        }
+      }
+    }
+  }
+}
+.eyeglass-price {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #e3f2fd;  // Thay đổi màu background để phù hợp với design
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  span {
+    &:first-child {
+      color: #1976d2;
+      font-weight: 500;
+    }
+
+    &.price {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1976d2;
+    }
+  }
+}
+
+.total-price {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #fdf2f2;  // Thêm background color
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+
+  span {
+    &:first-child {
+      color: #c53030;
+      font-weight: 500;
+    }
+
+    &.price {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #e53e3e;
+    }
+  }
+}
+
+// Responsive styles cho các phần mới
+@media (max-width: 768px) {
+  .payment-details {
+    .eyeglass-price,
+    .total-price {
+      padding: 0.75rem;
+      
+      span {
+        &.price {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-details {
+    .eyeglass-price,
+    .total-price {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      span {
+        &.price {
+          align-self: flex-end;
+        }
+      }
+    }
+  }
+}

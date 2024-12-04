@@ -9,13 +9,12 @@ export const useReportService = () => {
       const token = getToken();
       const response = await axios.get(`${baseUrl}/api/reports`, {
         params: {
-          
-            OrderID:orderId,
-            Status:status,
-            Type:type,
-            PageIndex: pageIndex,
-     
-            Descending: true
+          OrderID: orderId,
+          Status: status,
+          Type: type,
+          PageIndex: pageIndex,
+          PageSize: 10,
+          Descending: true,
         },
         headers: {
           Authorization: `Bearer ${token}`,
@@ -37,16 +36,12 @@ export const useReportService = () => {
   const createRePort = async (reportData) => {
     try {
       const token = getToken();
-      const response = await axios.post(
-        `${baseUrl}/api/reports`,
-        reportData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(`${baseUrl}/api/reports`, reportData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       return response;
     } catch (error) {
@@ -58,16 +53,12 @@ export const useReportService = () => {
   const updateReportStatus = async (reportData) => {
     try {
       const token = getToken();
-      const response = await axios.put(
-        `${baseUrl}/api/reports`,
-        reportData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.put(`${baseUrl}/api/reports`, reportData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       return response.data;
     } catch (error) {
@@ -80,6 +71,5 @@ export const useReportService = () => {
     fetchReportByOrderId,
     createRePort,
     updateReportStatus,
-
   };
 };
