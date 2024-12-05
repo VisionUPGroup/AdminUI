@@ -70,9 +70,9 @@ const OrderListModal: React.FC<OrderListModalProps> = ({
       try {
         const response = await fetchAllOrder(
           "",
-          null,
-          currentPage,
-          null,
+          "",
+          "",
+          "",
           kioskId
         );
         setOrders(response.items);
