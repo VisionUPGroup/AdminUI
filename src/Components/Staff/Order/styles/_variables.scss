@@ -7,31 +7,17 @@ $secondary: #2C3E50;
 $accent: #F39C12;
 $black: #000000;
 
-// Primary Colors
-$primary: #2563eb;  // Bright Blue thay vì Golden
-$primary-light: #dbeafe;
-$primary-dark: #1e40af;
 
-// Secondary Colors 
-$secondary: #64748b;
-$accent: #06b6d4;
-
-// Neutral Colors
-$background: #f8fafc;
-$surface: #ffffff;
-$text-primary: #0f172a;
-$text-secondary: #475569;
+$background: #F8FAFC;
+$surface: #FFFFFF; 
+$text-primary: #1A1A1A;
+$text-secondary: #616161;
 
 // Status Colors
 $success: #22c55e;
 $error: #ef4444;
 $warning: #f59e0b;
 
-// Neutral Colors
-$background: #F8FAFC;
-$surface: #FFFFFF;
-$text-primary: #1A1A1A;
-$text-secondary: #616161;
 
 // Status Colors
 $success: #2ECC71;
@@ -40,6 +26,8 @@ $error: #E74C3C;
 $error-light: lighten($error, 40%);
 $warning: #F1C40F;
 $warning-light: lighten($warning, 40%);
+
+$container-max-width: 1280px;
 
 // Typography
 $font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
@@ -86,6 +74,7 @@ $border-radius: 8px;
 $border-radius-lg: 12px;
 $border-radius-xl: 16px;
 $border-radius-full: 9999px;
+$border-color: #E2E8F0;
 
 // Shadows
 $shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -135,3 +124,69 @@ $breakpoint-md: 768px;  // Tablet
 $breakpoint-lg: 1024px; // Desktop
 $breakpoint-xl: 1280px; // Large Desktop
 $breakpoint-2xl: 1536px; // Extra Large
+
+
+$primary: #d39d4e;
+$primary-light: rgba(#d39d4e, 0.1);
+$success: #28a745;
+$success-light: rgba(#28a745, 0.1);
+$error: #dc3545;
+$error-light: rgba(#dc3545, 0.1);
+
+$text-primary: #1a1a1a;
+$text-secondary: #6c757d;
+
+$white: #ffffff;
+$background-light: #f8f9fa;
+$background-lighter: #f1f3f5;
+$border-color: #dee2e6;
+
+// Typography
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+
+// Spacing
+$spacing-unit: 0.25rem;    // 4px
+$spacing-xs: 0.5rem;       // 8px
+$spacing-sm: 0.75rem;      // 12px
+$spacing-md: 1rem;         // 16px
+$spacing-lg: 1.5rem;       // 24px
+$spacing-xl: 2rem;         // 32px
+
+// Border Radius
+$border-radius: 0.375rem;      // 6px
+$border-radius-lg: 0.5rem;     // 8px
+$border-radius-xl: 0.75rem;    // 12px
+$border-radius-full: 9999px;
+
+// Shadows
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Container
+$container-max-width: 1280px;
+
+// Transitions
+$transition-base: all 0.3s ease;
+$transition-fast: all 0.2s ease;
+$transition-slow: all 0.4s ease;
+
+// Z-index
+$z-index-dropdown: 1000;
+$z-index-modal: 1050;
+$z-index-tooltip: 1070;
+
+// Gradients
+$gradient-primary: linear-gradient(135deg, $primary, darken($primary, 10%));
+$gradient-surface: linear-gradient(to bottom, $white, $background-light);

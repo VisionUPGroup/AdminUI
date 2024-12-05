@@ -68,6 +68,7 @@ const LensList: React.FC = () => {
     const params = {
       PageIndex: 1,
       PageSize: 10,
+      Descending: true,
     };
 
     fetchLenses(params).then(data => {

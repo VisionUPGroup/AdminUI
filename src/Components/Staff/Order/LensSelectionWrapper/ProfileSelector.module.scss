@@ -1,0 +1,129 @@
+// styles/ProfileSelector.module.scss
+
+@import '../styles/variables';
+@import '../styles/mixins';
+
+.profileSelector {
+  .header {
+    margin-bottom: $spacing-2xl;
+    
+    .backButton {
+      @include button-secondary;
+      margin-bottom: $spacing-lg;
+    }
+    
+    h2 {
+      @include heading-2;
+      margin-bottom: $spacing-xs;
+    }
+    
+    p {
+      color: $text-secondary;
+    }
+  }
+
+  .profileGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: $spacing-lg;
+    
+    .profileCard {
+      @include card-interactive;
+      padding: $spacing-lg;
+      
+      &:hover {
+        .selectButton {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .profileImage {
+        @include flex-center;
+        width: 64px;
+        height: 64px;
+        border-radius: $border-radius-full;
+        background: $primary-light;
+        margin-bottom: $spacing-md;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: $border-radius-full;
+        }
+        
+        svg {
+          color: $primary;
+        }
+      }
+      
+      .profileInfo {
+        h3 {
+          @include heading-3;
+          margin-bottom: $spacing-sm;
+        }
+        
+        .details {
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-xs;
+          margin-bottom: $spacing-md;
+          
+          .detail {
+            @include flex-start;
+            gap: $spacing-xs;
+            color: $text-secondary;
+            font-size: $font-size-sm;
+            
+            svg {
+              color: $primary;
+            }
+          }
+        }
+        
+        .records {
+          @include flex-start;
+          padding: $spacing-xs $spacing-sm;
+          background: $primary-light;
+          border-radius: $border-radius-full;
+          color: $primary;
+          font-size: $font-size-sm;
+          width: fit-content;
+        }
+      }
+      
+      .selectButton {
+        @include button-primary;
+        width: 100%;
+        margin-top: $spacing-lg;
+        opacity: 0;
+        transform: translateY($spacing-sm);
+        transition: all 0.3s ease;
+      }
+    }
+  }
+
+  .loading {
+    @include flex-center;
+    min-height: 200px;
+    flex-direction: column;
+    gap: $spacing-md;
+    
+    .spinner {
+      @include loading-spinner;
+    }
+  }
+
+  .error {
+    @include flex-center;
+    min-height: 200px;
+    flex-direction: column;
+    gap: $spacing-md;
+    color: $error;
+    
+    button {
+      @include button-secondary;
+    }
+  }
+}

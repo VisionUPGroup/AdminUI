@@ -1,0 +1,171 @@
+// ShippingInformation.module.scss
+@import './variables';
+@import './mixins';
+
+.shippingSection {
+  .shippingMethods {
+    margin-bottom: $spacing-xl;
+
+    .methodOption {
+      display: flex;
+      align-items: flex-start;
+      padding: $spacing-lg;
+      border: 2px solid $border-color;
+      border-radius: $border-radius;
+      margin-bottom: $spacing-md;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: rgba($primary, 0.5);
+        background: rgba($primary, 0.02);
+      }
+
+      &.active {
+        border-color: $primary;
+        background: rgba($primary, 0.05);
+
+        .methodDetails {
+          h4 {
+            color: $primary;
+          }
+        }
+      }
+
+      input[type="radio"] {
+        margin-right: $spacing-lg;
+        margin-top: $spacing-xs;
+      }
+
+      .methodDetails {
+        flex: 1;
+
+        h4 {
+          font-size: $font-size-lg;
+          font-weight: 600;
+          margin-bottom: $spacing-xs;
+        }
+
+        p {
+          color: $text-secondary;
+          font-size: $font-size-sm;
+          margin-bottom: $spacing-sm;
+        }
+
+        .methodPrice {
+          font-weight: 600;
+          color: $primary;
+        }
+      }
+    }
+  }
+
+  .customerAddress {
+    .formGroupRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $spacing-lg;
+      margin-bottom: $spacing-lg;
+
+      @include respond-to(sm) {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+
+  .formGroup {
+    margin-bottom: $spacing-lg;
+
+    label {
+      display: block;
+      margin-bottom: $spacing-xs;
+      color: $text-secondary;
+      font-size: $font-size-sm;
+      font-weight: 500;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: $spacing-md;
+      border: 1px solid $border-color;
+      border-radius: $border-radius;
+      font-size: $font-size-base;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        box-shadow: 0 0 0 2px rgba($primary, 0.1);
+      }
+
+      &.error {
+        border-color: $error;
+        background: rgba($error, 0.02);
+      }
+    }
+
+    .errorMessage {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      margin-top: $spacing-xs;
+      color: $error;
+      font-size: $font-size-sm;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-lg;
+      color: $text-secondary;
+      background: $background;
+      border-radius: $border-radius;
+
+      .spinner {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+
+  .kioskDetails {
+    margin-top: $spacing-lg;
+    padding: $spacing-lg;
+    background: rgba($primary, 0.05);
+    border-radius: $border-radius;
+    border: 1px solid rgba($primary, 0.1);
+
+    h4 {
+      font-size: $font-size-lg;
+      font-weight: 600;
+      color: $primary;
+      margin-bottom: $spacing-lg;
+    }
+
+    .detailsGrid {
+      display: grid;
+      gap: $spacing-md;
+
+      .detailItem {
+        span {
+          display: block;
+          color: $text-secondary;
+          font-size: $font-size-sm;
+          margin-bottom: $spacing-xs;
+        }
+
+        p {
+          color: $text-primary;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

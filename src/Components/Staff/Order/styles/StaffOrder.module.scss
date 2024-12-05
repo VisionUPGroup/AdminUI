@@ -1,3 +1,234 @@
+// @import './variables';
+// @import './mixins';
+
+// .staffOrderPage {
+//   min-height: 100vh;
+//   background: $background;
+//   padding: $spacing-xl;
+
+//   .header {
+//     @include card;
+//     @include flex-between;
+//     padding: $spacing-xl;
+//     margin-bottom: $spacing-xl;
+//     background: $gradient-surface;
+
+//     .headerLeft {
+//       h1 {
+//         @include heading-1;
+//         color: $text-primary;
+//       }
+//     }
+
+//     .headerRight {
+//       .cartButton {
+//         @include button-secondary;
+//         position: relative;
+//         padding: $spacing-md;
+//         border-radius: $border-radius-full;
+
+//         &:hover {
+//           transform: translateY(-2px);
+//           background: $primary-light;
+          
+//           .cartCount {
+//             background: $primary;
+//             color: $surface;
+//           }
+//         }
+
+//         .cartCount {
+//           position: absolute;
+//           top: -8px;
+//           right: -8px;
+//           background: $secondary;
+//           color: $surface;
+//           width: 20px;
+//           height: 20px;
+//           border-radius: $border-radius-full;
+//           @include flex-center;
+//           font-size: $font-size-xs;
+//           font-weight: 600;
+//           transition: all 0.3s ease;
+//         }
+//       }
+//     }
+//   }
+
+//   .stepProgress {
+//     @include glass-effect;
+//     display: flex;
+//     justify-content: space-between;
+//     padding: $spacing-lg;
+//     border-radius: $border-radius-xl;
+//     margin-bottom: $spacing-xl;
+
+//     .stepContainer {
+//       flex: 1;
+//       display: flex;
+//       align-items: center;
+
+//       .step {
+//         display: flex;
+//         flex-direction: column;
+//         align-items: center;
+//         color: $text-secondary;
+//         transition: $transition-base;
+
+//         .iconWrapper {
+//           width: 48px;
+//           height: 48px;
+//           border-radius: $border-radius-full;
+//           background: rgba($text-secondary, 0.1);
+//           @include flex-center;
+//           margin-bottom: $spacing-sm;
+//           transition: all 0.3s ease;
+
+//           .icon {
+//             width: 24px;
+//             height: 24px;
+//           }
+//         }
+
+//         span {
+//           font-size: $font-size-sm;
+//           font-weight: 500;
+//           white-space: nowrap;
+//         }
+
+//         &.active {
+//           color: $primary;
+
+//           .iconWrapper {
+//             background: $primary-light;
+//             transform: scale(1.1);
+
+//             .icon {
+//               color: $primary;
+//             }
+//           }
+//         }
+
+//         &.completed {
+//           color: $success;
+
+//           .iconWrapper {
+//             background: $success-light;
+
+//             .icon {
+//               color: $success;
+//             }
+//           }
+//         }
+//       }
+
+//       .stepLine {
+//         flex: 1;
+//         height: 2px;
+//         background: rgba($text-secondary, 0.1);
+//         margin: 0 $spacing-lg;
+//         transform: translateY(-$spacing-xl);
+//         transition: background 0.3s ease;
+
+//         &.completed {
+//           background: $success;
+//         }
+//       }
+
+//       &:last-child {
+//         .stepLine {
+//           display: none;
+//         }
+//       }
+//     }
+//   }
+
+//   .error {
+//     @include card;
+//     background: $error-light;
+//     color: $error;
+//     padding: $spacing-lg;
+//     margin-bottom: $spacing-lg;
+//     @include flex-between;
+//     border-left: 4px solid $error;
+    
+//     .closeError {
+//       @include button-secondary;
+//       padding: $spacing-xs;
+//       color: $error;
+      
+//       &:hover {
+//         background: rgba($error, 0.1);
+//       }
+//     }
+//   }
+
+//   .content {
+//     position: relative;
+//     min-height: 500px;
+
+//     & > div {
+//       @include fade-in;
+//     }
+//   }
+
+//   // Responsive Styles
+//   @include respond-to(sm) {
+//     padding: $spacing-lg;
+
+//     .stepProgress {
+//       .stepContainer {
+//         .step {
+//           span {
+//             display: none;
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   @include respond-to(md) {
+//     .stepProgress {
+//       .stepContainer {
+//         .step {
+//           span {
+//             display: block;
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   @include respond-to(lg) {
+//     padding: $spacing-xl;
+
+//     .content {
+//       max-width: $container-max-width;
+//       margin: 0 auto;
+//     }
+//   }
+
+//   // Animations for step transitions
+//   .step {
+//     &.active {
+//       animation: pulse 2s infinite;
+//     }
+//   }
+
+//   @keyframes pulse {
+//     0% {
+//       transform: scale(1);
+//     }
+//     50% {
+//       transform: scale(1.05);
+//     }
+//     100% {
+//       transform: scale(1);
+//     }
+//   }
+// }
+
+
 @import './variables';
 @import './mixins';
 
@@ -8,15 +239,52 @@
 
   .header {
     @include card;
-    @include flex-between;
     padding: $spacing-xl;
     margin-bottom: $spacing-xl;
     background: $gradient-surface;
+    @include flex-between;
+    align-items: flex-start;
 
     .headerLeft {
       h1 {
         @include heading-1;
         color: $text-primary;
+        margin-bottom: $spacing-md;
+      }
+
+      .customerInfo {
+        display: inline-flex;
+        align-items: center;
+        gap: $spacing-lg;
+        padding: $spacing-md $spacing-lg;
+        background: rgba($primary-light, 0.5);
+        border-radius: $border-radius;
+        border: 1px solid rgba($primary, 0.1);
+        animation: slideIn 0.3s ease-out;
+
+        .name {
+          font-weight: 600;
+          color: $primary;
+          font-size: $font-size-lg;
+          padding-right: $spacing-lg;
+          border-right: 2px solid rgba($primary, 0.2);
+        }
+
+        .detail {
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
+          color: $text-secondary;
+          font-size: $font-size-sm;
+
+          svg {
+            color: $primary;
+          }
+
+          &:hover {
+            color: $text-primary;
+          }
+        }
       }
     }
 
@@ -26,6 +294,8 @@
         position: relative;
         padding: $spacing-md;
         border-radius: $border-radius-full;
+        transition: all 0.3s ease;
+        background: $surface;
 
         &:hover {
           transform: translateY(-2px);
@@ -34,6 +304,7 @@
           .cartCount {
             background: $primary;
             color: $surface;
+            transform: scale(1.1);
           }
         }
 
@@ -50,6 +321,7 @@
           font-size: $font-size-xs;
           font-weight: 600;
           transition: all 0.3s ease;
+          box-shadow: $shadow-sm;
         }
       }
     }
@@ -62,6 +334,7 @@
     padding: $spacing-lg;
     border-radius: $border-radius-xl;
     margin-bottom: $spacing-xl;
+    background: linear-gradient(to right, rgba($surface, 0.9), rgba($primary-light, 0.9));
 
     .stepContainer {
       flex: 1;
@@ -83,6 +356,7 @@
           @include flex-center;
           margin-bottom: $spacing-sm;
           transition: all 0.3s ease;
+          border: 2px solid transparent;
 
           .icon {
             width: 24px;
@@ -102,6 +376,7 @@
           .iconWrapper {
             background: $primary-light;
             transform: scale(1.1);
+            border-color: rgba($primary, 0.2);
 
             .icon {
               color: $primary;
@@ -114,6 +389,7 @@
 
           .iconWrapper {
             background: $success-light;
+            border-color: rgba($success, 0.2);
 
             .icon {
               color: $success;
@@ -128,10 +404,10 @@
         background: rgba($text-secondary, 0.1);
         margin: 0 $spacing-lg;
         transform: translateY(-$spacing-xl);
-        transition: background 0.3s ease;
+        transition: all 0.3s ease;
 
         &.completed {
-          background: $success;
+          background: linear-gradient(to right, $success, rgba($success, 0.5));
         }
       }
 
@@ -151,6 +427,7 @@
     margin-bottom: $spacing-lg;
     @include flex-between;
     border-left: 4px solid $error;
+    animation: slideIn 0.3s ease;
     
     .closeError {
       @include button-secondary;
@@ -159,6 +436,7 @@
       
       &:hover {
         background: rgba($error, 0.1);
+        transform: rotate(90deg);
       }
     }
   }
@@ -166,6 +444,8 @@
   .content {
     position: relative;
     min-height: 500px;
+    margin: 0 auto;
+    max-width: $container-max-width;
 
     & > div {
       @include fade-in;
@@ -176,11 +456,51 @@
   @include respond-to(sm) {
     padding: $spacing-lg;
 
+    .header {
+      padding: $spacing-lg;
+      flex-direction: column;
+      gap: $spacing-lg;
+
+      .headerLeft {
+        width: 100%;
+
+        .customerInfo {
+          flex-direction: column;
+          align-items: flex-start;
+          width: 100%;
+
+          .name {
+            border-right: none;
+            border-bottom: 2px solid rgba($primary, 0.2);
+            padding: $spacing-sm 0;
+            margin-bottom: $spacing-sm;
+            width: 100%;
+          }
+        }
+      }
+
+      .headerRight {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+
     .stepProgress {
       .stepContainer {
         .step {
           span {
             display: none;
+          }
+
+          .iconWrapper {
+            width: 40px;
+            height: 40px;
+
+            .icon {
+              width: 20px;
+              height: 20px;
+            }
           }
         }
       }
@@ -188,6 +508,32 @@
   }
 
   @include respond-to(md) {
+    .header {
+      flex-direction: row;
+
+      .headerLeft {
+        width: auto;
+
+        .customerInfo {
+          flex-direction: row;
+          align-items: center;
+          width: auto;
+
+          .name {
+            border-right: 2px solid rgba($primary, 0.2);
+            border-bottom: none;
+            padding-right: $spacing-lg;
+            margin-bottom: 0;
+            width: auto;
+          }
+        }
+      }
+
+      .headerRight {
+        width: auto;
+      }
+    }
+
     .stepProgress {
       .stepContainer {
         .step {
@@ -199,19 +545,15 @@
     }
   }
 
-  @include respond-to(lg) {
-    padding: $spacing-xl;
-
-    .content {
-      max-width: $container-max-width;
-      margin: 0 auto;
+  // Animations
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
     }
-  }
-
-  // Animations for step transitions
-  .step {
-    &.active {
-      animation: pulse 2s infinite;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 

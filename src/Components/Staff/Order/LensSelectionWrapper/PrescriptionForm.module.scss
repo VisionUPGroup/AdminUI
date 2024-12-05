@@ -1,0 +1,145 @@
+// styles/PrescriptionForm.module.scss
+
+@import '../styles/variables';
+@import '../styles/mixins';
+
+.prescriptionForm {
+  .header {
+    margin-bottom: $spacing-2xl;
+    
+    .backButton {
+      @include button-secondary;
+      margin-bottom: $spacing-lg;
+    }
+    
+    h2 {
+      @include heading-2;
+      margin-bottom: $spacing-xs;
+    }
+    
+    p {
+      color: $text-secondary;
+    }
+  }
+
+  .content {
+    @include card;
+    padding: $spacing-xl;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .eyeSelector {
+    display: flex;
+    gap: $spacing-md;
+    margin-bottom: $spacing-xl;
+    
+    .eyeButton {
+      flex: 1;
+      @include button-base;
+      padding: $spacing-lg;
+      border: 2px solid transparent;
+      
+      &:hover {
+        background: $primary-light;
+      }
+      
+      &.active {
+        border-color: $primary;
+        background: $primary-light;
+        color: $primary;
+        
+        svg {
+          color: $primary;
+        }
+      }
+      
+      svg {
+        margin-right: $spacing-sm;
+      }
+    }
+  }
+
+  .prescriptionGrid {
+    display: grid;
+    gap: $spacing-xl;
+    margin-bottom: $spacing-xl;
+    
+    .formColumn {
+      display: grid;
+      gap: $spacing-lg;
+    }
+  }
+
+  .inputGroup {
+    label {
+      display: block;
+      margin-bottom: $spacing-xs;
+      color: $text-secondary;
+      font-size: $font-size-sm;
+    }
+    
+    input {
+      @include input-modern;
+      text-align: center;
+      font-family: $font-mono;
+      
+      &.error {
+        border-color: $error;
+        
+        &:focus {
+          box-shadow: 0 0 0 3px rgba($error, 0.1);
+        }
+      }
+    }
+    
+    .errorText {
+      display: block;
+      color: $error;
+      font-size: $font-size-sm;
+      margin-top: $spacing-xs;
+    }
+    
+    .range {
+      display: block;
+      text-align: right;
+      color: $text-secondary;
+      font-size: $font-size-xs;
+      margin-top: $spacing-xs;
+    }
+  }
+
+  .pdSection {
+    padding-top: $spacing-xl;
+    border-top: 1px solid $border-color;
+    
+    .inputGroup {
+      max-width: 300px;
+      margin: 0 auto;
+    }
+  }
+
+  .actions {
+    @include flex-end;
+    gap: $spacing-md;
+    margin-top: $spacing-xl;
+    padding-top: $spacing-xl;
+    border-top: 1px solid $border-color;
+    
+    .resetButton {
+      @include button-secondary;
+      
+      svg {
+        margin-right: $spacing-xs;
+      }
+    }
+    
+    .submitButton {
+      @include button-primary;
+      
+      svg {
+        margin-right: $spacing-xs;
+      }
+    }
+  }
+}

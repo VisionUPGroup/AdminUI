@@ -1,0 +1,86 @@
+@import './variables';
+@import './mixins';
+
+.measurementSelector {
+  padding: $spacing-lg;
+
+  h3 {
+    @include heading-3;
+    margin-bottom: $spacing-lg;
+  }
+
+  .recordList {
+    display: grid;
+    gap: $spacing-md;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: $spacing-md;
+
+    .recordCard {
+      @include card;
+      @include interactive;
+      padding: $spacing-lg;
+      border: 1px solid rgba($primary, 0.1);
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: $primary;
+        transform: translateX(4px);
+      }
+
+      &.active {
+        background: linear-gradient(to right, $surface, $primary-light);
+        border-color: $primary;
+      }
+
+      .cardHeader {
+        @include flex-center;
+        gap: $spacing-sm;
+        margin-bottom: $spacing-md;
+        color: $primary;
+        font-weight: 500;
+      }
+
+      .cardBody {
+        .location {
+          @include flex-start;
+          gap: $spacing-sm;
+          color: $text-secondary;
+          margin-bottom: $spacing-md;
+        }
+
+        .measurements {
+          background: rgba($surface, 0.8);
+          padding: $spacing-md;
+          border-radius: $border-radius;
+          
+          .eye {
+            @include flex-start;
+            gap: $spacing-sm;
+            margin-bottom: $spacing-sm;
+            font-size: $font-size-sm;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .noRecords {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-2xl;
+    color: $text-secondary;
+    background: rgba($surface, 0.5);
+    border-radius: $border-radius;
+    border: 2px dashed rgba($text-secondary, 0.2);
+
+    p {
+      margin-top: $spacing-md;
+    }
+  }
+}

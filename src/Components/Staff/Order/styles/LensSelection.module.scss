@@ -1,223 +1,81 @@
 @import './variables';
 @import './mixins';
 
-.container {
+.lensSelection {
   min-height: 100vh;
-  background: $background;
-  padding: $spacing-xl;
+  background: linear-gradient(120deg, $background 0%, lighten($background, 3%) 100%);
+  padding: clamp($spacing-lg, 5vw, $spacing-2xl);
 
+  // Header Section
   .header {
     margin-bottom: $spacing-2xl;
-
-    .backButton {
-      @include button-secondary;
-      gap: $spacing-sm;
-      margin-bottom: $spacing-lg;
-
-      &:hover {
-        transform: translateX(-4px);
-      }
-    }
+    @include glass-effect;
+    border-radius: $border-radius-xl;
+    padding: $spacing-lg;
 
     .productPreview {
-      @include card;
       display: flex;
       align-items: center;
-      gap: $spacing-lg;
+      gap: $spacing-xl;
       padding: $spacing-lg;
-      background: $gradient-surface;
+      border-radius: $border-radius-lg;
+      background: linear-gradient(to right, rgba($surface, 0.8), rgba($primary-light, 0.2));
 
       .productImage {
-        width: 120px;
-        height: 120px;
+        width: 140px;
+        height: 140px;
         object-fit: cover;
-        border-radius: $border-radius;
-        transition: transform 0.3s ease;
+        border-radius: $border-radius-lg;
+        box-shadow: $shadow-md;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:hover {
-          transform: scale(1.05);
+          transform: scale(1.05) rotate(-2deg);
+          box-shadow: $shadow-lg;
         }
       }
 
       .productInfo {
+        flex: 1;
+
         h2 {
           @include heading-2;
-          margin-bottom: $spacing-sm;
+          background: linear-gradient(120deg, $primary, darken($primary, 15%));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          margin-bottom: $spacing-xs;
         }
 
         .price {
+          font-size: $font-size-xl;
+          font-weight: 700;
           color: $primary;
-          font-weight: 600;
-          font-size: $font-size-lg;
+          display: inline-block;
+          padding: $spacing-xs $spacing-sm;
+          background: rgba($primary, 0.1);
+          border-radius: $border-radius;
         }
       }
     }
   }
 
-  .mainContent {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: $spacing-xl;
-
-    @include respond-to(lg) {
-      grid-template-columns: 2fr 1fr;
-    }
-  }
-
-  .leftSection {
-    .typeSelection {
-      h2 {
-        @include heading-2;
-        margin-bottom: $spacing-xl;
-      }
-
-      .typeGrid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: $spacing-lg;
-      }
-
-      .typeCard {
-        @include card;
-        padding: $spacing-xl;
-        text-align: left;
-        @include interactive;
-        border: 2px solid transparent;
-
-        &:hover {
-          border-color: rgba($primary, 0.3);
-          background: $gradient-surface;
-        }
-
-        h3 {
-          @include heading-2;
-          font-size: $font-size-lg;
-          margin-bottom: $spacing-sm;
-          color: $text-primary;
-        }
-
-        p {
-          color: $text-secondary;
-          font-size: $font-size-sm;
-          line-height: 1.6;
-        }
-      }
-    }
-
-    .lensGrid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: $spacing-lg;
-
-      .lensCard {
-        @include card;
-        position: relative;
-        overflow: hidden;
-        @include interactive;
-        border: 2px solid transparent;
-
-        &.selected {
-          border-color: $primary;
-          background: linear-gradient(to bottom right, $surface, $primary-light);
-
-          .selectedCheck {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        img {
-          width: 100%;
-          height: 200px;
-          object-fit: cover;
-          transition: transform 0.6s ease;
-
-          &:hover {
-            transform: scale(1.05);
-          }
-        }
-
-        .content {
-          padding: $spacing-lg;
-
-          h3 {
-            @include heading-2;
-            font-size: $font-size-lg;
-            margin-bottom: $spacing-sm;
-          }
-
-          p {
-            color: $text-secondary;
-            font-size: $font-size-sm;
-            margin-bottom: $spacing-md;
-            line-height: 1.6;
-          }
-
-          .price {
-            color: $primary;
-            font-weight: 600;
-            font-size: $font-size-xl;
-          }
-
-          .rating {
-            @include flex-center;
-            gap: $spacing-xs;
-            margin-top: $spacing-sm;
-
-            svg {
-              width: 16px;
-              height: 16px;
-            }
-
-            span {
-              color: $text-secondary;
-              font-size: $font-size-sm;
-            }
-          }
-        }
-
-        .selectedCheck {
-          position: absolute;
-          top: $spacing-md;
-          right: $spacing-md;
-          width: 32px;
-          height: 32px;
-          background: $primary;
-          color: $surface;
-          border-radius: $border-radius-full;
-          @include flex-center;
-          opacity: 0;
-          transform: translateY(-10px);
-          transition: all 0.3s ease;
-        }
-      }
-    }
-  }
-
-  .rightSection {
-    position: sticky;
-    top: $spacing-lg;
-    height: max-content;
-
-    .prescriptionForm {
-      @include card;
+  // Content Area
+  .content {
+    .lensModeSelection {
+      @include card-base;
       padding: $spacing-xl;
-      background: linear-gradient(135deg, $surface, $primary-light 400%);
-      border: 1px solid rgba($primary, 0.1);
-    
+      background: rgba($surface, 0.9);
+
       h3 {
         @include heading-2;
-        margin-bottom: $spacing-xl;
-        color: $primary;
         text-align: center;
-        font-weight: 600;
+        margin-bottom: $spacing-xl;
         position: relative;
-        padding-bottom: $spacing-md;
-    
+        
         &:after {
           content: '';
           position: absolute;
-          bottom: 0;
+          bottom: -$spacing-sm;
           left: 50%;
           transform: translateX(-50%);
           width: 60px;
@@ -226,555 +84,221 @@
           border-radius: $border-radius-full;
         }
       }
-    
-      .eyeSection {
-        .eye {
-          margin-bottom: $spacing-xl;
+
+      .modeOptions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: $spacing-lg;
+        margin-bottom: $spacing-xl;
+
+        .modeButton {
+          position: relative;
+          display: flex;
+          align-items: center;
           padding: $spacing-lg;
-          background: rgba($surface, 0.8);
-          border-radius: $border-radius-lg;
-          border: 1px solid rgba($primary, 0.1);
-          transition: $transition-smooth;
-    
-          &:hover {
-            background: $surface;
-            box-shadow: $shadow-md;
-            transform: translateY(-2px);
-          }
-    
-          h4 {
-            color: $primary;
-            margin-bottom: $spacing-md;
-            font-weight: 600;
-            font-size: $font-size-lg;
-            display: flex;
-            align-items: center;
-            gap: $spacing-sm;
-    
-            &:before {
-              content: '';
-              display: block;
-              width: 8px;
-              height: 8px;
-              background: $primary;
-              border-radius: 50%;
-            }
-          }
-    
-          .inputs {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: $spacing-md;
-    
-            .field {
-              label {
-                display: block;
-                color: $text-secondary;
-                font-size: $font-size-sm;
-                margin-bottom: $spacing-sm;
-                font-weight: 500;
-              }
-    
-              input {
-                width: 100%;
-                padding: $spacing-md;
-                text-align: center;
-                font-family: $font-mono;
-                font-size: $font-size-base;
-                border: 1px solid rgba($primary, 0.2);
-                border-radius: $border-radius;
-                background: $surface;
-                color: $text-primary;
-                transition: all 0.2s ease;
-                appearance: none;
-                -moz-appearance: textfield;
-    
-                &::-webkit-outer-spin-button,
-                &::-webkit-inner-spin-button {
-                  -webkit-appearance: none;
-                  margin: 0;
-                }
-    
-                &:hover {
-                  border-color: rgba($primary, 0.4);
-                }
-    
-                &:focus {
-                  outline: none;
-                  border-color: $primary;
-                  box-shadow: 0 0 0 3px rgba($primary, 0.1);
-                }
-    
-                &.error {
-                  border-color: $error;
-                  background-color: rgba($error-light, 0.1);
-                }
-              }
-    
-              .inputWrapper {
-                position: relative;
-                
-                .unit {
-                  position: absolute;
-                  right: $spacing-md;
-                  top: 50%;
-                  transform: translateY(-50%);
-                  color: $text-secondary;
-                  font-size: $font-size-sm;
-                  pointer-events: none;
-                }
-              }
-    
-              .errorMessage {
-                color: $error;
-                font-size: $font-size-xs;
-                margin-top: $spacing-xs;
-              }
-            }
-          }
-        }
-    
-        .pdField {
-          margin-top: $spacing-xl;
           background: $surface;
-          padding: $spacing-lg;
+          border: 2px solid transparent;
           border-radius: $border-radius-lg;
-          border: 1px solid rgba($primary, 0.1);
-          transition: $transition-smooth;
-    
+          transition: all 0.3s ease;
+          overflow: hidden;
+          cursor: pointer;
+
+          &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba($primary, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+          }
+
           &:hover {
-            box-shadow: $shadow-md;
             transform: translateY(-2px);
+            border-color: rgba($primary, 0.3);
+            
+            &:before {
+              opacity: 1;
+            }
           }
-    
-          label {
-            display: block;
-            color: $primary;
-            margin-bottom: $spacing-md;
-            font-weight: 600;
-            font-size: $font-size-lg;
-            text-align: center;
+
+          &.active {
+            border-color: $primary;
+            background: rgba($primary, 0.05);
+
+            .modeIcon {
+              svg {
+                color: $primary;
+                transform: scale(1.1);
+              }
+            }
+
+            .checkIcon {
+              opacity: 1;
+              transform: scale(1) rotate(0deg);
+            }
           }
-    
-          input {
-            max-width: 200px;
-            margin: 0 auto;
-            display: block;
+
+          .modeIcon {
+            display: flex;
+            gap: $spacing-md;
             padding: $spacing-md;
-            text-align: center;
-            font-family: $font-mono;
-            font-size: $font-size-lg;
-            border: 1px solid rgba($primary, 0.2);
+            background: rgba($primary, 0.1);
             border-radius: $border-radius;
-            background: $surface;
-            transition: all 0.2s ease;
-            appearance: none;
-            -moz-appearance: textfield;
-    
-            &::-webkit-outer-spin-button,
-            &::-webkit-inner-spin-button {
-              -webkit-appearance: none;
-              margin: 0;
+            margin-right: $spacing-lg;
+
+            svg {
+              transition: all 0.3s ease;
+              color: rgba($primary, 0.7);
             }
-    
-            &:hover {
-              border-color: rgba($primary, 0.4);
+          }
+
+          .modeInfo {
+            flex: 1;
+
+            h4 {
+              font-weight: 600;
+              margin-bottom: $spacing-xs;
+              color: $text-primary;
             }
-    
-            &:focus {
-              outline: none;
-              border-color: $primary;
-              box-shadow: 0 0 0 3px rgba($primary, 0.1);
+
+            p {
+              font-size: $font-size-sm;
+              color: $text-secondary;
+              line-height: 1.5;
             }
+          }
+
+          .checkIcon {
+            position: absolute;
+            top: $spacing-md;
+            right: $spacing-md;
+            color: $primary;
+            opacity: 0;
+            transform: scale(0.8) rotate(-90deg);
+            transition: all 0.3s ease;
           }
         }
       }
-    }
-    
-    // Responsive adjustments
-    @media (max-width: $breakpoint-md) {
-      .prescriptionForm {
-        .eyeSection {
-          .eye {
-            .inputs {
-              grid-template-columns: 1fr;
-              gap: $spacing-lg;
+
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: $spacing-lg;
+        border-top: 1px solid rgba($text-secondary, 0.1);
+
+        .backButton {
+          @include button-secondary;
+          gap: $spacing-sm;
+          svg {
+            transition: transform 0.3s ease;
+          }
+          
+          &:hover {
+            svg {
+              transform: translateX(-4px);
             }
           }
         }
-      }
-    }
 
-    .nonPrescriptionDetails {
-      @include card;
-      padding: $spacing-xl;
-      text-align: center;
-
-      h3 {
-        @include heading-2;
-        margin-bottom: $spacing-lg;
-      }
-
-      .selectedLensInfo {
-        img {
-          width: 120px;
-          height: 120px;
-          object-fit: cover;
-          border-radius: $border-radius;
-          margin-bottom: $spacing-md;
+        .nextButton {
+          @include button-primary;
+          min-width: 160px;
+          
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: $shadow-md;
+          }
         }
-
-        h4 {
-          color: $primary;
-          margin-bottom: $spacing-sm;
-          font-weight: 600;
-        }
-
-        p {
-          color: $text-secondary;
-          font-size: $font-size-sm;
-          margin-bottom: $spacing-md;
-          line-height: 1.6;
-        }
-
-        .price {
-          font-size: $font-size-xl;
-          font-weight: 700;
-          color: $primary;
-        }
-      }
-    }
-
-    .addToCartButton {
-      @include button-primary;
-      width: 100%;
-      margin-top: $spacing-xl;
-      padding: $spacing-lg;
-      font-weight: 600;
-      
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .spinner {
-        @include loading-spinner;
-        margin-right: $spacing-sm;
       }
     }
   }
 
-  .emptyState {
-    @include flex-center;
-    flex-direction: column;
-    padding: $spacing-2xl;
-    min-height: 400px;
-    @include card;
-    background: linear-gradient(135deg, $surface, $background);
-    border: 2px dashed rgba($text-secondary, 0.2);
-    text-align: center;
+  // Error Messages
+  .error {
+    @include glass-effect;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $border-radius;
+    color: $error;
+    margin-top: $spacing-lg;
+    cursor: pointer;
+    transition: all 0.3s ease;
 
-    .illustration {
-      font-size: $font-size-3xl;
-      margin-bottom: $spacing-lg;
-      opacity: 0.5;
+    &:hover {
+      transform: translateY(-2px);
+      background: rgba($error-light, 0.2);
     }
 
-    h3 {
-      @include heading-2;
-      margin-bottom: $spacing-sm;
-    }
-
-    p {
-      color: $text-secondary;
-      max-width: 280px;
-      margin-bottom: $spacing-lg;
-      line-height: 1.6;
-    }
-
-    button {
-      @include button-primary;
+    svg {
+      flex-shrink: 0;
     }
   }
 
   // Responsive Styles
   @include respond-to(sm) {
-    .mainContent {
-      grid-template-columns: 1fr;
-    }
+    .header {
+      .productPreview {
+        flex-direction: column;
+        text-align: center;
+        padding: $spacing-lg;
 
-    .rightSection {
-      position: static;
-      margin-top: $spacing-xl;
-    }
+        .productImage {
+          width: 180px;
+          height: 180px;
+        }
 
-    .prescriptionForm {
-      .eyeSection {
-        .eye {
-          .inputs {
-            grid-template-columns: 1fr;
-          }
+        .productInfo {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: $spacing-sm;
         }
       }
     }
-  }
 
-  @include respond-to(md) {
-    .mainContent {
-      grid-template-columns: 1.2fr 1fr;
-    }
-  }
+    .content {
+      .lensModeSelection {
+        .modeOptions {
+          grid-template-columns: 1fr;
+        }
 
-  @include respond-to(lg) {
-    .mainContent {
-      grid-template-columns: 1.5fr 1fr;
-    }
+        .actions {
+          flex-direction: column-reverse;
+          gap: $spacing-md;
 
-    .lensGrid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @include respond-to(xl) {
-    .container {
-      padding: $spacing-2xl;
-    }
-
-    .lensGrid {
-      grid-template-columns: repeat(3, 1fr);
+          button {
+            width: 100%;
+          }
+        }
+      }
     }
   }
 
   // Animations
-  .typeCard, .lensCard {
-    @include fade-in;
+  .fade-enter {
+    opacity: 0;
+    transform: translateY(10px);
   }
 
-  .selectedCheck {
-    @include slide-in;
-  }
-}
-
-.container {
-  min-height: 100vh;
-  background: $background;
-  padding: $spacing-xl;
-
-  // ... (giữ nguyên các style khác ở đầu file)
-
-  .typeHeader {
-    display: flex;
-    align-items: center;
-    margin-bottom: $spacing-xl;
-    padding: $spacing-lg;
-    background: linear-gradient(to right, $surface, $primary-light);
-    border-radius: $border-radius-lg;
-    box-shadow: $shadow-sm;
-
-    .backToTypes {
-      @include button-secondary;
-      display: flex;
-      align-items: center;
-      gap: $spacing-sm;
-      padding: $spacing-md $spacing-lg;
-      font-weight: 500;
-      color: $text-primary;
-      background: rgba($surface, 0.9);
-      border: 1px solid rgba($primary, 0.2);
-      backdrop-filter: blur(8px);
-      transition: all 0.3s ease;
-
-      svg {
-        transition: transform 0.3s ease;
-      }
-
-      &:hover {
-        background: $surface;
-        border-color: $primary;
-        transform: translateX(-4px);
-
-        svg {
-          transform: translateX(-2px);
-        }
-      }
-    }
+  .fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
   }
 
-  .prescriptionForm {
-    @include card;
-    padding: $spacing-xl;
-    background: linear-gradient(135deg, $surface, $primary-light 400%);
-    border: 1px solid rgba($primary, 0.1);
+  .fade-exit {
+    opacity: 1;
+  }
 
-    h3 {
-      @include heading-2;
-      margin-bottom: $spacing-xl;
-      color: $primary;
-      text-align: center;
-      font-weight: 600;
-      position: relative;
-      padding-bottom: $spacing-md;
-
-      &:after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 3px;
-        background: $gradient-primary;
-        border-radius: $border-radius-full;
-      }
-    }
-
-    .eyeSection {
-      .eye {
-        margin-bottom: $spacing-xl;
-        padding: $spacing-lg;
-        background: rgba($surface, 0.8);
-        border-radius: $border-radius-lg;
-        border: 1px solid rgba($primary, 0.1);
-        transition: $transition-smooth;
-
-        &:hover {
-          background: $surface;
-          box-shadow: $shadow-md;
-          transform: translateY(-2px);
-        }
-
-        h4 {
-          color: $primary;
-          margin-bottom: $spacing-md;
-          font-weight: 600;
-          font-size: $font-size-lg;
-          display: flex;
-          align-items: center;
-          gap: $spacing-sm;
-
-          &:before {
-            content: '';
-            display: block;
-            width: 8px;
-            height: 8px;
-            background: $primary;
-            border-radius: 50%;
-          }
-        }
-
-        .inputs {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: $spacing-md;
-
-          .field {
-            label {
-              display: block;
-              color: $text-secondary;
-              font-size: $font-size-sm;
-              margin-bottom: $spacing-sm;
-              font-weight: 500;
-            }
-
-            .inputWrapper {
-              position: relative;
-
-              input {
-                @include input-modern;
-                text-align: center;
-                font-family: $font-mono;
-                font-size: $font-size-lg;
-                padding: $spacing-md;
-                border-color: rgba($primary, 0.2);
-                
-                &:focus {
-                  border-color: $primary;
-                  box-shadow: 0 0 0 3px rgba($primary, 0.1);
-                }
-
-                &:hover:not(:focus) {
-                  border-color: rgba($primary, 0.4);
-                }
-
-                &.error {
-                  border-color: $error;
-                  background-color: rgba($error-light, 0.1);
-                }
-              }
-
-              .unit {
-                position: absolute;
-                right: $spacing-md;
-                top: 50%;
-                transform: translateY(-50%);
-                color: $text-secondary;
-                font-size: $font-size-sm;
-                pointer-events: none;
-              }
-            }
-          }
-        }
-      }
-
-      .pdField {
-        margin-top: $spacing-xl;
-        padding: $spacing-lg;
-        background: $surface;
-        border-radius: $border-radius-lg;
-        border: 1px solid rgba($primary, 0.1);
-        text-align: center;
-        transition: $transition-smooth;
-
-        &:hover {
-          box-shadow: $shadow-md;
-          transform: translateY(-2px);
-        }
-
-        label {
-          display: block;
-          color: $primary;
-          margin-bottom: $spacing-md;
-          font-weight: 600;
-          font-size: $font-size-lg;
-        }
-
-        input {
-          @include input-modern;
-          max-width: 200px;
-          margin: 0 auto;
-          text-align: center;
-          font-family: $font-mono;
-          font-size: $font-size-lg;
-          padding: $spacing-md;
-          border-color: rgba($primary, 0.2);
-
-          &:focus {
-            border-color: $primary;
-            box-shadow: 0 0 0 3px rgba($primary, 0.1);
-          }
-        }
-      }
-    }
-
-    .addToCartButton {
-      @include button-primary;
-      width: 100%;
-      margin-top: $spacing-xl;
-      padding: $spacing-lg;
-      font-size: $font-size-lg;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      &:not(:disabled):hover {
-        transform: translateY(-2px);
-        box-shadow: $shadow-lg;
-      }
-    }
+  .fade-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
   }
 }

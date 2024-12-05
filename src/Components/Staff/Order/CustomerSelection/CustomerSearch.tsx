@@ -1,8 +1,10 @@
+
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, Search, UserPlus, Phone, Mail, MapPin, 
-  X, AlertCircle, Check, Calendar, Loader2 
+import {
+  Search, UserPlus, Phone, Mail, AlertCircle,
+  Check, Calendar, Loader2, User, Building, X
 } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -28,30 +30,28 @@ interface CustomerData {
     description: string;
     status: boolean;
   };
-  profiles: null; // Updated to match new structure
 }
 
-// Validation schema remains the same
 const validationSchema = Yup.object({
   fullName: Yup.string()
-    .required('Họ tên không được để trống')
-    .min(2, 'Họ tên quá ngắn')
-    .max(50, 'Họ tên quá dài'),
+    .required('Full name is required')
+    .min(2, 'Name is too short')
+    .max(50, 'Name is too long'),
   email: Yup.string()
-    .email('Email không hợp lệ')
-    .required('Email không được để trống'),
+    .email('Invalid email format')
+    .required('Email is required'),
   phoneNumber: Yup.string()
-    .matches(/^[0-9]{10}$/, 'Số điện thoại phải có 10 chữ số')
-    .required('Số điện thoại không được để trống'),
+    .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
+    .required('Phone number is required'),
   address: Yup.string()
-    .required('Địa chỉ không được để trống')
-    .min(5, 'Địa chỉ quá ngắn'),
+    .required('Address is required')
+    .min(5, 'Address is too short'),
   birthday: Yup.date()
-    .max(new Date(), 'Ngày sinh không hợp lệ')
+    .max(new Date(), 'Birthday cannot be in the future')
     .nullable()
 });
 
-const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onBack }) => {
+const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch] = useDebounce(searchQuery, 500);
   const [customers, setCustomers] = useState<CustomerData[]>([]);
@@ -62,81 +62,84 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
 
   const { fetchAccounts, createAccount } = useAccountService();
 
+  // Search effect
   useEffect(() => {
-    let isActive = true;
-    const controller = new AbortController();
+    // Tạo một biến để track component mounted state
+    let mounted = true;
+    const abortController = new AbortController();
 
     const performSearch = async () => {
-      // Don't perform search if query is empty or too short
+      // Clear previous results if search is empty
       if (!debouncedSearch?.trim() || debouncedSearch.length < 2) {
-        if (isActive) {
-          setCustomers([]);
-          setLoading(false);
-        }
+        setCustomers([]);
+        setLoading(false);
         return;
       }
 
-      try {
+      // Set loading state
+      if (mounted) {
         setLoading(true);
+      }
+
+      try {
         const response = await fetchAccounts({
           Username: debouncedSearch,
-          RoleID: 1
+          RoleID: 1,
+          signal: abortController.signal
         });
-        
-        if (isActive) {
+
+        // Only update state if component is still mounted
+        if (mounted) {
           setCustomers(response?.data || []);
-          console.log('Search results:', response?.data);
           setError(null);
+          setLoading(false);
         }
       } catch (error: any) {
+        // Ignore if request was aborted
         if (error.name === 'AbortError') {
           return;
         }
-        if (isActive) {
-          setError('Không thể tìm kiếm khách hàng');
+
+        // Only update state if component is still mounted
+        if (mounted) {
+          setError('Could not search for customers');
           setCustomers([]);
-        }
-      } finally {
-        if (isActive) {
           setLoading(false);
         }
       }
     };
 
-    performSearch();
+    // Debounce the search
+    const timeoutId = setTimeout(() => {
+      performSearch();
+    }, 300); // Reduce debounce time to make it more responsive
 
+    // Cleanup function
     return () => {
-      isActive = false;
-      controller.abort();
+      mounted = false;
+      abortController.abort();
+      clearTimeout(timeoutId);
     };
   }, [debouncedSearch]);
 
-  // Handle customer selection
-  const handleCustomerSelect = useCallback((customer: CustomerData) => {
-    console.log('Selected customer:', customer);
-    setSelectedCustomer(customer);
-    
-    // Delay the navigation slightly to allow the UI to update
-    setTimeout(() => {
-      onCustomerSelect(customer);
-    }, 100);
-  }, [onCustomerSelect]);
-
-  const formatDate = useCallback((dateString?: string) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('vi-VN');
-  }, []);
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    if (value.trim() === searchQuery.trim()) return; // Prevent unnecessary updates
     setSearchQuery(value);
-  }, []);
+  }, [searchQuery]);
 
   const clearSearch = useCallback(() => {
     setSearchQuery('');
     setCustomers([]);
     setSelectedCustomer(null);
   }, []);
+
+
+  const handleCustomerSelect = useCallback((customer: CustomerData) => {
+    setSelectedCustomer(customer);
+    onCustomerSelect(customer);
+  }, [onCustomerSelect]);
 
   const formik = useFormik({
     initialValues: {
@@ -170,86 +173,38 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
         setShowModal(false);
         resetForm();
       } catch (error: any) {
-        setError(error.message || 'Không thể tạo khách hàng mới');
+        setError(error.message || 'Could not create new customer');
       } finally {
         setLoading(false);
       }
     }
   });
 
-  const renderCustomerCard = useCallback((customer: CustomerData) => (
-    <motion.div
-      key={customer.id}
-      className={`${styles.customerCard} ${
-        selectedCustomer?.id === customer.id ? styles.selected : ''
-      }`}
-      onClick={() => handleCustomerSelect(customer)}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.2 }}
-    >
-      <div className={styles.customerInfo}>
-        <h3>{customer.username}</h3>
-        <div className={styles.details}>
-          {customer.phoneNumber && (
-            <span>
-              <Phone size={16} />
-              {customer.phoneNumber}
-            </span>
-          )}
-          <span>
-            <Mail size={16} />
-            {customer.email}
-          </span>
-          <span>
-            <AlertCircle size={16} />
-            {customer.status ? 'Đang hoạt động' : 'Không hoạt động'}
-          </span>
-        </div>
-      </div>
-      {selectedCustomer?.id === customer.id && (
-        <div className={styles.checkmark}>
-          <Check size={20} />
-        </div>
-      )}
-    </motion.div>
-  ), [selectedCustomer, handleCustomerSelect]);
-
-
   return (
     <div className={styles.customerSection}>
-      <header className={styles.header}>
-        <button 
-          className={styles.backButton} 
-          onClick={onBack}
-          type="button"
-        >
-          <ArrowLeft size={20} />
-          <span>Quay lại</span>
-        </button>
-        <button 
-          className={styles.addButton} 
-          onClick={() => setShowModal(true)}
-          type="button"
-        >
-          <UserPlus size={20} />
-          <span>Thêm khách hàng</span>
-        </button>
-      </header>
+      <div className={styles.welcomeHeader}>
+        <Building className={styles.icon} />
+        <h1>Welcome to Vision Store</h1>
+        <p>Let's start by selecting a customer or creating a new one</p>
+      </div>
 
       <div className={styles.searchContainer}>
         <div className={styles.searchInput}>
           <Search className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên, email hoặc số điện thoại..."
+            placeholder="Search by name, email or phone number..."
             value={searchQuery}
             onChange={handleSearchChange}
+            // Thêm onBlur để tránh việc search khi blur
+            onBlur={() => {
+              if (!searchQuery.trim()) {
+                setCustomers([]);
+              }
+            }}
           />
           {searchQuery && (
-            <button 
+            <button
               className={styles.clearButton}
               onClick={clearSearch}
               type="button"
@@ -258,15 +213,20 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
             </button>
           )}
         </div>
+        <button
+          className={styles.addButton}
+          onClick={() => setShowModal(true)}
+          type="button"
+        >
+          <UserPlus size={20} />
+          <span>New Customer</span>
+        </button>
       </div>
 
       {error && (
         <div className={styles.error} onClick={() => setError(null)}>
           <AlertCircle size={20} />
           <span>{error}</span>
-          <button className={styles.closeError} type="button">
-            <X size={16} />
-          </button>
         </div>
       )}
 
@@ -274,35 +234,76 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
         {loading ? (
           <div className={styles.loading}>
             <Loader2 className={styles.spinner} />
-            <span>Đang tìm kiếm...</span>
+            <span>Searching...</span>
           </div>
         ) : customers.length > 0 ? (
           <AnimatePresence>
-            {customers.map(renderCustomerCard)}
+            {customers.map((customer) => (
+              <motion.div
+                key={customer.id}
+                className={`${styles.customerCard} ${selectedCustomer?.id === customer.id ? styles.selected : ''
+                  }`}
+                onClick={() => handleCustomerSelect(customer)}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className={styles.customerInfo}>
+                  <User className={styles.avatar} size={40} />
+                  <div className={styles.details}>
+                    <h3>{customer.username}</h3>
+                    <div className={styles.contactInfo}>
+                      <span className={styles.phone}>
+                        <Phone size={16} />
+                        {customer.phoneNumber}
+                      </span>
+                      <span className={styles.email}>
+                        <Mail size={16} />
+                        {customer.email}
+                      </span>
+                    </div>
+                  </div>
+                  {selectedCustomer?.id === customer.id && (
+                    <div className={styles.selectedCheck}>
+                      <Check size={20} />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
           </AnimatePresence>
         ) : searchQuery ? (
-          <div className={styles.emptyState}>
+          <div className={styles.noResults}>
             <AlertCircle size={48} />
-            <h3>Không tìm thấy khách hàng</h3>
-            <p>Thử tìm kiếm lại hoặc thêm khách hàng mới</p>
-            <button onClick={() => setShowModal(true)} type="button">
+            <h3>No customers found</h3>
+            <p>Try searching with different terms or create a new customer</p>
+            <button onClick={() => setShowModal(true)}>
               <UserPlus size={20} />
-              Thêm khách hàng mới
+              Add New Customer
             </button>
           </div>
-        ) : null}
+        ) : (
+          <div className={styles.emptyState}>
+            <User size={48} />
+            <h3>Search for a Customer</h3>
+            <p>Enter customer details to search or create a new customer</p>
+          </div>
+        )}
       </div>
 
+      {/* Add Customer Modal */}
       <AnimatePresence>
         {showModal && (
-          <motion.div 
+          <motion.div
             className={styles.modalOverlay}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowModal(false)}
           >
-            <motion.div 
+            <motion.div
               className={styles.modalContent}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -310,7 +311,7 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
               onClick={e => e.stopPropagation()}
             >
               <div className={styles.modalHeader}>
-                <h2>Thêm khách hàng mới</h2>
+                <h2>Add New Customer</h2>
                 <button onClick={() => setShowModal(false)}>
                   <X size={20} />
                 </button>
@@ -318,7 +319,7 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
 
               <form onSubmit={formik.handleSubmit}>
                 <div className={styles.formField}>
-                  <label>Họ và tên</label>
+                  <label>Full Name</label>
                   <input
                     type="text"
                     {...formik.getFieldProps('fullName')}
@@ -343,7 +344,7 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
                   </div>
 
                   <div className={styles.formField}>
-                    <label>Số điện thoại</label>
+                    <label>Phone Number</label>
                     <input
                       type="tel"
                       {...formik.getFieldProps('phoneNumber')}
@@ -356,7 +357,7 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
                 </div>
 
                 <div className={styles.formField}>
-                  <label>Địa chỉ</label>
+                  <label>Address</label>
                   <input
                     type="text"
                     {...formik.getFieldProps('address')}
@@ -368,26 +369,25 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
                 </div>
 
                 <div className={styles.formField}>
-  <label>Ngày sinh</label>
-  <input
-    type="date"
-    {...formik.getFieldProps('birthday')}
-    className={`${styles.dateInput} ${
-      formik.errors.birthday && formik.touched.birthday ? styles.error : ''
-    }`}
-  />
-  {formik.touched.birthday && formik.errors.birthday && (
-    <span className={styles.errorText}>{formik.errors.birthday}</span>
-  )}
-</div>
+                  <label>Birthday</label>
+                  <input
+                    type="date"
+                    {...formik.getFieldProps('birthday')}
+                    className={`${styles.dateInput} ${formik.errors.birthday && formik.touched.birthday ? styles.error : ''
+                      }`}
+                  />
+                  {formik.touched.birthday && formik.errors.birthday && (
+                    <span className={styles.errorText}>{formik.errors.birthday}</span>
+                  )}
+                </div>
 
                 <div className={styles.modalActions}>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className={styles.cancelButton}
                     onClick={() => setShowModal(false)}
                   >
-                    Hủy
+                    Cancel
                   </button>
                   <button
                     type="submit"
@@ -397,10 +397,10 @@ const CustomerSection: React.FC<CustomerSectionProps> = ({ onCustomerSelect, onB
                     {loading ? (
                       <>
                         <Loader2 className={styles.spinner} />
-                        Đang xử lý...
+                        Processing...
                       </>
                     ) : (
-                      'Thêm khách hàng'
+                      'Add Customer'
                     )}
                   </button>
                 </div>

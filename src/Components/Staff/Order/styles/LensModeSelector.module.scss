@@ -1,0 +1,125 @@
+// styles/LensModeSelector.module.scss
+@import 'variables';
+@import 'mixins';
+
+.lensModeSelector {
+  padding: $spacing-xl;
+  background: $surface;
+  border-radius: $border-radius-lg;
+  @include card-base;
+
+  h2 {
+    @include heading-2;
+    margin-bottom: $spacing-sm;
+  }
+
+  .subtitle {
+    color: $text-secondary;
+    margin-bottom: $spacing-xl;
+  }
+
+  .modeCards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-lg;
+
+    @include respond-to(sm) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .modeCard {
+    @include card-interactive;
+    padding: $spacing-xl;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      border-color: rgba($primary, 0.3);
+      background: linear-gradient(145deg, $surface, $primary-light);
+    }
+
+    &.active {
+      border-color: $primary;
+      background: linear-gradient(145deg, $surface, $primary-light);
+
+      .iconWrapper {
+        background: rgba($primary, 0.1);
+        color: $primary;
+      }
+
+      .selectedIndicator {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .iconWrapper {
+      width: 48px;
+      height: 48px;
+      border-radius: $border-radius-full;
+      background: rgba($text-secondary, 0.1);
+      @include flex-center;
+      margin-bottom: $spacing-md;
+      transition: $transition-base;
+    }
+
+    .cardContent {
+      h3 {
+        @include heading-3;
+        margin-bottom: $spacing-sm;
+      }
+
+      p {
+        color: $text-secondary;
+        margin-bottom: $spacing-md;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+          color: $text-secondary;
+          margin-bottom: $spacing-xs;
+          font-size: $font-size-sm;
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
+
+          &:before {
+            content: '✓';
+            color: $primary;
+          }
+        }
+      }
+    }
+
+    .selectedIndicator {
+      position: absolute;
+      top: $spacing-md;
+      right: $spacing-md;
+      background: $primary;
+      color: $surface;
+      padding: $spacing-xs $spacing-sm;
+      border-radius: $border-radius-full;
+      font-size: $font-size-sm;
+      opacity: 0;
+      transform: translateY(-$spacing-md);
+      transition: all 0.3s ease;
+    }
+  }
+
+  .backButton {
+    @include button-secondary;
+    margin-bottom: $spacing-xl;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    &:hover {
+      transform: translateX(-4px);
+    }
+  }
+}

@@ -10,10 +10,15 @@ import {
   Tag,
   AlertCircle,
   Percent,
-  Loader
+  Loader,
+  Truck,
+  Clock,
+  Lock,
+  Building
 } from 'lucide-react';
 import { useVoucherService } from '../../../../../Api/voucherService';
 import { CartItem } from '../context/CartContext';
+import ShippingInformation from './ShippingInformation';
 import styles from '../styles/OrderSummary.module.scss';
 
 interface Customer {
@@ -31,6 +36,20 @@ interface Customer {
   };
 }
 
+interface OrderData {
+  accountID: number;
+  receiverAddress?: string;
+  kioskID?: number;
+  isDeposit: boolean;
+  voucherID?: number;
+  shippingMethod: 'customer' | 'kiosk';
+  paymentMethod: 'cash' | 'vnpay';
+  totalAmount: number;
+  depositAmount?: number;
+  remainingAmount?: number;
+  shippingCost: number;
+}
+
 interface VoucherInfo {
   id: number;
   name: string;
@@ -45,10 +64,11 @@ interface OrderSummaryProps {
   cartItems: CartItem[];
   customer: Customer;
   onBack: () => void;
-  onCreateOrder: (method: 'cash' | 'vnpay') => Promise<void>;
+  onCreateOrder: (method: 'cash' | 'vnpay', orderData: OrderData) => Promise<void>;
   loading: boolean;
   onVoucherSelect: (voucher: VoucherInfo | null) => void;
 }
+
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
   cartItems,
@@ -58,21 +78,30 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   loading,
   onVoucherSelect
 }) => {
+  // Payment & Voucher States
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'vnpay'>('cash');
-  const [error, setError] = useState<string | null>(null);
-  const [isDeposit, setIsDeposit] = useState(true);
-
-  // Voucher states
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherInfo, setVoucherInfo] = useState<VoucherInfo | null>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [isDeposit, setIsDeposit] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Shipping States
+  const [shippingMethod, setShippingMethod] = useState<'customer' | 'kiosk'>('customer');
+  const [shippingAddress, setShippingAddress] = useState<string>('');
+  const [selectedKioskId, setSelectedKioskId] = useState<number | null>(null);
 
   const { fetchVoucherByCode } = useVoucherService();
 
+  // Calculation Functions
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
-      const itemTotal = (item.eyeGlass.price + item.leftLens.lensPrice + item.rightLens.lensPrice) * item.quantity;
+      const itemTotal = (
+        item.eyeGlass.price +
+        item.leftLens.lensPrice +
+        item.rightLens.lensPrice
+      ) * item.quantity;
       return total + itemTotal;
     }, 0);
   };
@@ -83,13 +112,31 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     return Math.min(discountAmount, calculateSubtotal());
   };
 
-  const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
-    const discount = calculateDiscount();
-    const totalBeforeDeposit = Math.max(subtotal - discount, 0);
-    return isDeposit ? totalBeforeDeposit * 0.3 : totalBeforeDeposit;
+  const calculateAmountAfterDiscount = () => {
+    return calculateSubtotal() - calculateDiscount();
   };
 
+  const calculateShippingCost = () => {
+    return shippingMethod === 'kiosk' ? 0 : 30000;
+  };
+
+  const calculateDepositAmount = () => {
+    const amountAfterDiscount = calculateAmountAfterDiscount();
+    return isDeposit ? Math.round(amountAfterDiscount * 0.3) : amountAfterDiscount;
+  };
+
+  const calculateFinalAmount = () => {
+    const depositAmount = calculateDepositAmount();
+    const shipping = calculateShippingCost();
+    return depositAmount + shipping;
+  };
+
+  const calculateRemainingPayment = () => {
+    if (!isDeposit) return 0;
+    return calculateAmountAfterDiscount() * 0.7;
+  };
+
+  // Voucher Handlers
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) {
       setVoucherError('Please enter a voucher code');
@@ -102,44 +149,33 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     try {
       const voucherData = await fetchVoucherByCode(voucherCode);
       if (voucherData) {
-        const voucher = voucherData;
-        
-        // Check voucher quantity
-        if (voucher.quantity === 0) {
+        if (voucherData.quantity === 0) {
           setVoucherError('This voucher has been fully redeemed');
-          setVoucherInfo(null);
-          onVoucherSelect(null);
+          return;
+        }
+
+        if (!voucherData.status) {
+          setVoucherError('This voucher is no longer active');
           return;
         }
 
         const mappedVoucher = {
-          id: voucher.id,
-          name: voucher.name,
-          code: voucher.code,
+          id: voucherData.id,
+          name: voucherData.name,
+          code: voucherData.code,
           discountType: 'PERCENTAGE',
-          discountValue: voucher.sale,
-          status: voucher.status,
-          quantity: voucher.quantity
+          discountValue: voucherData.sale,
+          status: voucherData.status,
+          quantity: voucherData.quantity
         };
-
-        if (!mappedVoucher.status) {
-          setVoucherError('This voucher is no longer active');
-          setVoucherInfo(null);
-          onVoucherSelect(null);
-          return;
-        }
 
         setVoucherInfo(mappedVoucher);
         onVoucherSelect(mappedVoucher);
       } else {
         setVoucherError('Invalid voucher code');
-        setVoucherInfo(null);
-        onVoucherSelect(null);
       }
     } catch (error: any) {
       setVoucherError(error.message || 'Could not apply voucher');
-      setVoucherInfo(null);
-      onVoucherSelect(null);
     } finally {
       setVoucherLoading(false);
     }
@@ -152,14 +188,56 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     onVoucherSelect(null);
   };
 
+  // Order Submission
   const handleSubmit = async () => {
     try {
       setError(null);
-      await onCreateOrder(paymentMethod);
+  
+      // Validate required fields
+      if (shippingMethod === 'customer' && !shippingAddress) {
+        throw new Error('Please complete shipping address');
+      }
+  
+      if (shippingMethod === 'kiosk' && !selectedKioskId) {
+        throw new Error('Please select a kiosk');
+      }
+  
+      if (!paymentMethod) {
+        throw new Error('Please select a payment method');
+      }
+  
+      const orderData: OrderData = {
+        accountID: customer.id,
+        receiverAddress: shippingMethod === 'customer' ? shippingAddress : undefined,
+        kioskID: shippingMethod === 'kiosk' ? (selectedKioskId ?? undefined) : undefined,
+        voucherID: voucherInfo?.id,
+        isDeposit,
+        shippingMethod,
+        paymentMethod,
+        totalAmount: calculateAmountAfterDiscount(),
+        depositAmount: isDeposit ? calculateDepositAmount() : undefined,
+        remainingAmount: isDeposit ? calculateRemainingPayment() : undefined,
+        shippingCost: calculateShippingCost()
+      };
+  
+      // Log for debugging
+      console.log('Sending order data:', {
+        orderData,
+        customer,
+        cartItems,
+        voucherInfo,
+        shippingMethod,
+        paymentMethod
+      });
+  
+      await onCreateOrder(paymentMethod, orderData);
+  
     } catch (err: any) {
+      console.error('Order creation error:', err);
       setError(err.message || 'Failed to create order');
     }
   };
+
 
   return (
     <div className={styles.staffOrderSummary}>
@@ -204,7 +282,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     </div>
                     <div className={styles.price}>
                       {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                        .format((item.eyeGlass.price + item.leftLens.lensPrice) * item.quantity)}
+                        .format((item.eyeGlass.price + item.leftLens.lensPrice + item.rightLens.lensPrice) * item.quantity)}
                     </div>
                   </div>
                 </div>
@@ -212,7 +290,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
           </section>
 
-          {/* Customer Section */}
+          {/* Customer Information */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <User size={20} />
@@ -233,13 +311,28 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
               </div>
               <div className={styles.infoRow}>
                 <span>Status</span>
-                <strong>{customer.status ? 'Active' : 'Inactive'}</strong>
+                <strong className={customer.status ? styles.activeStatus : styles.inactiveStatus}>
+                  {customer.status ? 'Active' : 'Inactive'}
+                </strong>
               </div>
             </div>
           </section>
+
+          {/* Shipping Section */}
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <Truck size={20} />
+              <h3>Shipping Information</h3>
+            </div>
+            <ShippingInformation
+              selectedMethod={shippingMethod}
+              onMethodSelect={setShippingMethod}
+              onAddressSelect={setShippingAddress}
+              onKioskSelect={setSelectedKioskId}
+            />
+          </section>
         </div>
 
-        {/* Checkout Sidebar */}
         <div className={styles.checkoutSidebar}>
           {/* Voucher Section */}
           <section className={styles.section}>
@@ -313,7 +406,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
           </section>
 
-          {/* Payment Method Selection */}
+          {/* Payment Methods */}
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <Receipt size={20} />
@@ -346,34 +439,90 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             </div>
           </section>
 
-          {/* Order Summary Section */}
+          {/* Order Summary */}
           <section className={`${styles.section} ${styles.orderSummary}`}>
+            {/* Subtotal */}
             <div className={styles.summaryRow}>
               <span>Subtotal</span>
-              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                .format(calculateSubtotal())}</span>
+              <span>{new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+              }).format(calculateSubtotal())}</span>
             </div>
 
+            {/* Voucher Discount if applicable */}
             {voucherInfo && (
               <div className={`${styles.summaryRow} ${styles.discount}`}>
-                <span>Voucher Discount</span>
-                <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                  .format(calculateDiscount())}</span>
+                <span>Voucher Discount ({voucherInfo.discountValue}%)</span>
+                <span>-{new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(calculateDiscount())}</span>
               </div>
             )}
 
-            <div className={`${styles.summaryRow} ${styles.total}`}>
-              <span>{isDeposit ? 'Deposit Amount (30%)' : 'Total Amount'}</span>
-              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                .format(calculateTotal())}</span>
+            {/* Amount after discount */}
+            <div className={`${styles.summaryRow} ${styles.subtotalRow}`}>
+              <span>Amount After Discount</span>
+              <span>{new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+              }).format(calculateAmountAfterDiscount())}</span>
             </div>
 
+            {/* Deposit Amount if selected */}
             {isDeposit && (
-              <div className={styles.totalNote}>
-                Full payment: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                  .format(calculateTotal() / 0.3)}
+              <div className={styles.summaryRow}>
+                <span>Deposit Amount (30%)</span>
+                <span>{new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(calculateDepositAmount())}</span>
               </div>
             )}
+
+            {/* Shipping Fee */}
+            <div className={styles.summaryRow}>
+              <span>Shipping Fee</span>
+              <span>
+                {shippingMethod === 'kiosk' ? 'Free' : new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(calculateShippingCost())}
+              </span>
+            </div>
+
+            {/* Final Total */}
+            <div className={`${styles.summaryRow} ${styles.total}`}>
+              <span>Total Amount</span>
+              <span>
+                {new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND'
+                }).format(calculateFinalAmount())}
+                {isDeposit && (
+                  <span className={styles.totalNote}>
+                    Remaining: {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND'
+                    }).format(calculateRemainingPayment())}
+                  </span>
+                )}
+              </span>
+            </div>
+          </section>
+
+          {/* Additional Information */}
+          <section className={`${styles.section} ${styles.additionalInfo}`}>
+            <div className={styles.deliveryEstimate}>
+              <Clock size={16} />
+              <span>Estimated delivery: 5-7 business days</span>
+            </div>
+
+            <div className={styles.storeInfo}>
+              <Building size={16} />
+              <span>Store: Vision Store - District 1</span>
+            </div>
           </section>
 
           {error && (
@@ -394,12 +543,18 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                 Processing...
               </>
             ) : (
-              `Confirm ${isDeposit ? 'Deposit' : 'Full'} Payment • ${
-                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                  .format(calculateTotal())
+              `Confirm ${isDeposit ? 'Deposit' : 'Full'} Payment • ${new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+              }).format(calculateFinalAmount())
               }`
             )}
           </button>
+
+          <div className={styles.securePayment}>
+            <Lock size={16} />
+            <span>Secure Payment by VNPAY</span>
+          </div>
         </div>
       </div>
     </div>

@@ -5,18 +5,21 @@ export const useLensService = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
     // Fetch lenses with filters
-    const fetchLenses = async (params) => {
+    const fetchLenses = async (params = {}) => {
+        const queryParams = new URLSearchParams(params).toString();
+        const url = `${baseUrl}/api/lens?${queryParams}`;
+
         try {
-            const response = await axios.get(`${baseUrl}/api/lens`, {
-                params: params,Descending: true,
+            const response = await axios.get(url, {
                 headers: {
-                    Authorization: `Bearer ${getToken()}`
+                    'accept': '*/*',
+                    'Authorization': `Bearer ${getToken()}`
                 }
             });
             return response.data;
         } catch (error) {
             console.error("Error fetching lenses:", error);
-            return null;
+            throw error;
         }
     };
 

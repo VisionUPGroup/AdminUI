@@ -1,30 +1,510 @@
+// @import './variables';
+// @import './mixins';
+
+// .customerSection {
+//   min-height: 100vh;
+//   background: $background;
+//   padding: $spacing-xl;
+
+//   .header {
+//     @include flex-between;
+//     margin-bottom: $spacing-xl;
+
+//     .backButton {
+//       @include button-secondary;
+//       gap: $spacing-sm;
+      
+//       &:hover {
+//         transform: translateX(-4px);
+//         svg {
+//           animation: slideLeft 0.5s ease;
+//         }
+//       }
+//     }
+
+//     .addButton {
+//       @include button-primary;
+//       gap: $spacing-sm;
+      
+//       svg {
+//         transition: $transition-base;
+//       }
+      
+//       &:hover svg {
+//         transform: rotate(90deg);
+//       }
+//     }
+//   }
+
+//   .searchContainer {
+//     @include card-base;
+//     padding: $spacing-lg;
+//     margin-bottom: $spacing-xl;
+//     background: linear-gradient(to right, $primary-light, $surface);
+//     border: 1px solid rgba($primary, 0.1);
+
+//     .searchInput {
+//       position: relative;
+//       max-width: 800px;
+//       margin: 0 auto;
+
+//       .searchIcon {
+//         position: absolute;
+//         left: $spacing-lg;
+//         top: 50%;
+//         transform: translateY(-50%);
+//         color: $primary;
+//         transition: $transition-base;
+//       }
+
+//       input {
+//         @include input-modern;
+//         padding-left: $spacing-2xl;
+//         padding-right: $spacing-2xl;
+//         font-size: $font-size-lg;
+        
+//         &:focus + .searchIcon {
+//           transform: translateY(-50%) scale(1.1);
+//         }
+//       }
+
+//       .clearButton {
+//         @include button-icon;
+//         position: absolute;
+//         right: $spacing-sm;
+//         top: 50%;
+//         transform: translateY(-50%);
+        
+//         &:hover {
+//           transform: translateY(-50%) rotate(90deg);
+//         }
+//       }
+//     }
+//   }
+
+//   .customerList {
+//     display: grid;
+//     gap: $spacing-lg;
+//     margin-bottom: $spacing-xl;
+    
+//     .customerCard {
+//       @include card-interactive;
+//       padding: $spacing-xl;
+//       border: 2px solid transparent;
+//       background: linear-gradient(145deg, $surface, $background);
+//       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+//       &:hover {
+//         border-color: rgba($primary, 0.3);
+//         transform: translateY(-4px) scale(1.01);
+//       }
+
+//       &.selected {
+//         border-color: $primary;
+//         background: linear-gradient(145deg, $surface, $primary-light);
+
+//         .checkmark {
+//           opacity: 1;
+//           transform: scale(1);
+//         }
+
+//         h3 {
+//           color: $primary;
+//         }
+//       }
+
+//       .customerInfo {
+//         h3 {
+//           @include heading-2;
+//           font-size: $font-size-xl;
+//           margin-bottom: $spacing-sm;
+//           display: flex;
+//           align-items: center;
+//           justify-content: space-between;
+
+//           .birthday {
+//             @include flex-center;
+//             gap: $spacing-xs;
+//             font-size: $font-size-sm;
+//             color: $text-secondary;
+//             background: rgba($primary, 0.1);
+//             padding: $spacing-xs $spacing-sm;
+//             border-radius: $border-radius-full;
+            
+//             svg {
+//               color: $primary;
+//             }
+//           }
+//         }
+
+//         .details {
+//           display: grid;
+//           gap: $spacing-md;
+
+//           span {
+//             @include flex-center;
+//             gap: $spacing-sm;
+//             color: $text-secondary;
+//             font-size: $font-size-sm;
+
+//             svg {
+//               color: $primary;
+//               flex-shrink: 0;
+//             }
+//           }
+//         }
+//       }
+
+//       .checkmark {
+//         position: absolute;
+//         top: $spacing-lg;
+//         right: $spacing-lg;
+//         width: 24px;
+//         height: 24px;
+//         background: $primary;
+//         color: $surface;
+//         border-radius: $border-radius-full;
+//         @include flex-center;
+//         opacity: 0;
+//         transform: scale(0.8);
+//         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+//       }
+//     }
+//   }
+
+//   // Add Customer Modal
+//   .modalOverlay {
+//     position: fixed;
+//     inset: 0;
+//     background: rgba($text-primary, 0.4);
+//     backdrop-filter: blur(8px);
+//     @include flex-center;
+//     z-index: $z-index-modal;
+//     @include fade-in;
+//   }
+
+//   .modalContent {
+//     width: 100%;
+//     max-width: 600px;
+//     @include card-base;
+//     background: $surface;
+//     @include slide-in;
+//     overflow: hidden;
+
+//     .modalHeader {
+//       @include flex-between;
+//       padding: $spacing-lg $spacing-xl;
+//       background: linear-gradient(to right, $primary-light, $surface);
+//       border-bottom: 1px solid rgba($text-secondary, 0.1);
+
+//       h2 {
+//         @include heading-2;
+//         color: $text-primary;
+//       }
+
+//       button {
+//         @include button-icon;
+        
+//         &:hover {
+//           transform: rotate(90deg);
+//         }
+//       }
+//     }
+
+//     form {
+//       padding: $spacing-xl;
+//       display: grid;
+//       gap: $spacing-lg;
+
+//       .formField {
+//         position: relative;
+
+//         label {
+//           display: block;
+//           margin-bottom: $spacing-xs;
+//           color: $text-secondary;
+//           font-size: $font-size-sm;
+//           font-weight: 500;
+//         }
+
+//         input {
+//           @include input-modern;
+
+//           &.error {
+//             border-color: $error;
+//             background: $error-light;
+//           }
+          
+//           &.dateInput {
+//             cursor: pointer;
+            
+//             &::-webkit-calendar-picker-indicator {
+//               cursor: pointer;
+//               opacity: 0.6;
+//               transition: $transition-base;
+              
+//               &:hover {
+//                 opacity: 1;
+//               }
+//             }
+//           }
+//         }
+
+//         .errorText {
+//           position: absolute;
+//           left: 0;
+//           bottom: -$spacing-md;
+//           color: $error;
+//           font-size: $font-size-xs;
+//           display: flex;
+//           align-items: center;
+//           gap: $spacing-xs;
+          
+//           svg {
+//             width: 14px;
+//             height: 14px;
+//           }
+//         }
+//       }
+
+//       .formRow {
+//         display: grid;
+//         grid-template-columns: repeat(2, 1fr);
+//         gap: $spacing-lg;
+//       }
+
+//       .modalActions {
+//         display: flex;
+//         justify-content: flex-end;
+//         gap: $spacing-md;
+//         margin-top: $spacing-lg;
+//         padding-top: $spacing-lg;
+//         border-top: 1px solid rgba($text-secondary, 0.1);
+
+//         .cancelButton {
+//           @include button-secondary;
+//         }
+
+//         .submitButton {
+//           @include button-primary;
+//           min-width: 140px;
+
+//           .spinner {
+//             @include loading-spinner;
+//             margin-right: $spacing-sm;
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   // States
+//   .error {
+//     @include card-base;
+//     background: $error-light;
+//     color: $error;
+//     padding: $spacing-md $spacing-lg;
+//     margin-bottom: $spacing-lg;
+//     @include flex-between;
+//     border-left: 4px solid $error;
+//     animation: slideIn 0.3s ease;
+    
+//     svg {
+//       flex-shrink: 0;
+//     }
+    
+//     .closeError {
+//       @include button-icon;
+//       color: $error;
+      
+//       &:hover {
+//         background: rgba($error, 0.1);
+//       }
+//     }
+//   }
+
+//   .loading {
+//     @include flex-center;
+//     flex-direction: column;
+//     padding: $spacing-2xl;
+//     color: $text-secondary;
+//     gap: $spacing-lg;
+
+//     .spinner {
+//       @include loading-spinner;
+//       width: 40px;
+//       height: 40px;
+//       border-top-color: $primary;
+//     }
+//   }
+
+//   .emptyState {
+//     @include flex-center;
+//     flex-direction: column;
+//     padding: $spacing-2xl;
+//     text-align: center;
+//     gap: $spacing-lg;
+//     @include card-base;
+//     background: linear-gradient(145deg, $surface, $background);
+
+//     svg {
+//       color: $text-secondary;
+//       opacity: 0.5;
+//       animation: float 3s ease-in-out infinite;
+//     }
+
+//     h3 {
+//       @include heading-2;
+//       color: $text-primary;
+//     }
+
+//     p {
+//       color: $text-secondary;
+//       margin-bottom: $spacing-lg;
+//     }
+
+//     button {
+//       @include button-primary;
+//       gap: $spacing-sm;
+//     }
+//   }
+
+//   // Animations
+//   @keyframes slideLeft {
+//     0% { transform: translateX(0); }
+//     50% { transform: translateX(-4px); }
+//     100% { transform: translateX(0); }
+//   }
+
+//   @keyframes float {
+//     0%, 100% { transform: translateY(0); }
+//     50% { transform: translateY(-10px); }
+//   }
+
+//   // Responsive Styles
+//   @include respond-to(sm) {
+//     padding: $spacing-lg;
+
+//     .formRow {
+//       grid-template-columns: 1fr !important;
+//     }
+
+//     .modalContent {
+//       margin: $spacing-md;
+//       max-height: calc(100vh - #{$spacing-md * 2});
+//       overflow-y: auto;
+//     }
+//   }
+
+//   @include respond-to(md) {
+//     .customerList {
+//       grid-template-columns: repeat(2, 1fr);
+//     }
+//   }
+
+//   @include respond-to(lg) {
+//     padding: $spacing-xl;
+
+//     .customerList {
+//       grid-template-columns: repeat(3, 1fr);
+//     }
+//   }
+
+//   // Custom Scrollbar
+//   .modalContent {
+//     @include custom-scrollbar;
+//   }
+// }
+
 @import './variables';
 @import './mixins';
 
 .customerSection {
-  min-height: 100vh;
+  min-height: calc(100vh - 200px);
   background: $background;
   padding: $spacing-xl;
 
-  .header {
-    @include flex-between;
-    margin-bottom: $spacing-xl;
+  .welcomeHeader {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+    animation: fadeIn 0.5s ease-out;
 
-    .backButton {
-      @include button-secondary;
-      gap: $spacing-sm;
-      
-      &:hover {
-        transform: translateX(-4px);
-        svg {
-          animation: slideLeft 0.5s ease;
+    .icon {
+      color: $primary;
+      width: 48px;
+      height: 48px;
+      margin-bottom: $spacing-md;
+    }
+
+    h1 {
+      @include heading-1;
+      color: $text-primary;
+      margin-bottom: $spacing-sm;
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: $font-size-lg;
+    }
+  }
+
+  .searchContainer {
+    @include glass-effect;
+    display: flex;
+    gap: $spacing-lg;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-xl;
+    border-radius: $border-radius-xl;
+    background: linear-gradient(to right, rgba($surface, 0.9), rgba($primary-light, 0.9));
+
+    .searchInput {
+      flex: 1;
+      position: relative;
+
+      .searchIcon {
+        position: absolute;
+        left: $spacing-md;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $primary;
+        transition: $transition-base;
+      }
+
+      input {
+        @include input-modern;
+        width: 100%;
+        padding-left: $spacing-2xl;
+        font-size: $font-size-lg;
+        background: rgba($surface, 0.8);
+
+       &:focus {
+          background: $surface;
+          & + .searchIcon {
+            transform: translateY(-50%) scale(1.1);
+            color: darken($primary, 10%);
+          }
+        }
+      }
+
+      .clearButton {
+        @include button-icon;
+        position: absolute;
+        right: $spacing-md;
+        top: 50%;
+        transform: translateY(-50%);
+        
+        &:hover {
+          transform: translateY(-50%) rotate(90deg);
         }
       }
     }
 
     .addButton {
       @include button-primary;
+      display: flex;
+      align-items: center;
       gap: $spacing-sm;
+      padding: $spacing-md $spacing-lg;
       
       svg {
         transition: $transition-base;
@@ -36,164 +516,159 @@
     }
   }
 
-  .searchContainer {
-    @include card-base;
-    padding: $spacing-lg;
-    margin-bottom: $spacing-xl;
-    background: linear-gradient(to right, $primary-light, $surface);
-    border: 1px solid rgba($primary, 0.1);
-
-    .searchInput {
-      position: relative;
-      max-width: 800px;
-      margin: 0 auto;
-
-      .searchIcon {
-        position: absolute;
-        left: $spacing-lg;
-        top: 50%;
-        transform: translateY(-50%);
-        color: $primary;
-        transition: $transition-base;
-      }
-
-      input {
-        @include input-modern;
-        padding-left: $spacing-2xl;
-        padding-right: $spacing-2xl;
-        font-size: $font-size-lg;
-        
-        &:focus + .searchIcon {
-          transform: translateY(-50%) scale(1.1);
-        }
-      }
-
-      .clearButton {
-        @include button-icon;
-        position: absolute;
-        right: $spacing-sm;
-        top: 50%;
-        transform: translateY(-50%);
-        
-        &:hover {
-          transform: translateY(-50%) rotate(90deg);
-        }
-      }
-    }
-  }
-
   .customerList {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: $spacing-lg;
-    margin-bottom: $spacing-xl;
-    
+    margin-top: $spacing-xl;
+
     .customerCard {
       @include card-interactive;
-      padding: $spacing-xl;
+      padding: $spacing-lg;
       border: 2px solid transparent;
       background: linear-gradient(145deg, $surface, $background);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
 
       &:hover {
         border-color: rgba($primary, 0.3);
-        transform: translateY(-4px) scale(1.01);
+        transform: translateY(-4px);
+
+        .avatar {
+          transform: scale(1.1);
+        }
       }
 
       &.selected {
         border-color: $primary;
         background: linear-gradient(145deg, $surface, $primary-light);
 
-        .checkmark {
-          opacity: 1;
-          transform: scale(1);
+        .customerInfo {
+          h3 {
+            color: $primary;
+          }
         }
 
-        h3 {
-          color: $primary;
+        .selectedCheck {
+          opacity: 1;
+          transform: scale(1);
         }
       }
 
       .customerInfo {
-        h3 {
-          @include heading-2;
-          font-size: $font-size-xl;
-          margin-bottom: $spacing-sm;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+        display: flex;
+        align-items: flex-start;
+        gap: $spacing-lg;
 
-          .birthday {
-            @include flex-center;
-            gap: $spacing-xs;
-            font-size: $font-size-sm;
-            color: $text-secondary;
-            background: rgba($primary, 0.1);
-            padding: $spacing-xs $spacing-sm;
-            border-radius: $border-radius-full;
-            
-            svg {
-              color: $primary;
-            }
-          }
+        .avatar {
+          background: $primary-light;
+          padding: $spacing-sm;
+          border-radius: $border-radius;
+          color: $primary;
+          transition: transform 0.3s ease;
         }
 
         .details {
-          display: grid;
-          gap: $spacing-md;
+          flex: 1;
 
-          span {
-            @include flex-center;
+          h3 {
+            @include heading-2;
+            margin-bottom: $spacing-sm;
+            color: $text-primary;
+          }
+
+          .contactInfo {
+            display: flex;
+            flex-direction: column;
             gap: $spacing-sm;
-            color: $text-secondary;
-            font-size: $font-size-sm;
 
-            svg {
-              color: $primary;
-              flex-shrink: 0;
+            span {
+              display: flex;
+              align-items: center;
+              gap: $spacing-sm;
+              color: $text-secondary;
+              font-size: $font-size-sm;
+
+              svg {
+                color: $primary;
+                flex-shrink: 0;
+              }
             }
           }
         }
-      }
 
-      .checkmark {
-        position: absolute;
-        top: $spacing-lg;
-        right: $spacing-lg;
-        width: 24px;
-        height: 24px;
-        background: $primary;
-        color: $surface;
-        border-radius: $border-radius-full;
-        @include flex-center;
-        opacity: 0;
-        transform: scale(0.8);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .selectedCheck {
+          position: absolute;
+          top: $spacing-md;
+          right: $spacing-md;
+          width: 24px;
+          height: 24px;
+          background: $primary;
+          color: $surface;
+          border-radius: $border-radius-full;
+          @include flex-center;
+          opacity: 0;
+          transform: scale(0.8);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
       }
     }
   }
 
-  // Add Customer Modal
+  .noResults, .emptyState {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-lg;
+    min-height: 300px;
+    text-align: center;
+    padding: $spacing-2xl;
+    @include card;
+    background: linear-gradient(145deg, $surface, $background);
+
+    svg {
+      color: $text-secondary;
+      opacity: 0.5;
+    }
+
+    h3 {
+      @include heading-2;
+      color: $text-primary;
+    }
+
+    p {
+      color: $text-secondary;
+      max-width: 300px;
+      margin-bottom: $spacing-md;
+    }
+
+    button {
+      @include button-primary;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+    }
+  }
+
   .modalOverlay {
     position: fixed;
     inset: 0;
     background: rgba($text-primary, 0.4);
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(4px);
     @include flex-center;
     z-index: $z-index-modal;
-    @include fade-in;
   }
 
   .modalContent {
     width: 100%;
-    max-width: 600px;
-    @include card-base;
+    max-width: 500px;
+    @include card;
     background: $surface;
-    @include slide-in;
     overflow: hidden;
 
     .modalHeader {
       @include flex-between;
-      padding: $spacing-lg $spacing-xl;
+      padding: $spacing-lg;
       background: linear-gradient(to right, $primary-light, $surface);
       border-bottom: 1px solid rgba($text-secondary, 0.1);
 
@@ -241,7 +716,6 @@
             &::-webkit-calendar-picker-indicator {
               cursor: pointer;
               opacity: 0.6;
-              transition: $transition-base;
               
               &:hover {
                 opacity: 1;
@@ -252,18 +726,10 @@
 
         .errorText {
           position: absolute;
+          bottom: -18px;
           left: 0;
-          bottom: -$spacing-md;
           color: $error;
           font-size: $font-size-xs;
-          display: flex;
-          align-items: center;
-          gap: $spacing-xs;
-          
-          svg {
-            width: 14px;
-            height: 14px;
-          }
         }
       }
 
@@ -288,102 +754,31 @@
         .submitButton {
           @include button-primary;
           min-width: 140px;
-
+          
           .spinner {
-            @include loading-spinner;
+            animation: spin 1s linear infinite;
             margin-right: $spacing-sm;
           }
         }
       }
     }
   }
+}
 
-  // States
-  .error {
-    @include card-base;
-    background: $error-light;
-    color: $error;
-    padding: $spacing-md $spacing-lg;
-    margin-bottom: $spacing-lg;
-    @include flex-between;
-    border-left: 4px solid $error;
-    animation: slideIn 0.3s ease;
-    
-    svg {
-      flex-shrink: 0;
-    }
-    
-    .closeError {
-      @include button-icon;
-      color: $error;
-      
-      &:hover {
-        background: rgba($error, 0.1);
-      }
-    }
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
   }
+}
 
-  .loading {
-    @include flex-center;
-    flex-direction: column;
-    padding: $spacing-2xl;
-    color: $text-secondary;
-    gap: $spacing-lg;
-
-    .spinner {
-      @include loading-spinner;
-      width: 40px;
-      height: 40px;
-      border-top-color: $primary;
-    }
-  }
-
-  .emptyState {
-    @include flex-center;
-    flex-direction: column;
-    padding: $spacing-2xl;
-    text-align: center;
-    gap: $spacing-lg;
-    @include card-base;
-    background: linear-gradient(145deg, $surface, $background);
-
-    svg {
-      color: $text-secondary;
-      opacity: 0.5;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    h3 {
-      @include heading-2;
-      color: $text-primary;
-    }
-
-    p {
-      color: $text-secondary;
-      margin-bottom: $spacing-lg;
-    }
-
-    button {
-      @include button-primary;
-      gap: $spacing-sm;
-    }
-  }
-
-  // Animations
-  @keyframes slideLeft {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(-4px); }
-    100% { transform: translateX(0); }
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-
-  // Responsive Styles
-  @include respond-to(sm) {
+// Responsive Styles
+@include respond-to(sm) {
+  .customerSection {
     padding: $spacing-lg;
+
+    .searchContainer {
+      flex-direction: column;
+    }
 
     .formRow {
       grid-template-columns: 1fr !important;
@@ -391,27 +786,29 @@
 
     .modalContent {
       margin: $spacing-md;
-      max-height: calc(100vh - #{$spacing-md * 2});
-      overflow-y: auto;
+      width: calc(100% - #{$spacing-md * 2});
     }
   }
+}
 
-  @include respond-to(md) {
+@include respond-to(md) {
+  .customerSection {
+    .searchContainer {
+      flex-direction: row;
+    }
+
     .customerList {
       grid-template-columns: repeat(2, 1fr);
     }
   }
+}
 
-  @include respond-to(lg) {
+@include respond-to(lg) {
+  .customerSection {
     padding: $spacing-xl;
 
     .customerList {
       grid-template-columns: repeat(3, 1fr);
     }
-  }
-
-  // Custom Scrollbar
-  .modalContent {
-    @include custom-scrollbar;
   }
 }

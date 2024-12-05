@@ -143,6 +143,7 @@
       background: $surface;
       border: 1px solid rgba($primary, 0.1);
       overflow: hidden;
+      width: 32vh;
       
       &:hover {
         border-color: $primary;
