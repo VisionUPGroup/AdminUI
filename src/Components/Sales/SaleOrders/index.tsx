@@ -21,6 +21,7 @@ import {
   FaExclamationTriangle,
   FaBan,
   FaUser,
+  FaClipboardCheck,
 } from "react-icons/fa";
 import { useOrderService } from "../../../../Api/orderService";
 import { useVoucherService } from "../../../../Api/voucherService";
@@ -72,6 +73,18 @@ const SalesOrders: React.FC = () => {
     status: boolean;
     productGlass?: ProductGlass;
   }
+  interface OrderStatusStats {
+    count: number;
+    revenue: number;
+  }
+  interface AllOrderStats {
+    pending: OrderStatusStats;
+    processing: OrderStatusStats;
+    shipping: OrderStatusStats;
+    delivered: OrderStatusStats;
+    completed: OrderStatusStats;
+    cancelled: OrderStatusStats;
+  }
   interface Order {
     id: number;
     accountID: number;
@@ -105,6 +118,7 @@ const SalesOrders: React.FC = () => {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<
     OrderDetail[]
   >([]);
+
   const [selectedOrderId, setSelectedOrderId] = useState<number | undefined>();
   const [selectedOrderInfo, setSelectedOrderInfo] = useState<{
     orderId: number;
@@ -127,6 +141,16 @@ const SalesOrders: React.FC = () => {
     remainingAmount: number;
   } | null>(null);
   // Thêm các state mới
+  const [orderStats, setOrderStats] = useState({
+    completed: {
+      count: 0,
+      revenue: 0,
+    },
+    canceled: {
+      count: 0,
+      revenue: 0,
+    },
+  });
 
   const [totalItems, setTotalItems] = useState(0);
   const [totalItemsCompleted, setTotalItemsCompleted] = useState(0);
@@ -143,9 +167,12 @@ const SalesOrders: React.FC = () => {
     placedByKioskId: "",
     shipperId: "",
     kioskId: "",
-  orderId: ""
+    orderId: "",
   });
-  
+  const [revenueCanceled, setRevenueCanceled] = useState(0);
+
+  const [totalItemsCanceled, setTotalItemsCanceled] = useState(0);
+
   // Services
   const { fetchAllOrder, countOrder, deleteOrder, updateOrderProcess } =
     useOrderService();
@@ -182,172 +209,70 @@ const SalesOrders: React.FC = () => {
       if (filterOptions.isDeposit !== null) {
         depositParam = filterOptions.isDeposit ? "true" : "false";
       }
-      // Gọi API với các params filter
+
+      // Fetch data cho bảng orders chính
       const data = await fetchAllOrder(
-        filterOptions.fromDate, // Đã được format YYYY-MM-DD từ FilterSelects
-        filterOptions.toDate,   // Đã được format YYYY-MM-DD từ FilterSelects
-        searchTerm || '',
-        statusFilter || '',
+        filterOptions.fromDate,
+        filterOptions.toDate,
+        searchTerm || "",
+        statusFilter || "",
         currentPage,
-        '', // accountId
-        filterOptions.kioskId || '',
-        filterOptions.placedByKioskId || '',
-        filterOptions.shipperId || '',
-        depositParam, // Sử dụng depositParam đã được xử lý
-        filterOptions.issueType || '',
-        filterOptions.orderId ||''
-        
+        "",
+        filterOptions.kioskId || "",
+        filterOptions.placedByKioskId || "",
+        filterOptions.shipperId || "",
+        depositParam,
+        filterOptions.issueType || "",
+        filterOptions.orderId || ""
       );
 
-      // Cập nhật tổng số items
+      // Fetch thêm dữ liệu thống kê với cùng điều kiện filter
+      const completedData = await fetchAllOrder(
+        filterOptions.fromDate,
+        filterOptions.toDate,
+        "",
+        "4", // completed status
+        1,
+        "",
+        filterOptions.kioskId || "",
+        filterOptions.placedByKioskId || "",
+        filterOptions.shipperId || "",
+        depositParam,
+        filterOptions.issueType || "",
+        filterOptions.orderId || ""
+      );
+
+      const canceledData = await fetchAllOrder(
+        filterOptions.fromDate,
+        filterOptions.toDate,
+        "",
+        "5", // canceled status
+        1,
+        "",
+        filterOptions.kioskId || "",
+        filterOptions.placedByKioskId || "",
+        filterOptions.shipperId || "",
+        depositParam,
+        filterOptions.issueType || "",
+        filterOptions.orderId || ""
+      );
+
+      // Cập nhật state
+      setOrderData(data.items);
       setTotalItems(data.totalItems || 0);
 
-      // Format và xử lý data từ API
-      const formattedData = await Promise.all(
-        data.items.map(async (order: any) => {
-          // Fetch thông tin voucher nếu có
-          const voucherResponse = order.voucherID
-            ? await fetchVoucherById(order.voucherID)
-            : null;
-          const voucherName = voucherResponse ? voucherResponse.name : null;
-
-          // Fetch thông tin username
-          let username = "Unknown";
-          try {
-            const accountResponse = await fetchAccountById(order.accountID);
-            username = accountResponse?.username || "Unknown";
-          } catch (error) {
-            console.error(
-              `Error fetching username for account ${order.accountID}:`,
-              error
-            );
-          }
-
-          // Format order data
-          return {
-            id: order.id,
-            accountID: order.accountID,
-            username,
-            orderTime: new Date(order.orderTime).toLocaleString(),
-            status: order.status,
-            receiverAddress: order.receiverAddress,
-            total: order.total,
-            code: order.code,
-            process: order.process,
-            kiosks: order.kiosks,
-            isDeposit: order.isDeposit,
-            voucherID: order.voucherID,
-            voucherName,
-            totalPaid: order.totalPaid,
-            remainingAmount: order.remainingAmount,
-            orderDetails: order.orderDetails.map((detail: any) => ({
-              id: detail.id,
-              orderID: detail.orderID,
-              quantity: detail.quantity,
-              status: detail.status,
-              productGlass: detail.productGlass
-                ? {
-                    id: detail.productGlass.id,
-                    eyeGlassID: detail.productGlass.eyeGlassID,
-                    leftLenID: detail.productGlass.leftLenID,
-                    rightLenID: detail.productGlass.rightLenID,
-                    accountID: detail.productGlass.accountID,
-                    total: detail.productGlass.total,
-                    status: detail.productGlass.status,
-                    eyeGlass: detail.productGlass.eyeGlass
-                      ? {
-                          id: detail.productGlass.eyeGlass.id,
-                          eyeGlassTypeID:
-                            detail.productGlass.eyeGlass.eyeGlassTypeID,
-                          name: detail.productGlass.eyeGlass.name,
-                          price: detail.productGlass.eyeGlass.price,
-                          eyeGlassImages:
-                            detail.productGlass.eyeGlass.eyeGlassImages?.map(
-                              (image: any) => ({
-                                id: image.id,
-                                eyeGlassID: image.eyeGlassID,
-                                angleView: image.angleView,
-                                url: image.url,
-                              })
-                            ) || [],
-                        }
-                      : null,
-                  }
-                : null,
-            })),
-          };
-        })
-      );
-
-      // Cập nhật state với data đã format
-      setOrderData(formattedData);
-
-      // Apply filters
-      let filtered = formattedData;
-
-      if (searchTerm) {
-        const searchLower = searchTerm.toLowerCase();
-        filtered = filtered.filter(
-          (order) =>
-            (order.code?.toLowerCase().includes(searchLower)) ||  
-            order.username?.toLowerCase().includes(searchLower) ||
-            order.id.toString().includes(searchLower) ||
-            order.receiverAddress?.toLowerCase().includes(searchLower)
-        );
-      }
-
-      if (statusFilter !== "all") {
-        filtered = filtered.filter((order) => {
-          switch (statusFilter) {
-            case "0":
-              return order.process === 0; // Pending
-            case "1":
-              return order.process === 1; // Processing
-            case "2":
-              return order.process === 2; // Shipping
-            case "3":
-              return order.process === 3; // Delivered
-            case "4":
-              return order.process === 4; // Completed
-            case "5":
-              return order.process === 5; // Cancelled
-            default:
-              return true;
-          }
-        });
-      }
-
-      if (filterOptions.isDeposit !== null) {
-        filtered = filtered.filter(
-          (order) => order.isDeposit === filterOptions.isDeposit
-        );
-      }
-
-      if (filterOptions.fromDate && filterOptions.toDate) {
-        filtered = filtered.filter((order) => {
-          const orderDate = new Date(order.orderTime);
-          const fromDate = new Date(filterOptions.fromDate);
-          const toDate = new Date(filterOptions.toDate);
-          return orderDate >= fromDate && orderDate <= toDate;
-        });
-      }
-
-      if (filterOptions.issueType) {
-        filtered = filtered.filter((order) =>
-          order.orderDetails.some(
-            (detail: { issueType: string; }) => detail.issueType === filterOptions.issueType
-          )
-        );
-      }
-
-      setFilteredOrders(filtered);
-
-      // Cập nhật revenue cho các đơn completed
-      if (data.revenueCompleted) {
-        setRevenueCompleted(data.revenueCompleted);
-      }
+      setOrderStats({
+        completed: {
+          count: completedData.totalItems || 0,
+          revenue: completedData.revenueCompleted || 0,
+        },
+        canceled: {
+          count: canceledData.totalItems || 0,
+          revenue: canceledData.revenueCompleted || 0,
+        },
+      });
     } catch (error) {
-      console.error("Error fetching orders:", error);
+      console.error("Error fetching data:", error);
       toast.error("Failed to fetch orders");
     } finally {
       setIsLoading(false);
@@ -357,9 +282,42 @@ const SalesOrders: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const data = await fetchAllOrder("", "4", "");
-      setRevenueCompleted(data.revenueCompleted);
-      setTotalItemsCompleted(data.totalItems);
+      // Fetch completed orders data
+      const [completedData, canceledData] = await Promise.all([
+        fetchAllOrder(
+          "", // fromDate
+          "", // toDate
+          "", // username
+          "4", // process status - completed
+          1, // pageIndex
+          "", // accountId
+          "", // kioskId
+          "", // placedByKioskId
+          "" // shipperId
+        ),
+        fetchAllOrder(
+          "", // fromDate
+          "", // toDate
+          "", // username
+          "5", // process status - canceled
+          1, // pageIndex
+          "", // accountId
+          "", // kioskId
+          "", // placedByKioskId
+          "" // shipperId
+        ),
+      ]);
+
+      setOrderStats({
+        completed: {
+          count: completedData.totalItems || 0,
+          revenue: completedData.revenueCompleted || 0,
+        },
+        canceled: {
+          count: canceledData.totalItems || 0,
+          revenue: canceledData.revenueCompleted || 0,
+        },
+      });
     } catch (error) {
       toast.error("Failed to fetch orders");
       console.error("Error fetching data:", error);
@@ -426,7 +384,7 @@ const SalesOrders: React.FC = () => {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (order) =>
-          (order.code?.toLowerCase().includes(searchLower)) ||  // Thêm optional chaining
+          order.code?.toLowerCase().includes(searchLower) || // Thêm optional chaining
           order.username?.toLowerCase().includes(searchLower) ||
           order.id.toString().includes(searchLower) ||
           order.receiverAddress?.toLowerCase().includes(searchLower)
@@ -580,44 +538,42 @@ const SalesOrders: React.FC = () => {
 
         {/* Stats Section */}
         <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-content">
-              <div className="stat-value">{totalItems}</div>
-              <div className="stat-label">Total Orders</div>
-              <div className="stat-change">
-                <FaFirstOrder />
-                All order
-              </div>
-            </div>
-            <FaShoppingCart className="stat-icon" />
-          </div>
+  <div className="stat-card">
+    <div className="stat-content">
+      <div className="stat-value">{totalItems}</div>
+      <div className="stat-label">Total Orders</div>
+      <div className="stat-change">
+        <FaFirstOrder />
+        All Orders
+      </div>
+    </div>
+    <FaShoppingCart className="stat-icon" />
+  </div>
 
-          <div className="stat-card">
-            <div className="stat-content">
-              <div className="stat-value">
-                {formatCurrency(revenueCompleted)}
-              </div>
-              <div className="stat-label">Total Revenue</div>
-              <div className="stat-change">
-                <FaMoneyBill />
-                Revenue of order completed
-              </div>
-            </div>
-            <FaMoneyBillWave className="stat-icon" />
-          </div>
+  <div className="stat-card">
+    <div className="stat-content">
+      <div className="stat-value">{formatCurrency(orderStats.completed.revenue)}</div>
+      <div className="stat-label">Completed Orders Revenue</div>
+      <div className="stat-change">
+        <FaCheckCircle />
+        {orderStats.completed.count} Orders completed
+      </div>
+    </div>
+    <FaMoneyBillWave className="stat-icon" />
+  </div>
 
-          <div className="stat-card">
-            <div className="stat-content">
-              <div className="stat-value">{totalItemsCompleted}</div>
-              <div className="stat-label">Completed Orders</div>
-              <div className="stat-change">
-                <FaCheckCircle />
-                Order completed
-              </div>
-            </div>
-            <FaCheckCircle className="stat-icon" />
-          </div>
-        </div>
+  <div className="stat-card">
+    <div className="stat-content">
+      <div className="stat-value">{formatCurrency(orderStats.canceled.revenue)}</div>
+      <div className="stat-label">Canceled Orders Revenue</div>
+      <div className="stat-change">
+        <FaTimesCircle />
+        {orderStats.canceled.count} Orders canceled
+      </div>
+    </div>
+    <FaMoneyBillWave className="stat-icon" />
+  </div>
+</div>
 
         {selectedOrderId && (
           <ReportManagement
@@ -862,7 +818,6 @@ const SalesOrders: React.FC = () => {
         pauseOnHover
         theme="light"
       />
- 
     </div>
   );
 };
