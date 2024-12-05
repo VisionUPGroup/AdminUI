@@ -13,27 +13,39 @@ import {
   FaBan,
   FaSpinner,
   FaClock,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaCreditCard,
+  FaMoneyBillWave,
+  FaInfoCircle
 } from 'react-icons/fa';
 import { useOrderService } from '../../../../Api/orderService';
+import { usePaymentService } from '../../../../Api/paymentService';
+import './OrderDetailStyle.scss';
 
 interface OrderStatusTrackerProps {
   status: number;
   orderId: number;
   onStatusUpdate?: (newStatus: number) => void;
   onDeleteOrder?: (orderId: number) => void;
+  totalAmount?: number;
+  isDeposit?: boolean;
 }
 
 const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   status,
   orderId,
   onDeleteOrder,
-  onStatusUpdate
+  onStatusUpdate,
+  totalAmount = 0,
+  isDeposit = false
 }) => {
   const { updateOrderProcess } = useOrderService();
+  const { createPaymentUrl } = usePaymentService();
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [showConfirmation, setShowConfirmation] = React.useState(false);
   const [pendingStatus, setPendingStatus] = React.useState<number | null>(null);
+  const [showPaymentDialog, setShowPaymentDialog] = React.useState(false);
+  const [paymentAmount, setPaymentAmount] = React.useState<number>(totalAmount);
 
   const statusSteps = [
     {
@@ -41,43 +53,75 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
       subLabel: 'Awaiting confirmation',
       icon: <FaHourglassHalf />,
       color: '#c79816',
-      estimate: '1-2 hours'
+      estimate: '1-2 hours',
+      allowPayment: true
     },
     {
       label: 'Processing',
       subLabel: 'Order is being prepared',
       icon: <FaCog />,
       color: '#2563eb',
-      estimate: '1-2 days'
+      estimate: '1-2 days',
+      allowPayment: false
     },
     {
       label: 'Shipping',
       subLabel: 'Order in transit',
       icon: <FaTruck />,
       color: '#c79816',
-      estimate: '2-3 days'
+      estimate: '2-3 days',
+      allowPayment: true
     },
     {
       label: 'Delivered',
       subLabel: 'Package delivered',
       icon: <FaBoxOpen />,
       color: '#8b5cf6',
-      estimate: 'Pending confirmation'
+      estimate: 'Pending confirmation',
+      allowPayment: false
     },
     {
       label: 'Completed',
       subLabel: 'Order fulfilled',
       icon: <FaCheckCircle />,
       color: '#10b981',
-      estimate: null
+      estimate: null,
+      allowPayment: false
     }
   ];
+
+  const handleCreatePayment = async () => {
+    try {
+      setIsUpdating(true);
+      const response = await createPaymentUrl(orderId);
+      
+      if (response && response.paymentUrl) {
+        // Save current order state to session storage before redirecting
+        sessionStorage.setItem('lastOrderState', JSON.stringify({
+          orderId,
+          status,
+          paymentAmount
+        }));
+        
+        window.location.href = response.paymentUrl;
+      } else {
+        throw new Error('Invalid payment URL received');
+      }
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      toast.error("Failed to create payment", {
+        icon: <FaExclamationTriangle />
+      });
+    } finally {
+      setIsUpdating(false);
+      setShowPaymentDialog(false);
+    }
+  };
 
   const handleCancelOrder = async () => {
     try {
       setIsUpdating(true);
       
-      // Kiểm tra nếu order không phải trạng thái pending thì không cho phép hủy
       if (status !== 0) {
         toast.error("Only pending orders can be cancelled", {
           icon: <FaExclamationTriangle />
@@ -85,18 +129,20 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
         return;
       }
       
-      // Gọi hàm xóa order
       if (onDeleteOrder) {
         await onDeleteOrder(orderId);
       }
       
-      // Update UI status sang cancelled
       if (onStatusUpdate) {
         onStatusUpdate(5);
       }
       
       setShowConfirmation(false);
       setPendingStatus(null);
+      
+      toast.success("Order cancelled successfully", {
+        icon: <FaCheckCircle />
+      });
     } catch (error) {
       console.error("Error cancelling order:", error);
       toast.error("Failed to cancel order", {
@@ -143,6 +189,9 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
     setPendingStatus(newStatus);
     setShowConfirmation(true);
   };
+
+  // Kiểm tra xem trạng thái hiện tại có cho phép thanh toán không
+  const isPaymentAllowed = status === 0 || status === 2;
 
   if (status === 5) {
     return (
@@ -206,33 +255,98 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
         })}
       </div>
 
-      {status < 4 && (
-        <div className="status-actions">
-          {status < 4 && (
-            <button
-              className="action-btn next"
-              onClick={() => initiateStatusUpdate(status + 1)}
-              disabled={isUpdating}
-            >
-              Next Status
-              <FaArrowRight />
-            </button>
-          )}
-          
-          {/* Chỉ hiển thị nút Cancel khi order đang ở trạng thái pending */}
-          {status === 0 && (
-            <button
-              className="action-btn cancel"
-              onClick={() => initiateStatusUpdate(5)}
-              disabled={isUpdating}
-            >
-              <FaBan />
-              Cancel Order
-            </button>
-          )}
+      <div className="status-actions">
+        {status < 4 && (
+          <button
+            className="action-btn next"
+            onClick={() => initiateStatusUpdate(status + 1)}
+            disabled={isUpdating}
+          >
+            Next Status
+            <FaArrowRight />
+          </button>
+        )}
+        
+        {isPaymentAllowed && (
+          <button
+            className="action-btn payment"
+            onClick={() => setShowPaymentDialog(true)}
+            disabled={isUpdating}
+          >
+            <FaCreditCard />
+            Make Payment
+          </button>
+        )}
+        
+        {status === 0 && (
+          <button
+            className="action-btn cancel"
+            onClick={() => initiateStatusUpdate(5)}
+            disabled={isUpdating}
+          >
+            <FaBan />
+            Cancel Order
+          </button>
+        )}
+      </div>
+
+      {/* Payment Confirmation Dialog */}
+      {showPaymentDialog && (
+        <div className="confirmation-overlay">
+          <div className="confirmation-dialog payment-dialog">
+            <h4>
+              <FaMoneyBillWave className="dialog-icon" />
+              Confirm Payment
+            </h4>
+            <div className="payment-details">
+              <div className="amount-info">
+                <span>Total Amount:</span>
+                <span className="amount">
+                  {new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                  }).format(totalAmount)}
+                </span>
+              </div>
+              {isDeposit && (
+                <div className="deposit-note">
+                  <FaInfoCircle />
+                  <span>This is a deposit payment</span>
+                </div>
+              )}
+            </div>
+            <p>Are you sure you want to proceed with the payment?</p>
+            <div className="dialog-actions">
+              <button 
+                className="dialog-btn confirm"
+                onClick={handleCreatePayment}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <>
+                    <FaSpinner className="spinning" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <FaCreditCard />
+                    Proceed to Payment
+                  </>
+                )}
+              </button>
+              <button 
+                className="dialog-btn cancel"
+                onClick={() => setShowPaymentDialog(false)}
+                disabled={isUpdating}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
+      {/* Status Update Confirmation Dialog */}
       {showConfirmation && (
         <div className="confirmation-overlay">
           <div className="confirmation-dialog">

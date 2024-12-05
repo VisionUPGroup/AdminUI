@@ -9,7 +9,7 @@ const DashboardContainer = () => {
   return (
     <Fragment>
       <div className="dashboard-container">
-        <CommonBreadcrumb title="Dashboard" parent="Dashboard" />
+        
         
         <div className="content-wrapper">
           {/* Main Dashboard Grid */}

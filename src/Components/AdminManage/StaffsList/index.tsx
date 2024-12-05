@@ -273,6 +273,7 @@ const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
                                 <FaRegUserCircle />
                               </div>
                               <div className="staff-details">
+                              <div className="name">ID: {staff.id}</div>
                                 <div className="name">{staff.username}</div>
                                 <div className="email">{staff.email}</div>
                                 <div className="phone">{staff.phoneNumber}</div>

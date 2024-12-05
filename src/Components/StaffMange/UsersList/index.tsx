@@ -549,6 +549,7 @@ const UsersList: React.FC = () => {
                                   <FaRegUserCircle />
                                 </div>
                                 <div className="user-details">
+                                <div className="name">ID: {user.id}</div>
                                   <div className="name">{user.username}</div>
                                   <div className="email">{user.email}</div>
                                   <div className="phone">
@@ -853,6 +854,7 @@ const UsersList: React.FC = () => {
         editingUser={editingUser}
       />
     </div>
+
   );
 };
 

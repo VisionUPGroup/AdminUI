@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import {
+  FaFileAlt,
+  FaEdit,
+  FaExclamationTriangle,
+  FaBug,
+  FaQuestionCircle,
+  FaCommentDots,
+  FaUserCog,
+  FaTimes,
+  FaSearch,
+  FaSpinner,
+  FaPlus,
+  FaFilter,
+  FaChevronLeft,
+  FaChevronRight,
+  FaPencilAlt,
+} from "react-icons/fa";
+import {
   MdBugReport,
   MdLocalShipping,
   MdSupportAgent,
@@ -15,22 +32,13 @@ import {
   MdPhone,
   MdDescription,
 } from "react-icons/md";
-import {
-  FaFileAlt,
-  FaEdit,
-  FaSpinner,
-  FaPlus,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
-import { useReportService } from "../../../Api/reportService";
+import { useReportService } from "../../../../Api/reportService";
 import "./ReportManagementStyle.scss";
 
 interface Role {
   id?: number;
   name?: string;
 }
-
 interface Handler {
   id: number;
   username: string;
@@ -39,8 +47,12 @@ interface Handler {
   roleID: number;
   phoneNumber: string;
   role?: Role | null;
+  profiles?: any[];
+  orders?: any[];
+  payments?: any[];
+  ratingEyeGlasses?: any[];
+  ratingLens?: any[];
 }
-
 interface Report {
   id: number;
   orderID: number;
@@ -51,25 +63,28 @@ interface Report {
   type: number;
   createdTime?: string;
 }
-interface PaginationResponse {
-  items: Report[];
-  totalItems: number;
-  currentPage: number;
+
+interface ReportManagementProps {
+  orderId: number;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const ReportList: React.FC = () => {
+const ReportManagement: React.FC<ReportManagementProps> = ({
+  orderId,
+  isOpen,
+  onClose,
+}) => {
   // States
   const [reports, setReports] = useState<Report[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
-  const [orderFilter, setOrderFilter] = useState<number | undefined>(undefined);
+
   // Pagination and Filter states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  const [totalItems, setTotalItems] = useState(0);
   const [typeFilter, setTypeFilter] = useState<number | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<number | undefined>(
     undefined
@@ -77,7 +92,6 @@ const ReportList: React.FC = () => {
 
   // Form states
   const [newReport, setNewReport] = useState({
-    orderID: 0,
     description: "",
     type: 0,
   });
@@ -88,42 +102,29 @@ const ReportList: React.FC = () => {
   });
 
   // Services
-  const {
-    fetchReportByOrderId: fetchReports,
-    createRePort,
-    updateReportStatus,
-  } = useReportService();
+  const { fetchReportByOrderId, createRePort, updateReportStatus } =
+    useReportService();
 
   useEffect(() => {
-    fetchReportsList();
-  }, [currentPage, typeFilter, statusFilter, orderFilter]); // Thêm các dependencies
+    if (orderId) {
+      fetchReports();
+    }
+  }, [orderId, currentPage, typeFilter, statusFilter]);
 
-  const fetchReportsList = async () => {
+  const fetchReports = async () => {
     try {
       setIsLoading(true);
-
-      const response = await fetchReports(
-        orderFilter || null, // Đảm bảo gửi null nếu không có filter
+      const response = await fetchReportByOrderId(
+        orderId,
         statusFilter,
         typeFilter,
-        currentPage // BE thường tính page từ 0, FE hiển thị từ 1
+        currentPage
       );
 
-      if (response) {
-        setReports(response.items);
-        setTotalItems(response.totalItems);
-
-        // Nếu trang hiện tại lớn hơn tổng số trang và không có data
-        const maxPage = Math.ceil(response.totalItems / 10);
-        if (currentPage > maxPage && response.totalItems > 0) {
-          setCurrentPage(maxPage);
-        }
-      }
+      setReports(response.items);
+      setTotalPages(Math.ceil(response.totalItems / 10)); // Assuming 10 items per page
     } catch (error) {
-      console.error("Error fetching reports:", error);
       toast.error("Failed to fetch reports");
-      setReports([]);
-      setTotalItems(0);
     } finally {
       setIsLoading(false);
     }
@@ -132,8 +133,7 @@ const ReportList: React.FC = () => {
   const resetFilters = () => {
     setTypeFilter(undefined);
     setStatusFilter(undefined);
-    setOrderFilter(undefined);
-    setCurrentPage(1); // Reset về trang 1
+    setCurrentPage(1);
   };
 
   // Report Type and Status Label Functions
@@ -206,7 +206,6 @@ const ReportList: React.FC = () => {
         };
     }
   };
-
   // CRUD Operations
   const handleCreateReport = async () => {
     try {
@@ -215,25 +214,18 @@ const ReportList: React.FC = () => {
         return;
       }
 
-      if (!newReport.orderID || newReport.orderID <= 0) {
-        toast.warning("Please enter a valid Order ID");
-        return;
-      }
-
-      // Format data theo đúng yêu cầu API
       const reportData = {
-        orderID: parseInt(newReport.orderID.toString()), // Đảm bảo orderID là số
-        description: newReport.description.trim(),
-        type: parseInt(newReport.type.toString()), // Đảm bảo type là số
+        orderID: orderId,
+        description: newReport.description,
+        type: newReport.type,
       };
 
       await createRePort(reportData);
       toast.success("Report created successfully");
       setShowCreateModal(false);
-      setNewReport({ orderID: 0, description: "", type: 0 }); // Reset form
-      fetchReportsList();
+      setNewReport({ description: "", type: 0 });
+      fetchReports();
     } catch (error) {
-      console.error("Create report error:", error);
       toast.error("Failed to create report");
     }
   };
@@ -253,7 +245,7 @@ const ReportList: React.FC = () => {
       setShowUpdateModal(false);
       setSelectedReport(null);
       setUpdateReport({ feedback: "", status: 0 });
-      fetchReportsList();
+      fetchReports();
     } catch (error) {
       toast.error("Failed to update report");
     }
@@ -261,81 +253,55 @@ const ReportList: React.FC = () => {
 
   // Pagination Controls
   const handlePageChange = (newPage: number) => {
-    console.log("Changing to page:", newPage); // Debug
-    const totalPages = Math.ceil(totalItems / 10);
-
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
   };
 
   return (
-    <div className="report-management">
+    <div className={`report-management ${isOpen ? "open" : ""}`}>
       {/* Header Section with Filters */}
       <div className="report-header">
         <div className="header-content">
           <h2>Report Management</h2>
+          <button className="close-btn" onClick={onClose}>
+            ×
+          </button>
         </div>
 
         <div className="filters-section">
           <div className="filter-group">
-            <div className="filter-item">
-              <label htmlFor="orderFilter">Order ID</label>
-              <input
-                id="orderFilter"
-                type="number"
-                className="filter-input"
-                value={orderFilter || ""}
-                onChange={(e) => {
-                  const value = e.target.value
-                    ? parseInt(e.target.value)
-                    : undefined;
-                  setOrderFilter(value);
-                }}
-                placeholder="Filter by Order ID"
-                min="1"
-              />
-            </div>
+            <select
+              value={typeFilter || ""}
+              onChange={(e) =>
+                setTypeFilter(
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              className="filter-select"
+            >
+              <option value="">All Types</option>
+              <option value="0">Product Issue</option>
+              <option value="1">Shipping Issue</option>
+              <option value="2">Customer Issue</option>
+              <option value="3">Customer Service</option>
+              <option value="4">Other</option>
+            </select>
 
-            <div className="filter-item">
-              <label htmlFor="typeFilter">Type</label>
-              <select
-                id="typeFilter"
-                value={typeFilter || ""}
-                onChange={(e) =>
-                  setTypeFilter(
-                    e.target.value ? Number(e.target.value) : undefined
-                  )
-                }
-                className="filter-select"
-              >
-                <option value="">All Types</option>
-                <option value="0">Product Issue</option>
-                <option value="1">Shipping Issue</option>
-                <option value="2">Customer Issue</option>
-                <option value="3">Customer Service</option>
-                <option value="4">Other</option>
-              </select>
-            </div>
-
-            <div className="filter-item">
-              <label htmlFor="statusFilter">Status</label>
-              <select
-                id="statusFilter"
-                value={statusFilter || ""}
-                onChange={(e) =>
-                  setStatusFilter(
-                    e.target.value ? Number(e.target.value) : undefined
-                  )
-                }
-                className="filter-select"
-              >
-                <option value="">All Statuses</option>
-                <option value="0">Request</option>
-                <option value="1">Denied</option>
-                <option value="2">Accepted</option>
-              </select>
-            </div>
+            <select
+              value={statusFilter || ""}
+              onChange={(e) =>
+                setStatusFilter(
+                  e.target.value ? Number(e.target.value) : undefined
+                )
+              }
+              className="filter-select"
+            >
+              <option value="">All Statuses</option>
+              <option value="0">Request</option>
+              <option value="1">Denied</option>
+              <option value="2">Accepted</option>
+            </select>
 
             <button className="reset-filters-btn" onClick={resetFilters}>
               Reset Filters
@@ -368,18 +334,9 @@ const ReportList: React.FC = () => {
                 return (
                   <div key={report.id} className="report-card">
                     <div className="report-header">
-                      <div className="report-ids">
-                        <div className="report-id">
-                          <strong>Report ID:</strong> #{report.id}
-                        </div>
-                        <div className="order-id">
-                          <strong>Order ID:</strong> #{report.orderID}
-                        </div>
-                        <div className="report-type-status">
-                          <div className={`report-type ${typeInfo.colorClass}`}>
-                            {typeInfo.icon} {typeInfo.label}
-                          </div>
-                        </div>
+                      <div className={`report-type ${typeInfo.colorClass}`}>
+                        {typeInfo.icon}
+                        <span>{typeInfo.label}</span>
                       </div>
                       <div className={`report-status ${statusInfo.colorClass}`}>
                         {statusInfo.label}
@@ -387,11 +344,6 @@ const ReportList: React.FC = () => {
                     </div>
 
                     <div className="report-content">
-                      <div className="order-info">
-                        <strong>Order ID: </strong>
-                        <span>{report.orderID}</span>
-                      </div>
-
                       {report.handler && (
                         <div className="handler-info">
                           <div className="handler-title">
@@ -411,7 +363,6 @@ const ReportList: React.FC = () => {
                           </span>
                         </div>
                       )}
-
                       <div className="description-section">
                         <div className="description-title">
                           <MdDescription />
@@ -419,7 +370,6 @@ const ReportList: React.FC = () => {
                         </div>
                         <p className="description">{report.description}</p>
                       </div>
-
                       {report.feedback && (
                         <div className="feedback">
                           <strong>Feedback:</strong>
@@ -451,29 +401,27 @@ const ReportList: React.FC = () => {
             </div>
 
             {/* Pagination Controls */}
-            {reports.length > 0 && totalItems > 10 && (
-              <div className="pagination-controls">
-                <button
-                  className="page-btn"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage <= 1}
-                >
-                  <FaChevronLeft />
-                </button>
+            <div className="pagination-controls">
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <FaChevronLeft />
+              </button>
 
-                <span className="page-info">
-                  {`Page ${currentPage} of ${Math.ceil(totalItems / 10)}`}
-                </span>
+              <span className="page-info">
+                Page {currentPage} of {totalPages}
+              </span>
 
-                <button
-                  className="page-btn"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= Math.ceil(totalItems / 10)}
-                >
-                  <FaChevronRight />
-                </button>
-              </div>
-            )}
+              <button
+                className="page-btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <FaChevronRight />
+              </button>
+            </div>
           </>
         ) : (
           <div className="empty-state">
@@ -489,62 +437,29 @@ const ReportList: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Create New Report</h3>
-
-            <div className="order-input-group">
-              <label htmlFor="orderInput">Order ID</label>
-              <input
-                id="orderInput"
-                type="number"
-                className="order-input"
-                value={newReport.orderID === 0 ? "" : newReport.orderID}
-                onChange={(e) => {
-                  const value = e.target.value ? parseInt(e.target.value) : 0;
-                  setNewReport({ ...newReport, orderID: value });
-                }}
-                placeholder="Enter Order ID"
-                min="1"
-                required
-              />
-            </div>
-
-            <div className="type-select-group">
-              <label htmlFor="typeSelect">Report Type</label>
-              <select
-                id="typeSelect"
-                value={newReport.type}
-                onChange={(e) =>
-                  setNewReport({ ...newReport, type: parseInt(e.target.value) })
-                }
-                required
-              >
-                <option value={0}>Product Issue</option>
-                <option value={1}>Shipping Issue</option>
-                <option value={2}>Customer Issue</option>
-                <option value={3}>Customer Service</option>
-                <option value={4}>Other</option>
-              </select>
-            </div>
-
-            <div className="description-input-group">
-              <label htmlFor="descriptionInput">Description</label>
-              <textarea
-                id="descriptionInput"
-                value={newReport.description}
-                onChange={(e) =>
-                  setNewReport({ ...newReport, description: e.target.value })
-                }
-                placeholder="Enter report description..."
-                required
-              />
-            </div>
-
+            <select
+              value={newReport.type}
+              onChange={(e) =>
+                setNewReport({ ...newReport, type: Number(e.target.value) })
+              }
+            >
+              <option value={0}>Product Issue</option>
+              <option value={1}>Shipping Issue</option>
+              <option value={2}>Customer Issue</option>
+              <option value={3}>Customer Service</option>
+              <option value={4}>Other</option>
+            </select>
+            <textarea
+              value={newReport.description}
+              onChange={(e) =>
+                setNewReport({ ...newReport, description: e.target.value })
+              }
+              placeholder="Enter report description..."
+            />
             <div className="modal-actions">
               <button
                 className="cancel-btn"
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewReport({ orderID: 0, description: "", type: 0 }); // Reset form when canceling
-                }}
+                onClick={() => setShowCreateModal(false)}
               >
                 Cancel
               </button>
@@ -599,4 +514,4 @@ const ReportList: React.FC = () => {
   );
 };
 
-export default ReportList;
+export default ReportManagement;

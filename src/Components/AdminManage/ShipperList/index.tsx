@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   FaPlus,
   FaSearch,
@@ -9,12 +9,11 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
-import { useAuthService } from "../../../../Api/authService";
-
-import Pagination from "./Pagination";
+import Pagination from "./Pagination"; // Import Pagination component
+import "./ShipperStyle.scss";
 import Swal from "sweetalert2";
-import "./UserStyle.scss";
-import UserUpdateModal from "./UserUpdateModal";
+import ShipperUpdateModal from "./ShipperUpdateModal";
+
 
 interface Role {
   id: number;
@@ -23,7 +22,7 @@ interface Role {
   status: boolean;
 }
 
-interface UserData {
+interface StaffData {
   id: number;
   username: string;
   email: string;
@@ -34,29 +33,28 @@ interface UserData {
 }
 
 interface ApiResponse {
-  items: UserData[];
+  items: StaffData[];
   totalItems: number;
   currentPage: number;
 }
 
-const UsersList: React.FC = () => {
+const ShipperList: React.FC = () => {
   const { fetchAccountByRole, deleteAccount } = useAccountService();
-  const { register } = useAuthService();
-  const [userData, setUserData] = useState<UserData[]>([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [staffData, setStaffData] = useState<StaffData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [editingUser, setEditingUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
 
-  const getUserData = async (
+  // Main function to fetch staff data
+  const fetchStaffData = async (
     page: number,
     search: string,
     status: "all" | "active" | "inactive"
@@ -68,44 +66,44 @@ const UsersList: React.FC = () => {
       else if (status === "inactive") apiStatus = false;
 
       const response = await fetchAccountByRole(
-        1,
+        4, // roleID for staff
         search || undefined,
         page,
         apiStatus,
         undefined
       );
 
-      if (response) {
-        setUserData(response.items);
-        setTotalItems(response.totalItems);
-        setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
-      }
+      setStaffData(response.items);
+      setTotalItems(response.totalItems);
+      setTotalPages(Math.ceil(response.totalItems / itemsPerPage));
     } catch (error) {
-      console.error("Failed to load user data:", error);
-      setUserData([]);
+      console.error("Failed to load staff data:", error);
+      setStaffData([]);
       setTotalItems(0);
       setTotalPages(0);
-    
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Effect for fetching data
-  useEffect(() => {
-    getUserData(currentPage, searchTerm, filterStatus);
-  }, [currentPage]);
-
-  // Search handlers
+  // Search handler with debounce
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
   };
+  const handleOpenUpdateModal = (staff: StaffData) => {
+    setSelectedStaff(staff);
+    setIsUpdateModalOpen(true);
+  };
+  const handleUpdateSuccess = () => {
+    fetchStaffData(currentPage, searchTerm, filterStatus);
+  };
 
+  // Handle Enter key press for search
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       setCurrentPage(1);
-      getUserData(1, searchTerm, filterStatus);
+      fetchStaffData(1, searchTerm, filterStatus);
     }
   };
 
@@ -113,7 +111,7 @@ const UsersList: React.FC = () => {
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
     setCurrentPage(1);
-    getUserData(1, searchTerm, status);
+    fetchStaffData(1, searchTerm, status);
   };
 
   // Pagination handler
@@ -122,63 +120,61 @@ const UsersList: React.FC = () => {
   };
 
   // Delete handler
-  const handleDelete = async (userId: number) => {
+  const handleDelete = async (staff: StaffData) => {
     try {
       const result = await Swal.fire({
         title: "Are you sure?",
-        text: "Do you want to delete this user?",
+        text: `Do you want to delete staff "${staff.username}"?`,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#c79816",
         cancelButtonColor: "black",
         confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
       });
 
       if (result.isConfirmed) {
-        setIsLoading(true);
-        await deleteAccount(userId);
-        
+        await deleteAccount(staff.id);
         await Swal.fire({
-          icon: "success",
           title: "Deleted!",
-          text: "User has been deleted successfully.",
+          text: "Staff has been deleted successfully.",
+          icon: "success",
           confirmButtonColor: "#c79816",
         });
-        
-        getUserData(currentPage, searchTerm, filterStatus);
+        fetchStaffData(currentPage, searchTerm, filterStatus);
       }
-    } catch (error: any) {
-      console.error("Error deleting user:", error);
-      const errorMessage = error.response?.data?.message || 
-        "Failed to delete user. Please try again.";
-      
+    } catch (error) {
+      console.error("Failed to delete staff:", error);
       Swal.fire({
+        title: "Error!",
+        text: "Failed to delete staff. Please try again.",
         icon: "error",
-        title: "Delete Error",
-        text: errorMessage,
-        confirmButtonColor: "#d33",
+        confirmButtonColor: "#c79816",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  // Effect for page changes
+  useEffect(() => {
+    fetchStaffData(currentPage, searchTerm, filterStatus);
+  }, [currentPage]);
+
   return (
-    <div className="user-management">
+    <div className="staff-management">
       <div className="management-container">
         {/* Header Section */}
         <div className="management-header">
           <div className="header-content">
             <div className="title-wrapper">
-              <h1>User Management</h1>
-              <p>Manage and monitor your user accounts</p>
+              <h1>Shipper Management</h1>
+              <p>Manage and monitor your shipper accounts</p>
             </div>
           </div>
           <div className="header-actions">
-            {/* <button className="create-btn" onClick={handleCreateUser}>
+            <button className="create-btn">
               <FaPlus className="btn-icon" />
-              Create User
-            </button> */}
+              Add New Shipper
+            </button>
           </div>
         </div>
 
@@ -187,10 +183,10 @@ const UsersList: React.FC = () => {
           <div className="stat-card">
             <div className="stat-content">
               <div className="stat-value">{totalItems}</div>
-              <div className="stat-label">Total Users</div>
+              <div className="stat-label">Total Shipper</div>
               <div className="stat-change">
                 <FaArrowUp />
-                all user include
+                All shipper include
               </div>
             </div>
             <FaUsers className="stat-icon" />
@@ -199,12 +195,12 @@ const UsersList: React.FC = () => {
           <div className="stat-card">
             <div className="stat-content">
               <div className="stat-value">
-                {userData.filter((user) => user.status).length}
+                {staffData.filter((staff) => staff.status).length}
               </div>
-              <div className="stat-label">Active Users</div>
+              <div className="stat-label">Active Shipper</div>
               <div className="stat-change">
                 <FaArrowUp />
-                all user with status active
+                All shipper with status active
               </div>
             </div>
             <FaRegUserCircle className="stat-icon" />
@@ -214,31 +210,40 @@ const UsersList: React.FC = () => {
         {/* Main Content Section */}
         <div className="content-section">
           <div className="content-header">
+            {/* Search Box */}
             <div className="search-box">
               <FaSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Search users..."
+                placeholder="Search shipper..."
                 value={searchTerm}
                 onChange={handleSearch}
                 onKeyPress={handleKeyPress}
               />
             </div>
+
+            {/* Filter Buttons */}
             <div className="filters">
               <button
-                className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
+                className={`filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
                 onClick={() => handleFilter("all")}
               >
-                All Users
+                All Shipper
               </button>
               <button
-                className={`filter-btn ${filterStatus === "active" ? "active" : ""}`}
+                className={`filter-btn ${
+                  filterStatus === "active" ? "active" : ""
+                }`}
                 onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${filterStatus === "inactive" ? "active" : ""}`}
+                className={`filter-btn ${
+                  filterStatus === "inactive" ? "active" : ""
+                }`}
                 onClick={() => handleFilter("inactive")}
               >
                 Inactive
@@ -246,6 +251,7 @@ const UsersList: React.FC = () => {
             </div>
           </div>
 
+          {/* Table Content */}
           {isLoading ? (
             <div className="loading-spinner">
               <div className="spinner-ring"></div>
@@ -254,58 +260,63 @@ const UsersList: React.FC = () => {
           ) : (
             <div className="table-wrapper">
               <div className="table-container">
-                {userData.length > 0 ? (
+                {staffData.length > 0 ? (
                   <table>
                     <thead>
                       <tr>
-                        <th>User Information</th>
+                        <th>Shipper Information</th>
                         <th>Role</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {userData.map((user) => (
-                        <tr key={user.id}>
+                      {staffData.map((staff) => (
+                        <tr key={staff.id}>
                           <td>
-                            <div className="user-info">
-                              <div className="user-icon">
+                            <div className="staff-info">
+                              <div className="staff-icon">
                                 <FaRegUserCircle />
                               </div>
-                              <div className="user-details">
-                              <div className="name">ID: {user.id}</div>
-                                <div className="name">{user.username}</div>
-                                <div className="email">{user.email}</div>
-                                <div className="phone">{user.phoneNumber}</div>
+                              <div className="staff-details">
+                                <div className="name">ID: {staff.id}</div>
+                                <div className="name">{staff.username}</div>
+                                <div className="email">{staff.email}</div>
+                                <div className="phone">{staff.phoneNumber}</div>
                               </div>
                             </div>
                           </td>
-                          <td>{user.role.name}</td>
+                          <td>{staff.role.name}</td>
                           <td>
                             <span
                               className={`status-badge ${
-                                user.status ? "active" : "inactive"
+                                staff.status ? "active" : "inactive"
                               }`}
                             >
-                              {user.status ? "Active" : "Inactive"}
+                              {staff.status ? "Active" : "Inactive"}
                             </span>
                           </td>
                           <td>
                             <div className="actions">
                               <button
                                 className="edit-btn"
-                                onClick={() => {
-                                  setEditingUser(user);
-                                  setUpdateModalOpen(true);
-                                }}
+                                onClick={() => handleOpenUpdateModal(staff)}
                               >
                                 <FaPen />
                               </button>
                               <button
-                                className={`delete-btn ${!user.status ? "disabled" : ""}`}
-                                onClick={() => user.status && handleDelete(user.id)}
-                                disabled={!user.status}
-                                title={!user.status ? "Cannot delete inactive user" : "Delete user"}
+                                className={`delete-btn ${
+                                  !staff.status ? "disabled" : ""
+                                }`}
+                                disabled={!staff.status}
+                                onClick={() =>
+                                  staff.status && handleDelete(staff)
+                                }
+                                title={
+                                  !staff.status
+                                    ? "Cannot delete inactive staff"
+                                    : "Delete staff"
+                                }
                               >
                                 <FaTrash />
                               </button>
@@ -319,12 +330,14 @@ const UsersList: React.FC = () => {
                   <div className="not-found">
                     <FaSearch className="not-found-icon" />
                     <h3>No Results Found</h3>
-                    <p>We couldn't find any users matching your search criteria</p>
+                    <p>
+                      We couldn't find any staff matching your search criteria
+                    </p>
                   </div>
                 )}
               </div>
 
-              {userData.length > 0 && (
+              {staffData.length > 0 && (
                 <div className="pagination-wrapper">
                   <Pagination
                     currentPage={currentPage}
@@ -337,18 +350,14 @@ const UsersList: React.FC = () => {
           )}
         </div>
       </div>
-
-      <UserUpdateModal
-        isOpen={updateModalOpen}
-        toggle={() => setUpdateModalOpen(false)}
-        onSave={() => {
-          getUserData(currentPage, searchTerm, filterStatus);
-          setUpdateModalOpen(false);
-        }}
-        editingUser={editingUser}
+      <ShipperUpdateModal
+        isOpen={isUpdateModalOpen}
+        toggle={() => setIsUpdateModalOpen(false)}
+        onSuccess={handleUpdateSuccess}
+        staffData={selectedStaff}
       />
     </div>
   );
 };
 
-export default UsersList;
+export default ShipperList;

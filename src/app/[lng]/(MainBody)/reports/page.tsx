@@ -1,8 +1,8 @@
 'use client'
-import Reports from "@/Components/Reports";
+import ReportManagement from "@/Components/Reports";
 
 const ReportsContainer = () => {
-  return <Reports />;
+  return <ReportManagement/>;
 };
 
 export default ReportsContainer;
