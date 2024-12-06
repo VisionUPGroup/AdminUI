@@ -243,6 +243,32 @@ export const useOrderService = () => {
     }
   };
 
+  const confirmDelivery = async (orderId, imageFile) => {
+    try {
+      const token = getToken();
+      const formData = new FormData();
+      formData.append('Id', orderId);
+      formData.append('Image', imageFile);
+  
+      const response = await axios.post(
+        `${baseUrl}/api/orders/delivery-confirm`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+            'accept': '*/*'
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error confirming delivery:', error);
+      throw error;
+    }
+  };
+  
+
   return {
     fetchAllOrder,
     fetchStaffOrder,
@@ -252,6 +278,7 @@ export const useOrderService = () => {
     updateOrderProcess,
     countOrder,
     createOrderNow,
-    fetchOrderById
+    fetchOrderById,
+    confirmDelivery
   };
 };

@@ -167,11 +167,11 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         setIsLoading(true);
         // Fetch order data
         const orderData = await fetchOrderById(Number(id));
-  
+
         // Fetch payment information 
         const paymentData = await fetchPaymentByOrderId(Number(id));
         setPaymentInfo(paymentData);
-  
+
         // Fetch product glass details
         const { fetchProductGlassById } = useProductGlassService();
         const productGlassPromises = orderData.orderDetails.map(async (detail: { productGlass: { id: any; }; id: any; }) => {
@@ -189,15 +189,15 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
             };
           }
         });
-  
+
         const productGlassResults = await Promise.all(productGlassPromises);
         const newProductGlassDetails = productGlassResults.reduce((acc, curr) => {
           acc[curr.orderDetailId] = curr.productGlass;
           return acc;
         }, {} as { [key: number]: ProductGlass });
-  
+
         setProductGlassDetails(newProductGlassDetails);
-  
+
         // Fetch lens information for all products
         const lensPromises = orderData.orderDetails.map(
           async (detail: {
@@ -206,10 +206,10 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
           }) => {
             const leftLenID = detail.productGlass.leftLenID;
             const rightLenID = detail.productGlass.rightLenID;
-  
+
             let leftLensData = null;
             let rightLensData = null;
-  
+
             try {
               if (leftLenID) {
                 leftLensData = await fetchLensById(leftLenID);
@@ -220,7 +220,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
             } catch (error) {
               console.error(`Error fetching lens data:`, error);
             }
-  
+
             return {
               orderDetailId: detail.id,
               leftLens: leftLensData,
@@ -228,10 +228,10 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
             };
           }
         );
-  
+
         const lensResults = await Promise.all(lensPromises);
         console.log("Lens Results:", lensResults);
-  
+
         const newLensInfo = lensResults.reduce((acc, curr) => {
           acc[curr.orderDetailId] = {
             leftLens: curr.leftLens || null,
@@ -239,11 +239,11 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
           };
           return acc;
         }, {} as LensInfo);
-  
+
         console.log("Processed Lens Info:", newLensInfo);
         setLensInfo(newLensInfo);
         setOrder(orderData);
-  
+
         // Fetch voucher information if exists
         if (orderData.voucherID) {
           try {
@@ -261,7 +261,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         setIsLoading(false);
       }
     };
-  
+
     // Check if ID exists before loading data
     if (id) {
       loadOrderData();
@@ -332,9 +332,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               <span className="label">Order ID:</span>
               <span className="value">#{order.id}</span>
               <span
-                className={`status-badge ${
-                  order.status ? "active" : "inactive"
-                }`}
+                className={`status-badge ${order.status ? "active" : "inactive"
+                  }`}
               >
                 {order.status ? "Active" : "Inactive"}
               </span>
@@ -469,74 +468,92 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               </div>
             </div>
             <div className="products-section">
-  <div className="section-header">
-    <h3>Prescription Details</h3>
-    <span className="item-count">
-      {order.orderDetails.length} items
-    </span>
-  </div>
-  <div className="product-list">
-    {order?.orderDetails.map((orderDetail, index) => {
-      const productGlassDetail = productGlassDetails[orderDetail.id];
-      
-      return (
-        <div key={orderDetail.id} className="product-item">
-          <div className="product-content">
-            <div className="product-info">
-              <h4>Glass Specification #{index + 1}</h4>
-              <div className="specs-grid">
-                <div className="spec-group">
-                  <h5>Right Eye (OD)</h5>
-                  <div>
-                    Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD}
-                  </div>
-                  <div>
-                    Cylinder: {productGlassDetail?.cylinderOD || orderDetail.productGlass.cylinderOD}
-                  </div>
-                  <div>
-                    Axis: {productGlassDetail?.axisOD || orderDetail.productGlass.axisOD}
-                  </div>
-                  <div>
-                    Add: {productGlassDetail?.addOD || orderDetail.productGlass.addOD}
-                  </div>
-                </div>
-                <div className="spec-group">
-                  <h5>Left Eye (OS)</h5>
-                  <div>
-                    Sphere: {productGlassDetail?.sphereOS || orderDetail.productGlass.sphereOS}
-                  </div>
-                  <div>
-                    Cylinder: {productGlassDetail?.cylinderOS || orderDetail.productGlass.cylinderOS}
-                  </div>
-                  <div>
-                    Axis: {productGlassDetail?.axisOS || orderDetail.productGlass.axisOS}
-                  </div>
-                  <div>
-                    Add: {productGlassDetail?.addOS || orderDetail.productGlass.addOS}
-                  </div>
-                </div>
-                <div className="spec-group">
-                  <h5>Additional Info</h5>
-                  <div>
-                    PD: {productGlassDetail?.pd || orderDetail.productGlass.pd}
-                  </div>
-                </div>
+              <div className="section-header">
+                <h3>Prescription Details</h3>
+                <span className="item-count">
+                  {order.orderDetails.length} items
+                </span>
+              </div>
+              <div className="product-list">
+                {order?.orderDetails.map((orderDetail, index) => {
+                  const productGlassDetail = productGlassDetails[orderDetail.id];
+
+                  return (
+                    <div key={orderDetail.id} className="product-item">
+                      <div className="product-content">
+                        <div className="product-info">
+                          <h4>Glass Specification #{index + 1}</h4>
+                          <div className="specs-grid">
+                            <div className="spec-group">
+                              <h5>Right Eye (OD)</h5>
+                              <div>
+                                Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD}
+                              </div>
+                              <div>
+                                Cylinder: {productGlassDetail?.cylinderOD || orderDetail.productGlass.cylinderOD}
+                              </div>
+                              <div>
+                                Axis: {productGlassDetail?.axisOD || orderDetail.productGlass.axisOD}
+                              </div>
+                              <div>
+                                Add: {productGlassDetail?.addOD || orderDetail.productGlass.addOD}
+                              </div>
+                            </div>
+                            <div className="spec-group">
+                              <h5>Left Eye (OS)</h5>
+                              <div>
+                                Sphere: {productGlassDetail?.sphereOS || orderDetail.productGlass.sphereOS}
+                              </div>
+                              <div>
+                                Cylinder: {productGlassDetail?.cylinderOS || orderDetail.productGlass.cylinderOS}
+                              </div>
+                              <div>
+                                Axis: {productGlassDetail?.axisOS || orderDetail.productGlass.axisOS}
+                              </div>
+                              <div>
+                                Add: {productGlassDetail?.addOS || orderDetail.productGlass.addOS}
+                              </div>
+                            </div>
+                            <div className="spec-group">
+                              <h5>Additional Info</h5>
+                              <div>
+                                PD: {productGlassDetail?.pd || orderDetail.productGlass.pd}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-        </div>
-      );
-    })}
-  </div>
-</div>
             {paymentInfo && <ProductAndPaymentInfo paymentInfo={paymentInfo} />}
 
             {/* Order Status Tracker */}
             <OrderStatusTracker
               status={order.process}
               orderId={order.id}
-              onStatusUpdate={() => {}}
+              onStatusUpdate={async () => {
+                try {
+                  // Reload both order and payment data
+                  const updatedOrder = await fetchOrderById(Number(id));
+                  const updatedPayment = await fetchPaymentByOrderId(Number(id));
+                  setOrder(updatedOrder);
+                  setPaymentInfo(updatedPayment);
+                } catch (error) {
+                  console.error("Error reloading order:", error);
+                  toast.error("Failed to reload order details");
+                }
+              }}
               onDeleteOrder={deleteOrder}
+              totalAmount={order.total}
+              remainingAmount={paymentInfo?.remainingAmount || 0}
+              isDeposit={order.isDeposit}
+              isHomeDelivery={!!order.receiverAddress}
+              hasKioskInfo={!!order.kiosks}
+              deliveryConfirmationImage={order.deliveryConfirmationImage}
+              isPaid={paymentInfo?.totalPaid === paymentInfo?.totalAmount}
             />
 
             {/* Payment Information */}
