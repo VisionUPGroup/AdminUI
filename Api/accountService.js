@@ -130,6 +130,26 @@ export const useAccountService = () => {
       throw error;
     }
   };
+  const createShipper = async (accountData) => {
+    try {
+      const token = getToken();
+      const response = await axios.post(
+        `${baseUrl}/api/accounts/create-shipper`,
+        accountData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Shipper created successfully:", response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error("Error creating account:", error);
+      throw error;
+    }
+  };
 
   return {
     fetchAccountByRole,
@@ -137,6 +157,7 @@ export const useAccountService = () => {
     fetchAccountById,
     updateAccount,
     deleteAccount,
-    createAccount, // Add the new function to the returned object
+    createAccount,
+    createShipper // Add the new function to the returned object
   };
 };

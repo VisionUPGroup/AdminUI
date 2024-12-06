@@ -9,11 +9,12 @@ import {
   FaTrash,
 } from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
+import { useAuthService } from "../../../../Api/authService";
 import Pagination from "./Pagination"; // Import Pagination component
 import "./ShipperStyle.scss";
 import Swal from "sweetalert2";
 import ShipperUpdateModal from "./ShipperUpdateModal";
-
+import ShipperModal from "./ShipperModal";
 
 interface Role {
   id: number;
@@ -39,7 +40,9 @@ interface ApiResponse {
 }
 
 const ShipperList: React.FC = () => {
-  const { fetchAccountByRole, deleteAccount } = useAccountService();
+  const { fetchAccountByRole, deleteAccount, createShipper } =
+    useAccountService();
+
   const [staffData, setStaffData] = useState<StaffData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<
@@ -52,6 +55,7 @@ const ShipperList: React.FC = () => {
   const itemsPerPage = 10;
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Main function to fetch staff data
   const fetchStaffData = async (
@@ -85,7 +89,13 @@ const ShipperList: React.FC = () => {
       setIsLoading(false);
     }
   };
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true);
+  };
 
+  const handleCreateSuccess = () => {
+    fetchStaffData(currentPage, searchTerm, filterStatus);
+  };
   // Search handler with debounce
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -171,7 +181,7 @@ const ShipperList: React.FC = () => {
             </div>
           </div>
           <div className="header-actions">
-            <button className="create-btn">
+            <button className="create-btn" onClick={handleOpenCreateModal}>
               <FaPlus className="btn-icon" />
               Add New Shipper
             </button>
@@ -350,6 +360,33 @@ const ShipperList: React.FC = () => {
           )}
         </div>
       </div>
+      <ShipperModal
+  isOpen={isCreateModalOpen}
+  toggle={() => setIsCreateModalOpen(false)}
+  onSave={async (data) => {
+    try {
+      const result = await createShipper(data);
+      
+      setIsCreateModalOpen(false);
+      handleCreateSuccess();
+      await Swal.fire({
+        title: "Success!",
+        text: "Shipper has been created successfully.",
+        icon: "success",
+        confirmButtonColor: "#c79816",
+      });
+    } catch (error: any) {
+      console.error("Error creating shipper:", error);
+      await Swal.fire({
+        title: "Error!",
+        text: error.response?.data?.message || "Failed to create shipper. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#c79816",
+      });
+      throw error; // Re-throw để modal có thể xử lý error messaging
+    }
+  }}
+/>
       <ShipperUpdateModal
         isOpen={isUpdateModalOpen}
         toggle={() => setIsUpdateModalOpen(false)}
