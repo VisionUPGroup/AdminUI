@@ -280,11 +280,13 @@ const FilterSelects: React.FC<FilterSelectsProps> = ({
             onChange={(e) => handleFilterChange("issueType", e.target.value)}
           >
             <option value="">All Issues</option>
-            <option value="0">Damaged</option>
-            <option value="1">Delayed</option>
-            <option value="2">Wrong Item</option>
-            <option value="3">Quality Issue</option>
-            <option value="4">Other Issues</option>
+            <option value="0">Product Issue</option>
+            <option value="1">Shipping Issue</option>
+            <option value="2">Customer Issue</option>
+            <option value="3">Customer Service</option>
+            <option value="4">Other</option>
+            <option value="5">None</option>
+            <option value="6">All</option>
           </select>
         </div>
 

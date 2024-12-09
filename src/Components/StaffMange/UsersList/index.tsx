@@ -460,7 +460,7 @@ const UsersList: React.FC = () => {
               <div className="stat-label">Total Users</div>
               <div className="stat-change">
                 <FaArrowUp />
-                12% from last month
+                All user
               </div>
             </div>
             <FaUsers className="stat-icon" />
@@ -474,7 +474,7 @@ const UsersList: React.FC = () => {
               <div className="stat-label">Active Users</div>
               <div className="stat-change">
                 <FaArrowUp />
-                8% from last month
+                All active user
               </div>
             </div>
             <FaRegUserCircle className="stat-icon" />
