@@ -1,152 +1,295 @@
-// styles/MeasurementHistory.module.scss
-
 @import '../styles/variables';
-@import '../styles/mixins';
 
 .measurementHistory {
+  padding: 2rem;
+  background: $surface;
+  min-height: 100vh;
+
+  // Header
   .header {
-    margin-bottom: $spacing-2xl;
-    
+    margin-bottom: 2rem;
+
     .backButton {
-      @include button-secondary;
-      margin-bottom: $spacing-lg;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1rem;
+      background: rgba($warning-light, 0.15);
+      border: none;
+      border-radius: 0.5rem;
+      color: $warning;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba($warning-light, 0.25);
+      }
     }
-    
+
     h2 {
-      @include heading-2;
-      margin-bottom: $spacing-xs;
+      font-size: 2rem;
+      font-weight: 600;
+      color: $text-primary;
+      margin-bottom: 0.5rem;
     }
-    
+
     p {
       color: $text-secondary;
     }
   }
 
-  .content {
+  // Main Content Grid
+  .mainContent {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: $spacing-xl;
+    grid-template-columns: 380px 1fr;
+    gap: 2rem;
+    align-items: start;
 
-    @include respond-to(sm) {
-      grid-template-columns: 1fr;
-    }
-  }
+    // Left Side - Records List
+    .recordsList {
+      background: $surface;
+      border-radius: 1rem;
+      border: 1px solid $border-color;
 
-  .recordsList {
-    .recordCard {
-      @include card-interactive;
-      padding: $spacing-lg;
-      margin-bottom: $spacing-md;
-      position: relative;
-      border: 2px solid transparent;
-      
-      &:hover {
-        border-color: rgba($primary, 0.3);
-      }
-      
-      &.active {
-        border-color: $primary;
-        background: linear-gradient(145deg, $surface, $primary-light);
-        
-        .recordHeader {
-          color: $primary;
+      .recordsHeader {
+        padding: 1.5rem;
+        border-bottom: 1px solid $border-color;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        h3 {
+          font-weight: 600;
+          color: $text-primary;
+          margin: 0;
         }
-      }
-      
-      .recordHeader {
-        @include flex-start;
-        gap: $spacing-sm;
-        margin-bottom: $spacing-sm;
-        font-weight: 500;
-      }
-      
-      .recordLocation {
-        @include flex-start;
-        gap: $spacing-xs;
-        color: $text-secondary;
-        font-size: $font-size-sm;
-      }
-      
-      .selectedIndicator {
-        position: absolute;
-        top: $spacing-md;
-        right: $spacing-md;
-        background: $primary;
-        color: $surface;
-        padding: $spacing-xs $spacing-sm;
-        border-radius: $border-radius-full;
-        font-size: $font-size-sm;
-      }
-    }
-  }
 
-  .measurementDetails {
-    @include card;
-    padding: $spacing-xl;
-    
-    h3 {
-      @include heading-3;
-      margin-bottom: $spacing-xl;
-      color: $primary;
-    }
-    
-    .eyeGrid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: $spacing-xl;
-      margin-bottom: $spacing-xl;
-      
-      @include respond-to(sm) {
-        grid-template-columns: 1fr;
-      }
-      
-      .eyeCard {
-        @include card;
-        padding: $spacing-lg;
-        
-        .eyeHeader {
-          @include flex-start;
-          gap: $spacing-sm;
-          margin-bottom: $spacing-lg;
+        .newMeasurementButton {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background: $primary-light;
           color: $primary;
+          border: none;
+          border-radius: 0.5rem;
           font-weight: 500;
+          cursor: pointer;
+
+          &:hover {
+            background: darken($primary-light, 5%);
+          }
         }
-        
-        .measurementGrid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: $spacing-md;
-          
-          .measurement {
-            text-align: center;
-            
-            span {
-              display: block;
-              color: $text-secondary;
-              font-size: $font-size-sm;
-              margin-bottom: $spacing-xs;
-            }
-            
-            strong {
-              font-size: $font-size-lg;
+      }
+
+      .recordsGrid {
+        padding: 1rem;
+
+        .recordCard {
+          padding: 1rem;
+          border: 1px solid $border-color;
+          border-radius: 0.75rem;
+          margin-bottom: 0.75rem;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &:hover {
+            border-color: $primary;
+            background: $surface-hover;
+          }
+
+          &.active {
+            border-color: $primary;
+            background: linear-gradient(to right, $primary-light, rgba($primary-light, 0.3));
+          }
+
+          .recordInfo {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.75rem;
+
+            .recordDate {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
               color: $text-primary;
-              font-family: $font-mono;
+              font-weight: 500;
+            }
+
+            .recordTime {
+              color: $text-secondary;
+              font-size: 0.875rem;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+            }
+          }
+
+          .recordLocation {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: $text-secondary;
+            font-size: 0.875rem;
+
+            svg {
+              color: $primary;
             }
           }
         }
       }
     }
-    
-    .actions {
-      @include flex-end;
-      gap: $spacing-md;
-      
-      .selectButton {
-        @include button-primary;
+
+    // Right Side - Measurement Results
+    .measurementDetails {
+      background: $surface;
+      border-radius: 1rem;
+      border: 1px solid $border-color;
+      padding: 1.5rem;
+
+      .detailsHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid $border-color;
+
+        h3 {
+          font-size: 1.5rem;
+          font-weight: 600;
+          color: $text-primary;
+          margin: 0;
+        }
+
+        .measurementDate {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: $text-secondary;
+          font-size: 0.875rem;
+
+          svg {
+            color: $primary;
+          }
+        }
       }
-      
-      .newButton {
-        @include button-secondary;
+
+      .eyeGrid {
+        display: grid;
+        gap: 2rem;
+        margin-bottom: 2rem;
+
+        .eyeCard {
+          background: $surface;
+          border: 1px solid $border-color;
+          border-radius: 0.75rem;
+          overflow: hidden;
+
+          .eyeHeader {
+            padding: 1rem;
+            border-bottom: 1px solid $border-color;
+            background: $surface-hover;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+
+            svg {
+              color: $primary;
+            }
+
+            h4 {
+              margin: 0;
+              font-weight: 600;
+              color: $text-primary;
+            }
+
+            p {
+              margin: 0.25rem 0 0;
+              font-size: 0.875rem;
+              color: $text-secondary;
+            }
+          }
+
+          .measurementGrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            padding: 1rem;
+
+            .measurementValue {
+              background: $surface-hover;
+              padding: 1rem;
+              border-radius: 0.5rem;
+              text-align: center;
+
+              .label {
+                display: block;
+                color: $text-secondary;
+                font-size: 0.875rem;
+                margin-bottom: 0.5rem;
+              }
+
+              strong {
+                color: $text-primary;
+                font-size: 1.25rem;
+                font-weight: 600;
+              }
+            }
+          }
+        }
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid $border-color;
+
+        button {
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+
+          &.primaryButton {
+            background: $primary;
+            color: $surface;
+            border: none;
+
+            &:hover {
+              background: darken($primary, 5%);
+            }
+          }
+
+          &.secondaryButton {
+            background: $surface;
+            color: $text-primary;
+            border: 1px solid $border-color;
+
+            &:hover {
+              background: $surface-hover;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Responsive
+  @media (max-width: 1024px) {
+    .mainContent {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+
+      .recordsList {
+        max-height: 300px;
+        overflow-y: auto;
       }
     }
   }

@@ -192,20 +192,20 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   const handleSubmit = async () => {
     try {
       setError(null);
-  
+
       // Validate required fields
       if (shippingMethod === 'customer' && !shippingAddress) {
         throw new Error('Please complete shipping address');
       }
-  
+
       if (shippingMethod === 'kiosk' && !selectedKioskId) {
         throw new Error('Please select a kiosk');
       }
-  
+
       if (!paymentMethod) {
         throw new Error('Please select a payment method');
       }
-  
+
       const orderData: OrderData = {
         accountID: customer.id,
         receiverAddress: shippingMethod === 'customer' ? shippingAddress : undefined,
@@ -219,7 +219,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         remainingAmount: isDeposit ? calculateRemainingPayment() : undefined,
         shippingCost: calculateShippingCost()
       };
-  
+
       // Log for debugging
       console.log('Sending order data:', {
         orderData,
@@ -229,9 +229,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
         shippingMethod,
         paymentMethod
       });
-  
+
       await onCreateOrder(paymentMethod, orderData);
-  
+
     } catch (err: any) {
       console.error('Order creation error:', err);
       setError(err.message || 'Failed to create order');
@@ -257,36 +257,86 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
               <ShoppingBag size={20} />
               <h3>Items ({cartItems.length})</h3>
             </div>
-            <div className={styles.products}>
-              {cartItems.map((item) => (
-                <div key={item.id} className={styles.productCard}>
-                  <img src={item.eyeGlass.eyeGlassImages[0]?.url} alt={item.eyeGlass.name} />
-                  <div className={styles.productInfo}>
-                    <h4>{item.eyeGlass.name}</h4>
-                    <div className={styles.lensInfo}>
-                      <span>Lens: {item.leftLens.lensName}</span>
+            <div className={styles.productsWrapper}>
+              <div className={styles.products}>
+                {cartItems.map((item) => (
+                  <div key={item.id} className={styles.productCard}>
+                    <img src={item.eyeGlass.eyeGlassImages[0]?.url} alt={item.eyeGlass.name} />
+                    <div className={styles.productInfo}>
+                      {/* Frame Information */}
+                      <div className={styles.frameInfo}>
+                        <h4>{item.eyeGlass.name}</h4>
+                        <span className={styles.price}>
+                          {new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                          }).format(item.eyeGlass.price)}
+                        </span>
+                      </div>
+
+                      {/* Lens Information */}
+                      <div className={styles.lensDetails}>
+                        {/* Left Lens */}
+                        <div className={styles.lensItem}>
+                          <div className={styles.lensHeader}>
+                            <span className={styles.lensTitle}>Left Lens</span>
+                            <span className={styles.lensPrice}>
+                              {new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                              }).format(item.leftLens.lensPrice)}
+                            </span>
+                          </div>
+                          <span className={styles.lensName}>{item.leftLens.lensName}</span>
+                        </div>
+
+                        {/* Right Lens */}
+                        <div className={styles.lensItem}>
+                          <div className={styles.lensHeader}>
+                            <span className={styles.lensTitle}>Right Lens</span>
+                            <span className={styles.lensPrice}>
+                              {new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                              }).format(item.rightLens.lensPrice)}
+                            </span>
+                          </div>
+                          <span className={styles.lensName}>{item.rightLens.lensName}</span>
+                        </div>
+                      </div>
+
+                      {/* Prescription Details */}
                       <div className={styles.prescriptionDetails}>
-                        <div className={styles.prescriptionValue}>
-                          <span>Right Eye</span>
-                          <small>SPH: {item.prescriptionData.sphereOD}, CYL: {item.prescriptionData.cylinderOD}, AXIS: {item.prescriptionData.axisOD}°</small>
+                        <div className={styles.prescriptionRow}>
+                          <div className={styles.prescriptionValue}>
+                            <span>Right Eye (OD)</span>
+                            <small>SPH: {item.prescriptionData.sphereOD}, CYL: {item.prescriptionData.cylinderOD}, AXIS: {item.prescriptionData.axisOD}°</small>
+                          </div>
+                          <div className={styles.prescriptionValue}>
+                            <span>Left Eye (OS)</span>
+                            <small>SPH: {item.prescriptionData.sphereOS}, CYL: {item.prescriptionData.cylinderOS}, AXIS: {item.prescriptionData.axisOS}°</small>
+                          </div>
                         </div>
-                        <div className={styles.prescriptionValue}>
-                          <span>Left Eye</span>
-                          <small>SPH: {item.prescriptionData.sphereOS}, CYL: {item.prescriptionData.cylinderOS}, AXIS: {item.prescriptionData.axisOS}°</small>
-                        </div>
-                        <div className={styles.prescriptionValue}>
+                        <div className={styles.prescriptionFooter}>
                           <span>PD: {item.prescriptionData.pd}mm</span>
                           <span>Quantity: {item.quantity}</span>
                         </div>
                       </div>
-                    </div>
-                    <div className={styles.price}>
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
-                        .format((item.eyeGlass.price + item.leftLens.lensPrice + item.rightLens.lensPrice) * item.quantity)}
+
+                      {/* Total Price */}
+                      <div className={styles.totalPrice}>
+                        <span>Total:</span>
+                        <span className={styles.amount}>
+                          {new Intl.NumberFormat('vi-VN', {
+                            style: 'currency',
+                            currency: 'VND'
+                          }).format((item.eyeGlass.price + item.leftLens.lensPrice + item.rightLens.lensPrice) * item.quantity)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </section>
 

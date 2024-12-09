@@ -1,261 +1,253 @@
-@import '../styles/variables';
-@import '../styles/mixins';
+// Variables
+$primary-color: #2563eb;
+$secondary-color: #3b82f6;
+$success-color: #22c55e;
+$background-color: #f8fafc;
+$surface-color: #ffffff;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$border-color: #e2e8f0;
 
-.lensSelectionWrapper {
-  width: 100%;
-  max-width: $container-max-width;
-  margin: 0 auto;
-  padding: 0 $spacing-lg;
+// Mixins
+@mixin glass-effect {
+  background: rgba($surface-color, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba($border-color, 0.5);
+}
 
-  // Progress Steps Container
-  .progressStepsWrapper {
-    margin-bottom: $spacing-2xl;
-    padding: $spacing-lg;
-    background: rgba($surface, 0.95);
-    border-radius: $border-radius-lg;
-    box-shadow: $shadow-sm;
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wrapper {
+  min-height: 100vh;
+  background-color: $background-color;
+  padding: 2rem;
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
     
-    .progressSteps {
-      position: relative;
-      display: flex;
-      justify-content: space-between;
-      max-width: 800px;
-      margin: 0 auto;
+    // Steps Progress
+    .stepsProgress {
+      margin-bottom: 3rem;
+      padding: 2rem;
+      border-radius: 1rem;
+      @include glass-effect;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       
-      // Progress Line
-      &:before {
-        content: '';
-        position: absolute;
-        top: 24px;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: $border-color;
-        z-index: 1;
-      }
-
-      // Active Progress Line
-      &:after {
-        content: '';
-        position: absolute;
-        top: 24px;
-        left: 0;
-        height: 3px;
-        background: $primary;
-        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 2;
-      }
-
-      &[data-step="1"]:after { width: 0; }
-      &[data-step="2"]:after { width: 33.33%; }
-      &[data-step="3"]:after { width: 66.66%; }
-      &[data-step="4"]:after { width: 100%; }
-
-      // Step Item
-      .step {
-        flex: 1;
-        text-align: center;
-        z-index: 3;
-        padding: 0 $spacing-md;
-
-        .stepNumber {
-          width: 48px;
-          height: 48px;
-          margin: 0 auto $spacing-sm;
-          background: $surface;
-          border: 2px solid $border-color;
-          border-radius: 50%;
-          @include flex-center;
-          font-weight: 600;
-          color: $text-secondary;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          
-          // Check Mark
-          &:after {
-            content: '✓';
-            position: absolute;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.3s ease;
-          }
-        }
-
-        .stepTitle {
-          font-size: $font-size-sm;
-          font-weight: 500;
-          color: $text-secondary;
-          transition: all 0.3s ease;
-          margin-top: $spacing-xs;
-          white-space: nowrap;
-        }
-
-        // Active State
-        &.active {
-          .stepNumber {
-            border-color: $primary;
-            background: $primary;
-            color: $surface;
-            transform: scale(1.1);
-            box-shadow: 0 0 0 4px rgba($primary, 0.2);
-          }
-
-          .stepTitle {
-            color: $primary;
-            font-weight: 600;
-            transform: translateY(2px);
-          }
-        }
-
-        // Completed State
-        &.completed {
-          .stepNumber {
-            background: $success;
-            border-color: $success;
-            color: $surface;
-
-            &:after {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-
-          .stepTitle {
-            color: $success;
-          }
-        }
-
-        // Hover Effects
-        &:not(.active):hover {
-          .stepNumber {
-            border-color: $primary;
-            background: rgba($primary, 0.1);
-            transform: scale(1.05);
-          }
-
-          .stepTitle {
-            color: $text-primary;
-          }
-        }
-      }
-    }
-  }
-
-  // Content Area
-  .content {
-    background: $surface;
-    border-radius: $border-radius-lg;
-    box-shadow: $shadow-md;
-    min-height: 500px;
-    overflow: hidden;
-    position: relative;
-    padding: $spacing-xl;
-
-    @include glass-effect;
-    
-    // Loading State
-    .loading {
-      position: absolute;
-      inset: 0;
-      @include flex-center;
-      flex-direction: column;
-      gap: $spacing-md;
-      background: rgba($surface, 0.9);
-      backdrop-filter: blur(8px);
-      z-index: 10;
-
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba($primary, 0.1);
-        border-top-color: $primary;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-    }
-  }
-
-  // Responsive Styles
-  @media (max-width: 768px) {
-    padding: 0 $spacing-md;
-
-    .progressStepsWrapper {
-      padding: $spacing-md;
-      margin-bottom: $spacing-xl;
-
-      .progressSteps {
-        flex-direction: column;
-        gap: $spacing-lg;
-        padding: 0 $spacing-md;
-
-        &:before {
-          top: 0;
-          bottom: 0;
-          left: 24px;
-          width: 3px;
+      .progressTrack {
+        height: 4px;
+        background-color: $border-color;
+        border-radius: 2px;
+        margin-bottom: 2rem;
+        position: relative;
+        
+        .progressFill {
+          position: absolute;
           height: 100%;
+          background-color: $primary-color;
+          border-radius: 2px;
+          transition: width 0.5s ease;
         }
-
-        &:after {
-          top: 0;
-          left: 24px;
-          width: 3px;
-        }
-
-        &[data-step="1"]:after { height: 0; width: 3px; }
-        &[data-step="2"]:after { height: 33.33%; width: 3px; }
-        &[data-step="3"]:after { height: 66.66%; width: 3px; }
-        &[data-step="4"]:after { height: 100%; width: 3px; }
-
-        .step {
+      }
+      
+      .stepsContainer {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        
+        .stepItem {
+          flex: 1;
           display: flex;
           align-items: center;
-          text-align: left;
-          padding: $spacing-sm 0;
-
-          .stepNumber {
-            margin: 0 $spacing-lg 0 0;
+          gap: 1rem;
+          padding: 1rem;
+          border-radius: 0.5rem;
+          transition: all 0.3s ease;
+          
+          &:hover:not(.completed) {
+            background-color: rgba($primary-color, 0.05);
+          }
+          
+          .stepIconWrapper {
             width: 40px;
             height: 40px;
+            @include flex-center;
+            border-radius: 50%;
+            background-color: $background-color;
+            border: 2px solid $border-color;
+            transition: all 0.3s ease;
+            
+            .stepNumber {
+              font-weight: 600;
+              color: $text-secondary;
+            }
+            
+            .completedIcon {
+              color: $success-color;
+            }
           }
+          
+          .stepInfo {
+            flex: 1;
+            
+            .stepTitle {
+              font-weight: 600;
+              color: $text-primary;
+              margin-bottom: 0.25rem;
+            }
+            
+            .stepDescription {
+              font-size: 0.875rem;
+              color: $text-secondary;
+            }
+          }
+          
+          .stepArrow {
+            color: $text-secondary;
+          }
+          
+          &.active {
+            .stepIconWrapper {
+              border-color: $primary-color;
+              background-color: rgba($primary-color, 0.1);
+              
+              .stepNumber {
+                color: $primary-color;
+              }
+            }
+            
+            .stepInfo {
+              .stepTitle {
+                color: $primary-color;
+              }
+            }
+          }
+          
+          &.completed {
+            .stepIconWrapper {
+              border-color: $success-color;
+              background-color: rgba($success-color, 0.1);
+            }
+          }
+        }
+      }
+    }
+    
+    // Content Container
+    .contentContainer {
+      background-color: $surface-color;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
+      min-height: 500px;
+      position: relative;
+    }
+    
+    // Progress Indicator
+    .progressIndicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+      
+      .steps {
+        display: flex;
+        gap: 0.5rem;
+        
+        .indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background-color: $border-color;
+          transition: all 0.3s ease;
+          
+          &.active {
+            background-color: $primary-color;
+            transform: scale(1.2);
+          }
+        }
+      }
+      
+      .stepCounter {
+        font-size: 0.875rem;
+        color: $text-secondary;
+        font-weight: 500;
+      }
+    }
+  }
+}
 
-          .stepTitle {
-            margin-top: 0;
+// Responsive Design
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 1rem;
+    
+    .container {
+      .stepsProgress {
+        padding: 1rem;
+        
+        .stepsContainer {
+          flex-direction: column;
+          
+          .stepItem {
+            .stepArrow {
+              transform: rotate(90deg);
+            }
           }
         }
       }
     }
   }
+}
 
-  @media (max-width: 480px) {
-    .progressStepsWrapper .progressSteps .step .stepTitle {
-      font-size: $font-size-xs;
-    }
-  }
-
-  // Animations
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .fade-enter {
+// Animation Keyframes
+@keyframes slideIn {
+  from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateX(20px);
   }
-
-  .fade-enter-active {
+  to {
     opacity: 1;
-    transform: translateY(0);
-    transition: all 0.4s ease-out;
+    transform: translateX(0);
   }
+}
 
-  .fade-exit {
+@keyframes slideOut {
+  from {
     opacity: 1;
+    transform: translateX(0);
   }
-
-  .fade-exit-active {
+  to {
     opacity: 0;
-    transform: translateY(-20px);
-    transition: all 0.4s ease-in;
+    transform: translateX(-20px);
   }
+}
+
+// Transitions
+.fade-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 300ms, transform 300ms;
 }

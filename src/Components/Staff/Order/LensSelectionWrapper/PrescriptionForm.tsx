@@ -1,10 +1,22 @@
-// components/LensSelection/PrescriptionForm.tsx
+// components/LensSelection/ModernPrescriptionForm.tsx
 
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Eye, AlertCircle, Save, RefreshCw } from 'lucide-react';
+import { 
+  ArrowLeft, 
+  Eye, 
+  AlertCircle, 
+  Save, 
+  RefreshCw, 
+  Info,
+  CheckCircle ,
+  ChevronRight
+} from 'lucide-react';
+import { toast } from 'react-toastify';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MeasurementRecord, PrescriptionData } from '../types/lens.types';
 import styles from './PrescriptionForm.module.scss';
 import { LensMode } from '../types/lens.types';
+import { Tooltip } from './Tooltip';
 
 interface PrescriptionFormProps {
   initialData?: MeasurementRecord[];
@@ -13,7 +25,7 @@ interface PrescriptionFormProps {
   lensMode: LensMode;
 }
 
-const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
+const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
   initialData = [],
   onComplete,
   onBack,
@@ -33,6 +45,16 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
 
   const [activeEye, setActiveEye] = useState<'OD' | 'OS'>('OD');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Field descriptions for tooltips
+  const fieldDescriptions = {
+    sphere: 'Measures the degree of nearsightedness or farsightedness',
+    cylinder: 'Measures the degree of astigmatism',
+    axis: 'Indicates the orientation of astigmatism',
+    add: 'Additional magnifying power for reading (bifocal/progressive)',
+    pd: 'Distance between the centers of your pupils'
+  };
 
   useEffect(() => {
     if (initialData.length > 0) {
@@ -80,33 +102,48 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
 
   const handleInputChange = (field: keyof PrescriptionData, value: string) => {
     const numValue = parseFloat(value) || 0;
-    const error = validateField(field, numValue);
-
-    setErrors(prev => ({
-      ...prev,
-      [field]: error
-    }));
-
+    
     setPrescriptionData(prev => ({
       ...prev,
       [field]: numValue
     }));
+  
+    if (errors[field]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
+  
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Validate tất cả các trường khi submit
     const newErrors: Record<string, string> = {};
+    let hasValidationErrors = false;
+  
     Object.entries(prescriptionData).forEach(([key, value]) => {
       const error = validateField(key, value);
-      if (error) newErrors[key] = error;
+      if (error) {
+        newErrors[key] = error;
+        hasValidationErrors = true;
+      }
     });
-
-    if (Object.keys(newErrors).length > 0) {
+  
+    if (hasValidationErrors) {
       setErrors(newErrors);
+      // Show thông báo lỗi nếu cần
+      toast.error('Please check your prescription values');
       return;
     }
-
+  
+    // Nếu không có lỗi, tiếp tục submit
+    setShowSuccess(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
     onComplete(prescriptionData);
   };
+  
 
   const handleReset = () => {
     setPrescriptionData({
@@ -123,130 +160,153 @@ const PrescriptionForm: React.FC<PrescriptionFormProps> = ({
     setErrors({});
   };
 
+
+  const renderEyeSelector = () => (
+    <div className={styles.eyeSelector}>
+      {['OD', 'OS'].map((eye) => (
+        <motion.button
+          key={eye}
+          className={`${styles.eyeButton} ${activeEye === eye ? styles.active : ''}`}
+          onClick={() => setActiveEye(eye as 'OD' | 'OS')}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div className={styles.eyeContent}>
+            <Eye size={24} />
+            <div className={styles.eyeInfo}>
+              <span>{eye === 'OD' ? 'Right Eye (OD)' : 'Left Eye (OS)'}</span>
+              <small>{eye === 'OD' ? 'Oculus Dexter' : 'Oculus Sinister'}</small>
+            </div>
+          </div>
+          {activeEye === eye && (
+            <motion.div 
+              className={styles.activeIndicator}
+              layoutId="activeEye"
+            />
+          )}
+        </motion.button>
+      ))}
+    </div>
+  );
+
+  const renderInputField = (label: string, field: keyof PrescriptionData, description: string) => (
+    <div className={styles.inputGroup}>
+      <div className={styles.labelGroup}>
+        <label>{label}</label>
+        <Tooltip content={description} position="top">
+          <Info size={16} className={styles.info} />
+        </Tooltip>
+      </div>
+      <div className={styles.inputWrapper}>
+        <input
+          type="number"
+          step={field.includes('axis') ? '1' : '0.25'}
+          value={prescriptionData[field]}
+          onChange={(e) => handleInputChange(field, e.target.value)}
+          className={errors[field] ? styles.error : ''}
+        />
+        <span className={styles.unit}>
+          {field.includes('axis') ? '°' : 
+           field === 'pd' ? 'mm' : 
+           'D'}
+        </span>
+      </div>
+      <AnimatePresence>
+        {errors[field] && (
+          <motion.span
+            className={styles.errorText}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            {errors[field]}
+          </motion.span>
+        )}
+      </AnimatePresence>
+      <span className={styles.range}>
+        {field.includes('axis') ? '0° to 180°' : 
+         field.includes('add') ? '0.00 to +4.00' :
+         field === 'pd' ? '50mm to 80mm' : 
+         '-12.00 to +12.00'}
+      </span>
+    </div>
+  );
+
   return (
     <div className={styles.prescriptionForm}>
-      <div className={styles.header}>
+      <nav className={styles.breadcrumb}>
         <button className={styles.backButton} onClick={onBack}>
-          <ArrowLeft size={20} />
-          <span>Back to Measurement History</span>
+          <ArrowLeft size={18} />
         </button>
-        <h2>Prescription Details</h2>
-        <p>Enter or verify prescription values for both eyes</p>
-      </div>
+        <ChevronRight size={16} className={styles.separator} />
+        <span>Prescription Details</span>
+      </nav>
 
-      <div className={styles.content}>
-        <div className={styles.eyeSelector}>
-          <button
-            className={`${styles.eyeButton} ${activeEye === 'OD' ? styles.active : ''}`}
-            onClick={() => setActiveEye('OD')}
-          >
-            <Eye size={24} />
-            <span>Right Eye (OD)</span>
-          </button>
-          <button
-            className={`${styles.eyeButton} ${activeEye === 'OS' ? styles.active : ''}`}
-            onClick={() => setActiveEye('OS')}
-          >
-            <Eye size={24} />
-            <span>Left Eye (OS)</span>
-          </button>
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <h1>Prescription Details</h1>
+          <p>Enter or verify prescription values for both eyes</p>
         </div>
+        <div className={styles.progressBar}>
+          <div className={styles.progress} style={{ width: '50%' }}>
+            <span>2 of 4</span>
+          </div>
+        </div>
+      </header>
 
-        <div className={styles.prescriptionGrid}>
-          {/* Dynamic form fields based on activeEye */}
-          <div className={styles.formColumn}>
-            <div className={styles.inputGroup}>
-              <label>Sphere (SPH)</label>
-              <input
-                type="number"
-                step="0.25"
-                value={prescriptionData[`sphere${activeEye}`]}
-                onChange={(e) => handleInputChange(`sphere${activeEye}` as keyof PrescriptionData, e.target.value)}
-                className={errors[`sphere${activeEye}`] ? styles.error : ''}
-              />
-              {errors[`sphere${activeEye}`] && (
-                <span className={styles.errorText}>{errors[`sphere${activeEye}`]}</span>
-              )}
-              <span className={styles.range}>-12.00 to +12.00</span>
-            </div>
+      <main className={styles.mainContent}>
+        {renderEyeSelector()}
 
-            <div className={styles.inputGroup}>
-              <label>Cylinder (CYL)</label>
-              <input
-                type="number"
-                step="0.25"
-                value={prescriptionData[`cylinder${activeEye}`]}
-                onChange={(e) => handleInputChange(`cylinder${activeEye}` as keyof PrescriptionData, e.target.value)}
-                className={errors[`cylinder${activeEye}`] ? styles.error : ''}
-              />
-              {errors[`cylinder${activeEye}`] && (
-                <span className={styles.errorText}>{errors[`cylinder${activeEye}`]}</span>
-              )}
-              <span className={styles.range}>-12.00 to +12.00</span>
-            </div>
+        <div className={styles.prescriptionDetails}>
+          <AnimatePresence mode="wait">
+            <motion.div 
+              className={styles.formGrid}
+              key={activeEye}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className={styles.column}>
+                <h3>Sphere & Cylinder</h3>
+                {renderInputField('Sphere (SPH)', `sphere${activeEye}`, fieldDescriptions.sphere)}
+                {renderInputField('Cylinder (CYL)', `cylinder${activeEye}`, fieldDescriptions.cylinder)}
+              </div>
+              
+              <div className={styles.column}>
+                <h3>Axis & Add Power</h3>
+                {renderInputField('Axis', `axis${activeEye}`, fieldDescriptions.axis)}
+                {renderInputField('Add Power', `add${activeEye}`, fieldDescriptions.add)}
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
-            <div className={styles.inputGroup}>
-              <label>Axis</label>
-              <input
-                type="number"
-                step="1"
-                value={prescriptionData[`axis${activeEye}`]}
-                onChange={(e) => handleInputChange(`axis${activeEye}` as keyof PrescriptionData, e.target.value)}
-                className={errors[`axis${activeEye}`] ? styles.error : ''}
-              />
-              {errors[`axis${activeEye}`] && (
-                <span className={styles.errorText}>{errors[`axis${activeEye}`]}</span>
-              )}
-              <span className={styles.range}>0° to 180°</span>
-            </div>
-
-            <div className={styles.inputGroup}>
-              <label>Add Power</label>
-              <input
-                type="number"
-                step="0.25"
-                value={prescriptionData[`add${activeEye}`]}
-                onChange={(e) => handleInputChange(`add${activeEye}` as keyof PrescriptionData, e.target.value)}
-                className={errors[`add${activeEye}`] ? styles.error : ''}
-              />
-              {errors[`add${activeEye}`] && (
-                <span className={styles.errorText}>{errors[`add${activeEye}`]}</span>
-              )}
-              <span className={styles.range}>0.00 to +4.00</span>
-            </div>
+          <div className={styles.pdSection}>
+            <h3>Pupillary Distance</h3>
+            {renderInputField('PD', 'pd', fieldDescriptions.pd)}
           </div>
         </div>
 
-        <div className={styles.pdSection}>
-          <div className={styles.inputGroup}>
-            <label>Pupillary Distance (PD)</label>
-            <input
-              type="number"
-              step="0.5"
-              value={prescriptionData.pd}
-              onChange={(e) => handleInputChange('pd', e.target.value)}
-              className={errors.pd ? styles.error : ''}
-            />
-            {errors.pd && (
-              <span className={styles.errorText}>{errors.pd}</span>
-            )}
-            <span className={styles.range}>50mm to 80mm</span>
-          </div>
-        </div>
+        <footer className={styles.footer}>
+          <button 
+            className={styles.resetButton}
+            onClick={handleReset}
+          >
+            <RefreshCw size={18} />
+            <span>Reset</span>
+          </button>
 
-        <div className={styles.actions}>
-          <button className={styles.resetButton} onClick={handleReset}>
-            <RefreshCw size={20} />
-            Reset Values
+          <button 
+            className={styles.submitButton}
+            onClick={handleSubmit}
+          >
+            {showSuccess ? <CheckCircle size={18} /> : <Save size={18} />}
+            <span>{showSuccess ? 'Saving...' : 'Save Prescription'}</span>
           </button>
-          <button className={styles.submitButton} onClick={handleSubmit}>
-            <Save size={20} />
-            Save Prescription
-          </button>
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 };
 
-export default PrescriptionForm;
+export default ModernPrescriptionForm;

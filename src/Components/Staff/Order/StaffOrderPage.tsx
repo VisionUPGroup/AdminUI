@@ -133,41 +133,38 @@ const StaffOrderPage: React.FC = () => {
   
     setLoading(true);
     try {
-      // 1. Create ProductGlass entries first
-      const productGlassIds = await Promise.all(
-        cartState.items.map(async (item) => {
-          const productGlassData = {
-            eyeGlassID: item.eyeGlass.id,
-            leftLenID: item.leftLens.id,
-            rightLenID: item.rightLens.id,
-            accountID: selectedCustomer.id,
-            sphereOD: item.prescriptionData.sphereOD || 0,
-            cylinderOD: item.prescriptionData.cylinderOD || 0,
-            axisOD: item.prescriptionData.axisOD || 0,
-            sphereOS: item.prescriptionData.sphereOS || 0,
-            cylinderOS: item.prescriptionData.cylinderOS || 0,
-            axisOS: item.prescriptionData.axisOS || 0,
-            addOD: 0,
-            addOS: 0,
-            pd: item.prescriptionData.pd || 0
-          };
+      // Prepare order details from cart items
+      const orderDetails = cartState.items.map(item => ({
+        quantity: item.quantity,
+        productGlassRequest: {
+          eyeGlassID: item.eyeGlass.id,
+          leftLenID: item.leftLens.id,
+          rightLenID: item.rightLens.id,
+          accountID: selectedCustomer.id,
+          sphereOD: item.prescriptionData.sphereOD || 0,
+          cylinderOD: item.prescriptionData.cylinderOD || 0,
+          axisOD: item.prescriptionData.axisOD || 0,
+          sphereOS: item.prescriptionData.sphereOS || 0,
+          cylinderOS: item.prescriptionData.cylinderOS || 0,
+          axisOS: item.prescriptionData.axisOS || 0,
+          addOD: item.prescriptionData.addOD || 0,
+          addOS: item.prescriptionData.addOS || 0,
+          pd: item.prescriptionData.pd || 0
+        }
+      }));
+      console.log('Order details:', orderDetails);  
   
-          // const response = await createProductGlass(productGlassData);
-          // return response.id;
-        })
-      );
-  
-      // 2. Prepare final order data
+      // Prepare final order data with new structure
       const finalOrderData = {
         accountID: orderData.accountID,
         receiverAddress: orderData.receiverAddress,
         kioskID: orderData.kioskID,
         voucherID: orderData.voucherID,
         isDeposit: orderData.isDeposit,
-        listProductGlassID: productGlassIds
+        orderDetails: orderDetails
       };
   
-      // 3. Create order
+      // Create order
       console.log('Creating order with data:', finalOrderData);
       const orderResponse = await createOrderNow(finalOrderData);
   
@@ -175,20 +172,24 @@ const StaffOrderPage: React.FC = () => {
         throw new Error('Failed to create order');
       }
   
-      // 4. Handle payment based on method
+      // Handle payment based on method
       if (method === 'vnpay') {
-        const paymentData = {
-          amount: orderData.isDeposit ? orderData.depositAmount : orderData.totalAmount,
-          accountID: orderResponse.accountID,
-          orderID: orderResponse.id
-        };
-  
-        const paymentResponse = await createPaymentUrl(paymentData);
-        
-        if (paymentResponse?.paymentUrl) {
-          window.location.href = paymentResponse.paymentUrl;
-        } else {
-          throw new Error('Failed to create payment URL');
+        try {
+          const paymentData = {
+            orderID: orderResponse.id
+          };
+          
+          const paymentResponse = await createPaymentUrl(paymentData);
+          console.log('Payment response:', paymentResponse);
+          
+          if (paymentResponse?.paymentUrl) {
+            window.location.href = paymentResponse.paymentUrl;
+          } else {
+            throw new Error('Failed to create payment URL');
+          }
+        } catch (err) {
+          console.error('Payment URL creation error:', err);
+          throw new Error('Failed to create payment URL: ' + err.message);
         }
       } else {
         // For cash payment
