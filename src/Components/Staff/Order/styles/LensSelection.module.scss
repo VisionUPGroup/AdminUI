@@ -1,37 +1,45 @@
+// LensSelection.module.scss
 @import './variables';
-@import './mixins';
 
 .lensSelection {
   min-height: 100vh;
-  background: linear-gradient(120deg, $background 0%, lighten($background, 3%) 100%);
-  padding: clamp($spacing-lg, 5vw, $spacing-2xl);
+  background: linear-gradient(135deg, $background 0%, darken($background, 5%) 100%);
+  padding: clamp(1.5rem, 5vw, 3rem);
 
-  // Header Section
   .header {
-    margin-bottom: $spacing-2xl;
-    @include glass-effect;
-    border-radius: $border-radius-xl;
-    padding: $spacing-lg;
+    background: rgba($surface, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
     .productPreview {
       display: flex;
       align-items: center;
-      gap: $spacing-xl;
-      padding: $spacing-lg;
-      border-radius: $border-radius-lg;
-      background: linear-gradient(to right, rgba($surface, 0.8), rgba($primary-light, 0.2));
+      gap: 2rem;
+      margin-bottom: 2rem;
 
-      .productImage {
-        width: 140px;
-        height: 140px;
-        object-fit: cover;
-        border-radius: $border-radius-lg;
-        box-shadow: $shadow-md;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      .imageWrapper {
+        position: relative;
+        width: 180px;
+        height: 180px;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 12px 24px rgba($primary, 0.15);
 
-        &:hover {
-          transform: scale(1.05) rotate(-2deg);
-          box-shadow: $shadow-lg;
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(45deg, rgba($primary, 0.1), transparent);
+        }
+
+        .productImage {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
       }
 
@@ -39,87 +47,126 @@
         flex: 1;
 
         h2 {
-          @include heading-2;
-          background: linear-gradient(120deg, $primary, darken($primary, 15%));
+          font-size: 1.75rem;
+          font-weight: 700;
+          background: linear-gradient(120deg, $primary, darken($primary, 20%));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
-          margin-bottom: $spacing-xs;
+          margin-bottom: 1rem;
         }
 
-        .price {
-          font-size: $font-size-xl;
-          font-weight: 700;
-          color: $primary;
-          display: inline-block;
-          padding: $spacing-xs $spacing-sm;
-          background: rgba($primary, 0.1);
-          border-radius: $border-radius;
+        .priceTag {
+          display: inline-flex;
+          flex-direction: column;
+          padding: 0.75rem 1.25rem;
+          background: rgba($primary, 0.08);
+          border-radius: 0.75rem;
+          border: 1px solid rgba($primary, 0.15);
+
+          .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: $primary;
+          }
+
+          .label {
+            font-size: 0.875rem;
+            color: rgba($text-primary, 0.6);
+          }
+        }
+      }
+    }
+
+    .progressSteps {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba($text-secondary, 0.1);
+
+      .step {
+        display: flex;
+        align-items: center;
+        flex: 1;
+
+        .stepNumber {
+          width: 2rem;
+          height: 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: rgba($text-secondary, 0.1);
+          color: $text-secondary;
+          margin-right: 1rem;
+          transition: all 0.3s ease;
+        }
+
+        .stepTitle {
+          font-weight: 500;
+          color: $text-secondary;
+          transition: color 0.3s ease;
+        }
+
+        .connector {
+          flex: 1;
+          height: 2px;
+          background: rgba($text-secondary, 0.1);
+          margin: 0 1rem;
+        }
+
+        &.active {
+          .stepNumber {
+            background: $primary;
+            color: white;
+          }
+
+          .stepTitle {
+            color: $primary;
+            font-weight: 600;
+          }
+
+          & ~ .step .connector {
+            background: $primary;
+          }
         }
       }
     }
   }
 
-  // Content Area
   .content {
     .lensModeSelection {
-      @include card-base;
-      padding: $spacing-xl;
-      background: rgba($surface, 0.9);
-
-      h3 {
-        @include heading-2;
-        text-align: center;
-        margin-bottom: $spacing-xl;
-        position: relative;
-        
-        &:after {
-          content: '';
-          position: absolute;
-          bottom: -$spacing-sm;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 60px;
-          height: 3px;
-          background: $gradient-primary;
-          border-radius: $border-radius-full;
-        }
-      }
-
       .modeOptions {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: $spacing-lg;
-        margin-bottom: $spacing-xl;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
 
-        .modeButton {
+        .modeCard {
           position: relative;
           display: flex;
-          align-items: center;
-          padding: $spacing-lg;
-          background: $surface;
+          align-items: flex-start;
+          padding: 1.5rem;
+          background: rgba($surface, 0.9);
+          border-radius: 1rem;
           border: 2px solid transparent;
-          border-radius: $border-radius-lg;
           transition: all 0.3s ease;
-          overflow: hidden;
           cursor: pointer;
+          overflow: hidden;
 
-          &:before {
+          &::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, rgba($primary, 0.1), transparent);
+            inset: 0;
+            background: linear-gradient(45deg, rgba($primary, 0.05), transparent);
             opacity: 0;
             transition: opacity 0.3s ease;
           }
 
           &:hover {
-            transform: translateY(-2px);
             border-color: rgba($primary, 0.3);
             
-            &:before {
+            &::before {
               opacity: 1;
             }
           }
@@ -127,58 +174,72 @@
           &.active {
             border-color: $primary;
             background: rgba($primary, 0.05);
-
-            .modeIcon {
-              svg {
-                color: $primary;
-                transform: scale(1.1);
-              }
-            }
-
-            .checkIcon {
-              opacity: 1;
-              transform: scale(1) rotate(0deg);
-            }
           }
 
           .modeIcon {
             display: flex;
-            gap: $spacing-md;
-            padding: $spacing-md;
+            gap: 0.75rem;
+            padding: 1rem;
             background: rgba($primary, 0.1);
-            border-radius: $border-radius;
-            margin-right: $spacing-lg;
+            border-radius: 0.75rem;
+            margin-right: 1.5rem;
+            transition: all 0.3s ease;
 
             svg {
-              transition: all 0.3s ease;
-              color: rgba($primary, 0.7);
+              color: $primary;
+              transition: transform 0.3s ease;
+            }
+
+            &:hover svg {
+              transform: scale(1.1);
             }
           }
 
-          .modeInfo {
+          .modeContent {
             flex: 1;
 
             h4 {
+              font-size: 1.25rem;
               font-weight: 600;
-              margin-bottom: $spacing-xs;
               color: $text-primary;
+              margin-bottom: 0.5rem;
             }
 
             p {
-              font-size: $font-size-sm;
+              font-size: 0.875rem;
               color: $text-secondary;
-              line-height: 1.5;
+              margin-bottom: 1rem;
+            }
+
+            .features {
+              display: flex;
+              gap: 0.75rem;
+              flex-wrap: wrap;
+
+              span {
+                padding: 0.35rem 0.75rem;
+                background: rgba($primary, 0.08);
+                border-radius: 1rem;
+                font-size: 0.75rem;
+                color: $primary;
+                font-weight: 500;
+              }
             }
           }
 
-          .checkIcon {
+          .selectedIndicator {
             position: absolute;
-            top: $spacing-md;
-            right: $spacing-md;
-            color: $primary;
-            opacity: 0;
-            transform: scale(0.8) rotate(-90deg);
-            transition: all 0.3s ease;
+            top: 1rem;
+            right: 1rem;
+            width: 1.75rem;
+            height: 1.75rem;
+            background: $primary;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 2px 8px rgba($primary, 0.3);
           }
         }
       }
@@ -187,52 +248,114 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-top: $spacing-lg;
+        padding-top: 1.5rem;
         border-top: 1px solid rgba($text-secondary, 0.1);
 
+        .backButton, .nextButton {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1.5rem;
+          border-radius: 0.75rem;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
         .backButton {
-          @include button-secondary;
-          gap: $spacing-sm;
-          svg {
-            transition: transform 0.3s ease;
-          }
-          
+          color: $text-secondary;
+          background: transparent;
+          border: 1px solid rgba($text-secondary, 0.2);
+
           &:hover {
-            svg {
-              transform: translateX(-4px);
-            }
+            background: rgba($text-secondary, 0.05);
+            border-color: rgba($text-secondary, 0.3);
+            transform: translateX(-4px);
           }
         }
 
         .nextButton {
-          @include button-primary;
-          min-width: 160px;
-          
+          background: linear-gradient(135deg, $primary, darken($primary, 15%));
+          color: white;
+          padding-right: 2rem;
+          box-shadow: 0 4px 12px rgba($primary, 0.2);
+
           &:hover {
             transform: translateY(-2px);
-            box-shadow: $shadow-md;
+            box-shadow: 0 6px 16px rgba($primary, 0.3);
+          }
+
+          &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+          }
+
+          svg {
+            transition: transform 0.3s ease;
+          }
+
+          &:hover svg {
+            transform: translateX(4px);
           }
         }
       }
     }
   }
 
-  // Error Messages
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 1rem);
+    right: 1rem;
+    max-width: 280px;
+    padding: 1rem;
+    background: rgba($surface, 0.95);
+    backdrop-filter: blur(8px);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    
+    svg {
+      color: $primary;
+      flex-shrink: 0;
+      margin-top: 0.25rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: $text-secondary;
+      line-height: 1.5;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 24px;
+      width: 16px;
+      height: 16px;
+      background: inherit;
+      transform: rotate(45deg);
+    }
+  }
+
   .error {
-    @include glass-effect;
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-md $spacing-lg;
-    border-radius: $border-radius;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: rgba($error-light, 0.1);
+    border: 1px solid rgba($error, 0.2);
+    border-radius: 0.75rem;
     color: $error;
-    margin-top: $spacing-lg;
+    margin-top: 1.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
 
     &:hover {
+      background: rgba($error-light, 0.15);
       transform: translateY(-2px);
-      background: rgba($error-light, 0.2);
     }
 
     svg {
@@ -241,23 +364,34 @@
   }
 
   // Responsive Styles
-  @include respond-to(sm) {
+  @media (max-width: 768px) {
     .header {
+      padding: 1.5rem;
+
       .productPreview {
         flex-direction: column;
         text-align: center;
-        padding: $spacing-lg;
 
-        .productImage {
-          width: 180px;
-          height: 180px;
+        .imageWrapper {
+          width: 160px;
+          height: 160px;
+          margin: 0 auto;
         }
 
         .productInfo {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: $spacing-sm;
+        }
+      }
+
+      .progressSteps {
+        .stepTitle {
+          display: none;
+        }
+
+        .connector {
+          flex: 1;
         }
       }
     }
@@ -270,10 +404,11 @@
 
         .actions {
           flex-direction: column-reverse;
-          gap: $spacing-md;
+          gap: 1rem;
 
           button {
             width: 100%;
+            justify-content: center;
           }
         }
       }
@@ -281,24 +416,33 @@
   }
 
   // Animations
-  .fade-enter {
-    opacity: 0;
-    transform: translateY(10px);
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  .fade-enter-active {
-    opacity: 1;
-    transform: translateY(0);
-    transition: all 0.3s ease;
+  @keyframes slideIn {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
   }
 
-  .fade-exit {
-    opacity: 1;
+  .fadeIn {
+    animation: fadeIn 0.5s ease forwards;
   }
 
-  .fade-exit-active {
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
+  .slideIn {
+    animation: slideIn 0.3s ease forwards;
   }
 }

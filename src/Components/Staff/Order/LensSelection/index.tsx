@@ -1,9 +1,10 @@
-
+// LensSelection.tsx
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Eye, Check, AlertCircle } from 'lucide-react';
-import { Lens, LensType, LensMode, PrescriptionData, Profile } from '../types/lens.types';
+import { ArrowLeft, Eye, Check, AlertCircle, ChevronRight, Info } from 'lucide-react';
+import { Lens, LensType, LensMode, PrescriptionData } from '../types/lens.types';
 import LensSelectionWrapper from '../LensSelectionWrapper/LensSelectionWrapper';
 import { useLensService } from '../../../../../Api/lensService';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../styles/LensSelection.module.scss';
 
 interface LensSelectionProps {
@@ -27,7 +28,7 @@ const LensSelection: React.FC<LensSelectionProps> = ({
   refractionRecordService,
   measurementResultService
 }) => {
-  // Main state
+  // States
   const [currentStep, setCurrentStep] = useState(1);
   const [lensMode, setLensMode] = useState<LensMode>('same');
   const [selectedLenses, setSelectedLenses] = useState<{
@@ -37,104 +38,144 @@ const LensSelection: React.FC<LensSelectionProps> = ({
     leftLens: null,
     rightLens: null
   });
-
-  // Lens data state
-  const [lensTypes, setLensTypes] = useState<LensType[]>([]);
-  const [selectedType, setSelectedType] = useState<number | null>(null);
-  const [availableLenses, setAvailableLenses] = useState<Lens[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const { fetchLenses, fetchLensTypes } = useLensService();
-
-  // Initial data loading
-  useEffect(() => {
-    loadLensTypes();
-  }, []);
-
-  const loadLensTypes = async () => {
-    try {
-      setLoading(true);
-      const response = await fetchLensTypes();
-      if (response) {
-        const activeTypes = response.filter((type: LensType) => type.status);
-        setLensTypes(activeTypes);
-      }
-    } catch (err) {
-      setError('Failed to load lens types');
-    } finally {
-      setLoading(false);
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
+    },
+    exit: { 
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.3 }
     }
   };
 
-  const loadLenses = async (typeId: number) => {
-    try {
-      setLoading(true);
-      const response = await fetchLenses({
-        LensTypeID: typeId
-      });
-      if (response?.data) {
-        setAvailableLenses(response.data.filter((lens: Lens) => lens.status));
-      }
-    } catch (err) {
-      setError('Failed to load lenses');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const stepsData = [
+    { number: 1, title: 'Select Lens Mode' },
+    { number: 2, title: 'Customize Lens' },
+    { number: 3, title: 'Review & Confirm' }
+  ];
 
-  // Step 1: Lens Mode Selection
+  // Render progress steps
+  const renderProgressSteps = () => (
+    <div className={styles.progressSteps}>
+      {stepsData.map((step, index) => (
+        <div 
+          key={step.number} 
+          className={`${styles.step} ${currentStep >= step.number ? styles.active : ''}`}
+        >
+          <div className={styles.stepNumber}>
+            {currentStep > step.number ? <Check size={16} /> : step.number}
+          </div>
+          <span className={styles.stepTitle}>{step.title}</span>
+          {index < stepsData.length - 1 && <div className={styles.connector} />}
+        </div>
+      ))}
+    </div>
+  );
+
+  // Render lens mode selection
   const renderLensModeSelection = () => (
-    <div className={styles.lensModeSelection}>
-      <h3>Select Lens Mode</h3>
+    <motion.div 
+      className={styles.lensModeSelection}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       <div className={styles.modeOptions}>
-        <button
-          className={`${styles.modeButton} ${lensMode === 'same' ? styles.active : ''}`}
+        <motion.button
+          className={`${styles.modeCard} ${lensMode === 'same' ? styles.active : ''}`}
           onClick={() => setLensMode('same')}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <div className={styles.modeIcon}>
-            <Eye size={24} />
-            <Eye size={24} />
+            <Eye size={28} />
+            <Eye size={28} />
           </div>
-          <div className={styles.modeInfo}>
+          <div className={styles.modeContent}>
             <h4>Same Lens</h4>
-            <p>Use the same lens type for both eyes</p>
+            <p>Identical lenses for both eyes</p>
+            <div className={styles.features}>
+              <span>Recommended</span>
+              <span>Cost-effective</span>
+            </div>
           </div>
-          {lensMode === 'same' && <Check className={styles.checkIcon} />}
-        </button>
+          {lensMode === 'same' && (
+            <motion.div 
+              className={styles.selectedIndicator}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+            >
+              <Check size={20} />
+            </motion.div>
+          )}
+        </motion.button>
 
-        <button
-          className={`${styles.modeButton} ${lensMode === 'custom' ? styles.active : ''}`}
+        <motion.button
+          className={`${styles.modeCard} ${lensMode === 'custom' ? styles.active : ''}`}
           onClick={() => setLensMode('custom')}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onMouseEnter={() => setShowTooltip('custom')}
+          onMouseLeave={() => setShowTooltip('')}
         >
           <div className={styles.modeIcon}>
-            <Eye size={24} className={styles.leftEye} />
-            <Eye size={24} className={styles.rightEye} />
+            <Eye size={28} className={styles.leftEye} />
+            <Eye size={28} className={styles.rightEye} />
           </div>
-          <div className={styles.modeInfo}>
+          <div className={styles.modeContent}>
             <h4>Custom Lens</h4>
-            <p>Select different lenses for each eye</p>
+            <p>Different lenses for each eye</p>
+            <div className={styles.features}>
+              <span>Advanced</span>
+              <span>Personalized</span>
+            </div>
           </div>
-          {lensMode === 'custom' && <Check className={styles.checkIcon} />}
-        </button>
+          {lensMode === 'custom' && (
+            <motion.div 
+              className={styles.selectedIndicator}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+            >
+              <Check size={20} />
+            </motion.div>
+          )}
+        </motion.button>
       </div>
-      
+
       <div className={styles.actions}>
         <button onClick={onBack} className={styles.backButton}>
           <ArrowLeft size={20} />
-          Back
+          <span>Back</span>
         </button>
         <button 
           onClick={() => setCurrentStep(2)}
           className={styles.nextButton}
+          disabled={!lensMode}
         >
-          Continue
+          <span>Continue</span>
+          <ChevronRight size={20} />
         </button>
       </div>
-    </div>
+
+      {showTooltip === 'custom' && (
+        <div className={styles.tooltip}>
+          <Info size={16} />
+          <p>Choose different lens specifications for each eye based on your prescription</p>
+        </div>
+      )}
+    </motion.div>
   );
 
-  // Handle prescription data from wrapper
+  // Handle prescription data
   const handlePrescriptionComplete = (data: any) => {
     const { prescriptionData, leftLens, rightLens } = data;
     
@@ -154,46 +195,67 @@ const LensSelection: React.FC<LensSelectionProps> = ({
     <div className={styles.lensSelection}>
       <header className={styles.header}>
         <div className={styles.productPreview}>
-          <img
-            src={selectedProduct.eyeGlassImages[0]?.url}
-            alt={selectedProduct.name}
-            className={styles.productImage}
-          />
+          <motion.div 
+            className={styles.imageWrapper}
+            whileHover={{ scale: 1.05, rotate: -2 }}
+          >
+            <img
+              src={selectedProduct.eyeGlassImages[0]?.url}
+              alt={selectedProduct.name}
+              className={styles.productImage}
+            />
+          </motion.div>
           <div className={styles.productInfo}>
             <h2>{selectedProduct.name}</h2>
-            <span className={styles.price}>
-              {selectedProduct.price.toLocaleString('vi-VN')}₫
-            </span>
+            <div className={styles.priceTag}>
+              <span className={styles.price}>
+                {selectedProduct.price.toLocaleString('vi-VN')}₫
+              </span>
+              <span className={styles.label}>Selected Frame</span>
+            </div>
           </div>
         </div>
+        {renderProgressSteps()}
       </header>
 
-      <div className={styles.content}>
-        {currentStep === 1 && renderLensModeSelection()}
+      <main className={styles.content}>
+        <AnimatePresence mode="wait">
+          {currentStep === 1 && renderLensModeSelection()}
 
-        {currentStep === 2 && (
-          <LensSelectionWrapper
-            accountId={customer.id}
-            lensMode={lensMode}
-            onComplete={handlePrescriptionComplete}
-            onBack={() => setCurrentStep(1)}
-            refractionRecordService={refractionRecordService}
-            measurementResultService={measurementResultService}
-          />
-        )}
+          {currentStep === 2 && (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <LensSelectionWrapper
+                accountId={customer.id}
+                lensMode={lensMode}
+                onComplete={handlePrescriptionComplete}
+                onBack={() => setCurrentStep(1)}
+                refractionRecordService={refractionRecordService}
+                measurementResultService={measurementResultService}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {error && (
-          <div className={styles.error} onClick={() => setError(null)}>
+          <motion.div 
+            className={styles.error}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            onClick={() => setError(null)}
+          >
             <AlertCircle size={20} />
             <span>{error}</span>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </main>
     </div>
   );
 };
 
 export default LensSelection;
-
-
-

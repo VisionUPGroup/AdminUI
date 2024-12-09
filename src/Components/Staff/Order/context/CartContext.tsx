@@ -8,6 +8,8 @@ interface PrescriptionData {
   sphereOS?: number;
   cylinderOS?: number;
   axisOS?: number;
+  addOD?: number;
+  addOS?: number;
   pd?: number;
 }
 

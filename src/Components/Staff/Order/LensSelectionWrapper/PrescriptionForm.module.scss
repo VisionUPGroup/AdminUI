@@ -1,103 +1,235 @@
-// styles/PrescriptionForm.module.scss
-
 @import '../styles/variables';
-@import '../styles/mixins';
+
 
 .prescriptionForm {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: $spacing-lg;
+  
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-xl;
+    
+    .backButton {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: $border-radius-full;
+      border: none;
+      background: $background-light;
+      color: $text-secondary;
+      cursor: pointer;
+      transition: $transition-base;
+      
+      &:hover {
+        background: darken($background-light, 5%);
+        color: $text-primary;
+      }
+    }
+    
+    .separator {
+      color: $text-secondary;
+    }
+    
+    span {
+      color: $text-primary;
+      font-weight: $font-weight-medium;
+    }
+  }
+  
   .header {
     margin-bottom: $spacing-2xl;
     
-    .backButton {
-      @include button-secondary;
+    .headerContent {
       margin-bottom: $spacing-lg;
+      
+      h1 {
+        font-size: $font-size-3xl;
+        font-weight: $font-weight-bold;
+        background: $gradient-primary;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: $spacing-xs;
+      }
+      
+      p {
+        color: $text-secondary;
+      }
     }
     
-    h2 {
-      @include heading-2;
-      margin-bottom: $spacing-xs;
-    }
-    
-    p {
-      color: $text-secondary;
+    .progressBar {
+      height: 6px;
+      background: $background-light;
+      border-radius: $border-radius-full;
+      
+      .progress {
+        height: 100%;
+        background: $gradient-primary;
+        border-radius: $border-radius-full;
+        position: relative;
+        transition: width 0.3s ease;
+        
+        span {
+          position: absolute;
+          right: 0;
+          top: -24px;
+          font-size: $font-size-xs;
+          color: $text-secondary;
+        }
+      }
     }
   }
-
-  .content {
-    @include card;
-    padding: $spacing-xl;
-    max-width: 800px;
-    margin: 0 auto;
+  
+  .mainContent {
+    background: $surface;
+    border-radius: $border-radius-xl;
+    box-shadow: $shadow-lg;
+    overflow: hidden;
   }
-
+  
   .eyeSelector {
-    display: flex;
-    gap: $spacing-md;
-    margin-bottom: $spacing-xl;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: $border-color;
+    margin-bottom: $spacing-2xl;
     
     .eyeButton {
-      flex: 1;
-      @include button-base;
-      padding: $spacing-lg;
-      border: 2px solid transparent;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: $spacing-xl;
+      background: $surface;
+      border: none;
+      cursor: pointer;
+      transition: $transition-base;
+      
+      .eyeContent {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        
+        .eyeInfo {
+          text-align: left;
+          
+          span {
+            display: block;
+            font-weight: $font-weight-medium;
+            color: $text-primary;
+          }
+          
+          small {
+            color: $text-secondary;
+            font-size: $font-size-xs;
+          }
+        }
+      }
       
       &:hover {
-        background: $primary-light;
+        background: $background-light;
       }
       
       &.active {
-        border-color: $primary;
-        background: $primary-light;
-        color: $primary;
+        background: $surface;
         
-        svg {
+        .eyeContent {
           color: $primary;
+          
+          span {
+            color: $primary;
+          }
         }
       }
       
-      svg {
-        margin-right: $spacing-sm;
+      .activeIndicator {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: $primary;
       }
     }
   }
-
-  .prescriptionGrid {
+  
+  .prescriptionDetails {
+    padding: $spacing-2xl;
+  }
+  
+  .formGrid {
     display: grid;
-    gap: $spacing-xl;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-2xl;
+    margin-bottom: $spacing-3xl;
+    
+    .column {
+      h3 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        margin-bottom: $spacing-lg;
+        color: $text-primary;
+      }
+    }
+  }
+  
+  .inputGroup {
     margin-bottom: $spacing-xl;
     
-    .formColumn {
-      display: grid;
-      gap: $spacing-lg;
-    }
-  }
-
-  .inputGroup {
-    label {
-      display: block;
-      margin-bottom: $spacing-xs;
-      color: $text-secondary;
-      font-size: $font-size-sm;
-    }
-    
-    input {
-      @include input-modern;
-      text-align: center;
-      font-family: $font-mono;
+    .labelGroup {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      margin-bottom: $spacing-sm;
       
-      &.error {
-        border-color: $error;
-        
-        &:focus {
-          box-shadow: 0 0 0 3px rgba($error, 0.1);
-        }
+      label {
+        font-weight: $font-weight-medium;
+        color: $text-primary;
+      }
+      
+      .info {
+        color: $text-secondary;
+        cursor: help;
       }
     }
     
-    .errorText {
-      display: block;
-      color: $error;
-      font-size: $font-size-sm;
-      margin-top: $spacing-xs;
+    .inputWrapper {
+      position: relative;
+      
+      input {
+        width: 100%;
+        padding: $spacing-md;
+        padding-right: $spacing-xl;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        font-size: $font-size-lg;
+        font-family: $font-family-mono;
+        text-align: center;
+        transition: $transition-base;
+        
+        &:focus {
+          outline: none;
+          border-color: $primary;
+          box-shadow: 0 0 0 3px rgba($primary, 0.1);
+        }
+        
+        &.error {
+          border-color: $error;
+        }
+      }
+      
+      .unit {
+        position: absolute;
+        right: $spacing-md;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-secondary;
+        font-size: $font-size-sm;
+      }
     }
     
     .range {
@@ -107,38 +239,338 @@
       font-size: $font-size-xs;
       margin-top: $spacing-xs;
     }
+    
+    .errorText {
+      color: $error;
+      font-size: $font-size-sm;
+      margin-top: $spacing-xs;
+    }
   }
-
+  
   .pdSection {
-    padding-top: $spacing-xl;
-    border-top: 1px solid $border-color;
+    background: $background-light;
+    padding: $spacing-xl;
+    border-radius: $border-radius-lg;
+    
+    h3 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      margin-bottom: $spacing-lg;
+      color: $text-primary;
+    }
     
     .inputGroup {
       max-width: 300px;
       margin: 0 auto;
     }
   }
-
-  .actions {
-    @include flex-end;
+  
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
     gap: $spacing-md;
-    margin-top: $spacing-xl;
-    padding-top: $spacing-xl;
+    padding: $spacing-xl;
+    background: $background-light;
     border-top: 1px solid $border-color;
     
-    .resetButton {
-      @include button-secondary;
+    button {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-sm $spacing-lg;
+      border-radius: $border-radius;
+      font-weight: $font-weight-medium;
+      transition: $transition-base;
       
-      svg {
-        margin-right: $spacing-xs;
+      &.resetButton {
+        background: transparent;
+        border: 1px solid $border-color;
+        color: $text-secondary;
+        
+        &:hover {
+          background: $background;
+          color: $text-primary;
+        }
+      }
+      
+      &.submitButton {
+        background: $gradient-primary;
+        color: $white;
+        border: none;
+        
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: $shadow-md;
+        }
+        
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+.prescriptionForm {
+  // ... (giữ nguyên code phía trên) ...
+}
+
+@media (max-width: $breakpoint-md) {
+  .prescriptionForm {
+    padding: $spacing-md;
+    
+    .header {
+      .headerContent {
+        h1 {
+          font-size: $font-size-2xl;
+        }
+      }
+      
+      .progressBar {
+        margin-top: $spacing-lg;
       }
     }
     
-    .submitButton {
-      @include button-primary;
+    .mainContent {
+      border-radius: $border-radius-lg;
+    }
+    
+    .eyeSelector {
+      margin-bottom: $spacing-xl;
       
-      svg {
-        margin-right: $spacing-xs;
+      .eyeButton {
+        padding: $spacing-lg;
+        
+        .eyeContent {
+          flex-direction: column;
+          gap: $spacing-sm;
+          text-align: center;
+          
+          .eyeInfo {
+            text-align: center;
+            
+            small {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+    
+    .formGrid {
+      grid-template-columns: 1fr;
+      gap: $spacing-xl;
+      margin-bottom: $spacing-xl;
+      padding: $spacing-lg;
+    }
+    
+    .prescriptionDetails {
+      padding: $spacing-lg;
+    }
+    
+    .footer {
+      flex-direction: column-reverse;
+      padding: $spacing-lg;
+      
+      button {
+        width: 100%;
+        justify-content: center;
+        padding: $spacing-md;
+        
+        &.resetButton {
+          background: $background;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .prescriptionForm {
+    padding: $spacing-sm;
+    
+    .breadcrumb {
+      margin-bottom: $spacing-lg;
+      
+      .backButton {
+        width: 32px;
+        height: 32px;
+      }
+    }
+    
+    .header {
+      margin-bottom: $spacing-xl;
+      
+      .headerContent {
+        h1 {
+          font-size: $font-size-xl;
+        }
+        
+        p {
+          font-size: $font-size-sm;
+        }
+      }
+    }
+    
+    .mainContent {
+      border-radius: $border-radius;
+    }
+    
+    .eyeSelector {
+      gap: 1px;
+      
+      .eyeButton {
+        padding: $spacing-md;
+        
+        .eyeContent {
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+          
+          span {
+            font-size: $font-size-sm;
+          }
+        }
+      }
+    }
+    
+    .inputGroup {
+      margin-bottom: $spacing-lg;
+      
+      .labelGroup {
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .info {
+          margin-top: $spacing-xs;
+        }
+      }
+      
+      .inputWrapper {
+        input {
+          font-size: $font-size-base;
+          padding: $spacing-sm $spacing-lg $spacing-sm $spacing-sm;
+        }
+        
+        .unit {
+          right: $spacing-sm;
+        }
+      }
+      
+      .range {
+        font-size: $font-size-2xs;
+      }
+    }
+    
+    .pdSection {
+      padding: $spacing-lg;
+      
+      h3 {
+        font-size: $font-size-base;
+        margin-bottom: $spacing-md;
+      }
+      
+      .inputGroup {
+        max-width: 100%;
+      }
+    }
+  }
+}
+
+// Common Animation Keyframes
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translateX(-1px);
+  }
+  20%, 80% {
+    transform: translateX(2px);
+  }
+  30%, 50%, 70% {
+    transform: translateX(-4px);
+  }
+  40%, 60% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Print styles
+@media print {
+  .prescriptionForm {
+    padding: 0;
+    max-width: 100%;
+    
+    .breadcrumb,
+    .header .progressBar,
+    .footer {
+      display: none;
+    }
+    
+    .mainContent {
+      box-shadow: none;
+      border: 1px solid $border-color;
+    }
+    
+    .eyeSelector {
+      .eyeButton {
+        &:not(.active) {
+          display: none;
+        }
+        
+        &.active {
+          background: none;
+          color: $text-primary;
+          
+          .eyeContent {
+            color: $text-primary;
+            
+            span {
+              color: $text-primary;
+            }
+          }
+        }
+      }
+    }
+    
+    input {
+      border: none;
+      background: none;
+      
+      &:focus {
+        box-shadow: none;
       }
     }
   }

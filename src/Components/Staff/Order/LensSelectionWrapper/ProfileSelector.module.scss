@@ -1,129 +1,446 @@
-// styles/ProfileSelector.module.scss
-
 @import '../styles/variables';
-@import '../styles/mixins';
 
 .profileSelector {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem;
+
+  // Header Styles
   .header {
-    margin-bottom: $spacing-2xl;
-    
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
     .backButton {
-      @include button-secondary;
-      margin-bottom: $spacing-lg;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: rgba($primary, 0.1);
+      border: none;
+      border-radius: 0.5rem;
+      color: $primary;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: fit-content;
+
+      &:hover {
+        background: rgba($primary, 0.15);
+      }
     }
-    
-    h2 {
-      @include heading-2;
-      margin-bottom: $spacing-xs;
-    }
-    
-    p {
-      color: $text-secondary;
+
+    .headerContent {
+      h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: $text-primary;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: $text-secondary;
+        font-size: 1rem;
+      }
     }
   }
 
-  .profileGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: $spacing-lg;
-    
-    .profileCard {
-      @include card-interactive;
-      padding: $spacing-lg;
-      
-      &:hover {
-        .selectButton {
-          opacity: 1;
-          transform: translateY(0);
-        }
+  // Selected Lenses Section
+  .selectedLenses {
+    background: linear-gradient(135deg, rgba($surface, 0.8), rgba($primary, 0.05));
+    border-radius: 1rem;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba($primary, 0.1);
+
+    .sectionHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: $text-primary;
       }
-      
-      .profileImage {
-        @include flex-center;
-        width: 64px;
-        height: 64px;
-        border-radius: $border-radius-full;
-        background: $primary-light;
-        margin-bottom: $spacing-md;
-        
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          border-radius: $border-radius-full;
-        }
-        
-        svg {
-          color: $primary;
-        }
+
+      .totalPrice {
+        padding: 0.5rem 1rem;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        border-radius: 2rem;
+        font-weight: 500;
       }
-      
-      .profileInfo {
-        h3 {
-          @include heading-3;
-          margin-bottom: $spacing-sm;
-        }
-        
-        .details {
+    }
+
+    .lensCards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+
+      .lensCard {
+        background: $surface;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        border: 1px solid rgba($border-color, 0.2);
+        transition: all 0.3s ease;
+
+        .lensHeader {
           display: flex;
-          flex-direction: column;
-          gap: $spacing-xs;
-          margin-bottom: $spacing-md;
-          
-          .detail {
-            @include flex-start;
-            gap: $spacing-xs;
-            color: $text-secondary;
-            font-size: $font-size-sm;
-            
-            svg {
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1rem;
+          background: rgba($primary, 0.05);
+          color: $primary;
+          font-weight: 500;
+        }
+
+        .lensContent {
+          padding: 1rem;
+
+          .lensImageWrapper {
+            position: relative;
+            height: 150px;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+
+            .lensOverlay {
+              position: absolute;
+              inset: 0;
+              background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+            }
+          }
+
+          .lensInfo {
+            h4 {
+              font-weight: 600;
+              margin-bottom: 0.5rem;
+              color: $text-primary;
+            }
+
+            .price {
+              display: inline-block;
+              padding: 0.25rem 0.75rem;
+              background: rgba($primary, 0.1);
               color: $primary;
+              border-radius: 2rem;
+              font-weight: 500;
             }
           }
         }
-        
-        .records {
-          @include flex-start;
-          padding: $spacing-xs $spacing-sm;
-          background: $primary-light;
-          border-radius: $border-radius-full;
-          color: $primary;
-          font-size: $font-size-sm;
-          width: fit-content;
+
+        .emptyLens {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 2rem;
+          color: $text-secondary;
+          background: rgba($border-color, 0.1);
         }
       }
-      
-      .selectButton {
-        @include button-primary;
-        width: 100%;
-        margin-top: $spacing-lg;
-        opacity: 0;
-        transform: translateY($spacing-sm);
-        transition: all 0.3s ease;
+    }
+  }
+
+  // Control Panel
+  .controlPanel {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .searchBar {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: $surface;
+      border: 1px solid rgba($border-color, 0.2);
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+
+      &:focus-within {
+        border-color: $primary;
+        box-shadow: 0 0 0 2px rgba($primary, 0.1);
+      }
+
+      svg {
+        color: $text-secondary;
+      }
+
+      input {
+        flex: 1;
+        border: none;
+        background: none;
+        font-size: 1rem;
+        color: $text-primary;
+        outline: none;
+
+        &::placeholder {
+          color: $text-secondary;
+        }
+      }
+    }
+
+    .createProfileButton {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1.5rem;
+      background: $primary;
+      color: $surface;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+
+      &:hover {
+        background: darken($primary, 5%);
+      }
+
+      svg {
+        transition: transform 0.3s ease;
+      }
+
+      &:hover svg {
+        transform: rotate(90deg);
       }
     }
   }
 
-  .loading {
-    @include flex-center;
-    min-height: 200px;
-    flex-direction: column;
-    gap: $spacing-md;
-    
-    .spinner {
-      @include loading-spinner;
+  // Profile Grid
+  .profileGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 0.5rem;
+
+    .profileCard {
+      background: $surface;
+      border-radius: 1rem;
+      border: 1px solid rgba($border-color, 0.2);
+      overflow: hidden;
+      transition: all 0.3s ease;
+
+      &:hover {
+        border-color: $primary;
+        box-shadow: 0 8px 20px rgba($shadow, 0.1);
+
+        .selectButton {
+          background: $primary;
+          color: $surface;
+        }
+      }
+
+      .profileHeader {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba($border-color, 0.1);
+
+        .profileImage {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          overflow: hidden;
+          background: linear-gradient(135deg, rgba($primary, 0.1), rgba($primary, 0.05));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          svg {
+            color: $primary;
+          }
+        }
+
+        .mainInfo {
+          flex: 1;
+
+          h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: $text-primary;
+            margin-bottom: 0.5rem;
+          }
+
+          .measurements {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba($primary, 0.1);
+            color: $primary;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+          }
+        }
+      }
+
+      .profileDetails {
+        padding: 1rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .detail {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          color: $text-secondary;
+          font-size: 0.875rem;
+
+          svg {
+            color: $primary;
+          }
+        }
+      }
+
+      .selectButton {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: rgba($primary, 0.1);
+        color: $primary;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        svg {
+          transition: transform 0.2s ease;
+        }
+
+        &:hover svg {
+          transform: translateX(4px);
+        }
+      }
     }
   }
 
-  .error {
-    @include flex-center;
-    min-height: 200px;
+  // Loading State
+  .loading {
+    display: flex;
     flex-direction: column;
-    gap: $spacing-md;
-    color: $error;
-    
-    button {
-      @include button-secondary;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 4rem 0;
+    color: $text-secondary;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba($primary, 0.1);
+      border-top-color: $primary;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
+  }
+
+  // Error State
+  .error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 4rem 0;
+    color: $error;
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background: rgba($error, 0.1);
+      color: $error;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba($error, 0.15);
+      }
+    }
+  }
+
+  // Responsive Styles
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .header {
+      .headerContent {
+        h2 {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .selectedLenses {
+      .lensCards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .controlPanel {
+      flex-direction: column;
+
+      .createProfileButton {
+        width: 100%;
+      }
+    }
+
+    .profileGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // Animations
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  // Transitions
+  .fade-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+  }
+
+  .fade-exit {
+    opacity: 1;
+  }
+
+  .fade-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
   }
 }

@@ -5,14 +5,16 @@ import { getToken } from "./tokenHelper";
 export const usePaymentService = () => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    const createPaymentUrl = async (orderId) => {
+    const createPaymentUrl = async (paymentData) => {
         try {
             const token = getToken();
-            console.log('Creating payment URL for order:', orderId);
+            console.log('Creating payment URL for order:', paymentData.orderID);
             
             const response = await axios.post(
                 `${baseUrl}/api/payments/create-payment-url`,
-                { orderID: orderId }, // Đảm bảo gửi đúng format
+                { 
+                    orderID: paymentData.orderID
+                },
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -30,21 +32,20 @@ export const usePaymentService = () => {
         }
     };
 
-    // const createPaymentUrl = async (orderId) => {
+    // const createPaymentUrl = async (paymentData) => {
     //     try {
     //         const token = getToken();
     //         console.log('Creating payment URL for order:', orderId);
             
     //         // Tạo returnUrl động dựa trên current host
     //         const returnUrl = `${window.location.origin}/en/page/order-success`;
+    //         console.log('Payment data:', paymentData);
             
     //         const response = await axios.post(
     //             `${baseUrl}/api/payments/create-payment-url`,
     //             { 
-    //                 orderID: orderId,
-    //                 accountID: 1, // hoặc lấy từ context/props
-    //                 amount: 3000000, // hoặc lấy từ props
-    //                 returnUrl: returnUrl // Thêm returnUrl vào request
+    //                 orderID: paymentData.orderID,
+    //                 returnUrl: returnUrl
     //             },
     //             {
     //                 headers: {

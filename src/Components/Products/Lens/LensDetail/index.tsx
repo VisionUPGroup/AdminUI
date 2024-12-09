@@ -62,6 +62,7 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
     const [lens, setLens] = useState<LensDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const { fetchLensById, fetchLensImages } = useLensService();
+    const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -72,19 +73,34 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                         fetchLensById(Number(id)),
                         fetchLensImages(Number(id))
                     ]);
-    
-                    if (lensData && imagesData) {
-                        // Lọc ảnh hợp lệ
-                        const validImages = imagesData.filter((img: LensImage) => img.url && img.url.trim() !== '');
-                        
-                        // Cập nhật lens data với danh sách ảnh mới
+
+                    if (lensData) {
+                        // Xử lý trường hợp không có ảnh hoặc ảnh null
+                        let validImages = [];
+                        if (imagesData && Array.isArray(imagesData)) {
+                            validImages = imagesData.filter((img: LensImage) => img && img.url);
+
+                            // Nếu có ít hơn 5 ảnh, thêm placeholder cho đủ 5 slots
+                            if (validImages.length < 5) {
+                                const placeholdersNeeded = 5 - validImages.length;
+                                for (let i = 0; i < placeholdersNeeded; i++) {
+                                    validImages.push({
+                                        id: -1 * (i + 1), // ID âm để phân biệt với ảnh thật
+                                        lensID: Number(id),
+                                        angleView: 0,
+                                        url: '' // Empty url for placeholder
+                                    });
+                                }
+                            }
+                        }
+
                         setLens({
                             ...lensData,
                             lensImages: validImages
                         });
-                        
-                        // Set selected image là ảnh đầu tiên nếu có
-                        if (validImages.length > 0) {
+
+                        // Set ảnh đầu tiên là selected nếu có
+                        if (validImages.length > 0 && validImages[0].url) {
                             setSelectedImage(validImages[0].url);
                         }
                     }
@@ -95,25 +111,69 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                 }
             }
         };
-    
+
         fetchData();
     }, [id]);
 
-    const renderImage = (url: string) => {
-        if (!url || url.trim() === '') {
-            return null;
+    const handleImageError = (imageUrl: string) => {
+        setImageErrors(prev => ({
+            ...prev,
+            [imageUrl]: true
+        }));
+    };
+
+    const renderImage = (url: string, index: number) => {
+        if (!url) {
+            return (
+                <div className={styles.imagePlaceholder}>
+                    <span>No Image {index + 1}</span>
+                </div>
+            );
+        }
+
+        if (imageErrors[url]) {
+            return (
+                <div className={styles.imageError}>
+                    <span>Image Error</span>
+                </div>
+            );
         }
 
         return (
             <img
                 src={url}
-                alt="Product view"
-                onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                }}
+                alt={`Lens view ${index + 1}`}
+                onError={() => handleImageError(url)}
             />
         );
     };
+
+    const renderMainImage = () => {
+        if (!selectedImage) {
+            return (
+                <div className={styles.mainImagePlaceholder}>
+                    <span>No Image Available</span>
+                </div>
+            );
+        }
+
+        if (imageErrors[selectedImage]) {
+            return (
+                <div className={styles.mainImageError}>
+                    <span>Failed to load image</span>
+                </div>
+            );
+        }
+
+        return (
+            <img
+                src={selectedImage}
+                alt={lens?.lensName}
+                onError={() => handleImageError(selectedImage)}
+            />
+        );
+    };
+
 
     const handleBack = () => {
         router.push('/en/products/lens');
@@ -180,23 +240,16 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                             <Col lg={6}>
                                 <div className={styles.imageGallery}>
                                     <div className={styles.mainImage}>
-                                        <img
-                                            src={selectedImage || '/placeholder-image.jpg'}
-                                            alt={lens.lensName}
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/placeholder-image.jpg';
-                                            }}
-                                        />
+                                        {renderMainImage()}
                                     </div>
                                     <div className={styles.thumbnails}>
-                                        {lens.lensImages.map(image => (
+                                        {lens?.lensImages.map((image, index) => (
                                             <div
                                                 key={image.id}
                                                 className={`${styles.thumbnail} ${selectedImage === image.url ? styles.active : ''}`}
-                                                onClick={() => handleImageClick(image.url)}
+                                                onClick={() => image.url && handleImageClick(image.url)}
                                             >
-                                                {renderImage(image.url)}
+                                                {renderImage(image.url, index)}
                                             </div>
                                         ))}
                                     </div>
