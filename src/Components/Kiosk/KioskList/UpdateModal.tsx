@@ -125,6 +125,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
   };
 
   const handleSubmit = async () => {
+    // Validate form trước khi submit
     if (!validateForm()) {
       toast.error('Please check all required fields');
       return;
@@ -133,43 +134,37 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
     try {
       setIsSubmitting(true);
       const response = await onSave(formData);
-      
-      // Kiểm tra response status
-      if (response && response.status === 200) {
-        toast.success('Kiosk updated successfully!');
-        setHasChanges(false);
-        toggle();
-      } else {
-        // Nếu không phải status 200, xử lý như lỗi
-        throw new Error('Update failed');
+      if (!response) {
+        throw new Error("Failed to create kiosk");
       }
+      // Success case
+      toast.success('Updated successfully!'); 
+      setHasChanges(false);
+      toggle();
   
     } catch (error: any) {
-      console.log('Error response:', error.response); // Để debug
+      console.log('Error response:', error.response); // Debug log
   
-      // Xử lý các trường hợp lỗi
-      if (error.response) {
-        // Kiểm tra status code 400
-        if (error.response.status === 400) {
-          toast.error("Name or Email or PhoneNumber is already exist");
-          return;
-        }
-  
+      if (error.response?.data) {
         const apiErrors = error.response.data;
         
-        // Xử lý validation errors cho từng field
+        // Xử lý validation errors từ API
         if (apiErrors.errors) {
           const newErrors: FormError = {};
           Object.entries(apiErrors.errors).forEach(([key, messages]: [string, any]) => {
-            newErrors[key.toLowerCase() as keyof FormError] = Array.isArray(messages) ? messages[0] : messages;
+            newErrors[key.toLowerCase() as keyof FormError] = Array.isArray(messages) 
+              ? messages[0] 
+              : messages;
           });
           setErrors(newErrors);
         }
   
-        // Hiển thị message lỗi từ API
-        toast.error(apiErrors.message || 'Failed to update kiosk');
+        // Show error message từ API
+        toast.error(error.response.data[0] || 'Failed to update');
+        
       } else {
-        toast.error('Name or Email or PhoneNumber is already exist');
+        // General error message
+        toast.error('Failed to update. Please try again.');
       }
     } finally {
       setIsSubmitting(false);

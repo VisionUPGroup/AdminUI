@@ -168,12 +168,11 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
           setErrors(newErrors);
         }
         toast.error(
-          apiErrors.message ||
-            "Username, Name, Email or PhoneNumber is already exist"
+          error.response.data[0]
         );
       } else {
         toast.error(
-          error.message || "Failed to create kiosk. Please try again."
+          error.response.data[0] || "Failed to create kiosk. Please try again."
         );
       }
     } finally {

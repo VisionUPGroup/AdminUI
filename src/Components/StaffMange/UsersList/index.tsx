@@ -28,6 +28,9 @@ import ExpandableUserRow from "./ExpandableUserRow";
 import RefractionModal from "./RefractionRecordsModal";
 import UserUpdateModal from "./UserUpdateModal";
 import EnhancedSearch from "./EnhancedSearch";
+import { useRouter } from "next/navigation";
+import { FaShoppingCart } from "react-icons/fa";
+
 interface Role {
   id: number;
   name: string;
@@ -98,7 +101,7 @@ const UsersList: React.FC = () => {
   const [profileCurrentPage, setProfileCurrentPage] = useState(1);
   const [profileTotalPages, setProfileTotalPages] = useState(1);
   const [profileItemsPerPage] = useState(6); // Số profiles trên mỗi trang
-
+  const router = useRouter();
   const getUserData = async (
     page: number,
     searchTerm: string,
@@ -378,7 +381,7 @@ const UsersList: React.FC = () => {
   };
 
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === "Enter") {
       setCurrentPage(1);
       getUserData(1, searchTerm, filterStatus);
     }
@@ -387,7 +390,6 @@ const UsersList: React.FC = () => {
     setCurrentPage(1); // Reset về trang 1 khi search
     getUserData(1, searchTerm, filterStatus);
   };
- 
 
   const handleFilter = (status: "all" | "active" | "inactive") => {
     setFilterStatus(status);
@@ -430,6 +432,9 @@ const UsersList: React.FC = () => {
         confirmButtonColor: "#c79816",
       });
     }
+  };
+  const handleViewOrders = (accountId: number) => {
+    router.push(`/en/sales/staff-orders?accountId=${accountId}`);
   };
 
   return (
@@ -484,12 +489,12 @@ const UsersList: React.FC = () => {
         {/* Main Content Section */}
         <div className="content-section">
           <div className="content-header">
-          <EnhancedSearch
-        searchTerm={searchTerm}
-        onSearchChange={handleSearch}
-        onKeyPress={handleKeyPress}
-        placeholderText="Search by username, email, phone..."
-      />
+            <EnhancedSearch
+              searchTerm={searchTerm}
+              onSearchChange={handleSearch}
+              onKeyPress={handleKeyPress}
+              placeholderText="Search by username, email, phone..."
+            />
             <div className="filters">
               <button
                 className={`filter-btn ${
@@ -549,7 +554,7 @@ const UsersList: React.FC = () => {
                                   <FaRegUserCircle />
                                 </div>
                                 <div className="user-details">
-                                <div className="name">ID: {user.id}</div>
+                                  <div className="name">ID: {user.id}</div>
                                   <div className="name">{user.username}</div>
                                   <div className="email">{user.email}</div>
                                   <div className="phone">
@@ -592,6 +597,13 @@ const UsersList: React.FC = () => {
                                   disabled={!user.status}
                                 >
                                   <FaTrash />
+                                </button>
+                                <button
+                                  className="view-orders-btn"
+                                  onClick={() => handleViewOrders(user.id)}
+                                  title="View Orders"
+                                >
+                                  <FaShoppingCart />
                                 </button>
                               </div>
                             </td>
@@ -854,7 +866,6 @@ const UsersList: React.FC = () => {
         editingUser={editingUser}
       />
     </div>
-
   );
 };
 

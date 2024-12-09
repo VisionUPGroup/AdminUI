@@ -1,0 +1,690 @@
+// Variables
+$primary-color: #2563eb;
+$success-color: #10b981;
+$warning-color: #f59e0b;
+$error-color: #ef4444;
+$gold-color: #fbbf24;
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$border-color: #e5e7eb;
+$bg-light: #f9fafb;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+@mixin hover-transition {
+  transition: all 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Main Status Tracker Styles
+.status-tracker {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  @include card-shadow;
+
+  // Header Section
+  .tracker-header {
+    @include flex-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $border-color;
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $text-primary;
+    }
+
+    .estimated-time {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba($gold-color, 0.1);
+      border-radius: 2rem;
+      color: $text-secondary;
+      font-size: 0.875rem;
+
+      svg {
+        color: $gold-color;
+      }
+    }
+  }
+
+  // Timeline Section
+  .status-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+
+    .timeline-step {
+      display: flex;
+      gap: 1.5rem;
+      position: relative;
+
+      // Vertical Line
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 1.25rem;
+        top: 2.5rem;
+        bottom: -2rem;
+        width: 2px;
+        background: $border-color;
+        transition: background-color 0.3s ease;
+      }
+
+      &.active {
+        .step-indicator .step-icon {
+          background: rgba($gold-color, 0.15);
+          color: $gold-color;
+          transform: scale(1.1);
+        }
+
+        .step-content {
+          .current-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba($gold-color, 0.1);
+            color: $gold-color;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+          }
+        }
+
+        &::after {
+          background: $gold-color;
+        }
+      }
+
+      &.completed {
+        .step-indicator .step-icon {
+          background: rgba($success-color, 0.15);
+          color: $success-color;
+        }
+
+        &::after {
+          background: $success-color;
+        }
+      }
+
+      .step-indicator {
+        .step-icon {
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 50%;
+          background: rgba($text-secondary, 0.1);
+          color: $text-secondary;
+          @include flex-center;
+          transition: all 0.3s ease;
+        }
+      }
+
+      .step-content {
+        flex: 1;
+
+        h4 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: $text-primary;
+          margin-bottom: 0.25rem;
+        }
+
+        p {
+          font-size: 0.875rem;
+          color: $text-secondary;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  // Action Buttons
+  .status-actions, .delivery-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid $border-color;
+
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      outline: none;
+      font-size: 0.875rem;
+
+      svg {
+        font-size: 1.125rem;
+      }
+
+      &.next {
+        background: $gold-color;
+        color: white;
+        
+        &:hover {
+          background: darken($gold-color, 5%);
+          transform: translateY(-1px);
+        }
+      }
+
+      &.payment {
+        background: rgba($primary-color, 0.1);
+        color: $primary-color;
+
+        &:hover {
+          background: rgba($primary-color, 0.15);
+          transform: translateY(-1px);
+        }
+      }
+
+      &.upload {
+        background: rgba($gold-color, 0.1);
+        color: $gold-color;
+        border: 1px solid rgba($gold-color, 0.2);
+
+        &:hover {
+          background: rgba($gold-color, 0.15);
+          transform: translateY(-1px);
+        }
+      }
+
+      &.cancel {
+        background: rgba($error-color, 0.1);
+        color: $error-color;
+
+        &:hover {
+          background: rgba($error-color, 0.15);
+          transform: translateY(-1px);
+        }
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+    }
+  }
+}
+
+// Delivery Confirmation Section
+.delivery-confirmation-section {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  @include card-shadow;
+
+  .section-header {
+    padding: 1.25rem;
+    @include flex-between;
+    background: linear-gradient(
+      to right,
+      rgba($gold-color, 0.1),
+      rgba($gold-color, 0.05)
+    );
+    cursor: pointer;
+    user-select: none;
+
+    h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0;
+      font-size: 1.125rem;
+      color: $text-primary;
+
+      svg {
+        color: $gold-color;
+      }
+    }
+
+    .expand-icon {
+      transition: transform 0.3s ease;
+      color: $text-secondary;
+
+      &.expanded {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .section-content {
+    .image-preview {
+      padding: 1.5rem;
+      text-align: center;
+
+      img {
+        max-width: 100%;
+        max-height: 400px;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+
+        &:hover {
+          transform: scale(1.02);
+        }
+      }
+    }
+
+    .no-image {
+      padding: 3rem;
+      text-align: center;
+      color: $text-secondary;
+
+      svg {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+      }
+    }
+  }
+}
+
+// Cancelled State
+.status-tracker.cancelled {
+  .cancelled-content {
+    text-align: center;
+    padding: 3rem 2rem;
+
+    .cancelled-icon {
+      font-size: 3rem;
+      color: $error-color;
+      margin-bottom: 1.5rem;
+    }
+
+    .cancelled-info {
+      h4 {
+        font-size: 1.5rem;
+        color: $text-primary;
+        margin: 0 0 0.75rem;
+      }
+
+      p {
+        color: $text-secondary;
+        margin: 0;
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive Styles
+@media (max-width: 768px) {
+  .status-tracker {
+    padding: 1.5rem;
+
+    .tracker-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .status-timeline {
+      gap: 1.5rem;
+
+      .timeline-step {
+        gap: 1rem;
+
+        &:not(:last-child)::after {
+          left: 1rem;
+        }
+
+        .step-indicator .step-icon {
+          width: 2rem;
+          height: 2rem;
+          font-size: 0.875rem;
+        }
+      }
+    }
+
+    .status-actions, 
+    .delivery-actions {
+      flex-direction: column;
+
+      .action-btn {
+        width: 100%;
+      }
+    }
+  }
+
+  .confirmation-overlay {
+    .confirmation-dialog,
+    .upload-dialog {
+      padding: 1.5rem;
+
+      .dialog-actions {
+        flex-direction: column;
+      }
+    }
+  }
+}
+
+// Print Styles
+@media print {
+  .status-tracker {
+    box-shadow: none;
+    border: 1px solid $border-color;
+
+    .status-actions,
+    .delivery-actions,
+    .delivery-confirmation-section {
+      display: none;
+    }
+  }
+}
+
+// Variables
+$primary-gold: #fbbf24;
+$primary-dark: #111827;
+$primary-light: #f3f4f6;
+$border-color: rgba($primary-dark, 0.08);
+$success: #059669;
+$warning: #d97706;
+$danger: #dc2626;
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+.global-confirmation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 1rem;
+
+  .global-dialog {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    z-index: 100000;
+    box-shadow: $shadow-lg;
+    animation: dialogFadeIn 0.3s ease-out;
+    border: 1px solid $border-color;
+
+    // Header Styles
+    h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $primary-dark;
+      margin: 0 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid $border-color;
+
+      .dialog-icon {
+        color: $primary-gold;
+        font-size: 1.5rem;
+      }
+    }
+
+    // Payment Details Section
+    .payment-details {
+      background: $primary-light;
+      padding: 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      border: 1px solid $border-color;
+
+      .amount-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid $border-color;
+
+        span {
+          &.amount {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: $primary-gold;
+          }
+        }
+      }
+
+      .deposit-note {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: $warning;
+        padding: 0.75rem;
+        background: rgba($warning, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba($warning, 0.2);
+
+        svg {
+          color: $warning;
+        }
+      }
+    }
+
+    // Upload Content Section
+    .upload-content {
+      margin-bottom: 1.5rem;
+
+      .file-input {
+        width: 100%;
+        padding: 1.25rem;
+        border: 2px dashed rgba($primary-gold, 0.3);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: $primary-light;
+
+        &:hover {
+          border-color: $primary-gold;
+          background: rgba($primary-gold, 0.05);
+        }
+
+        &:focus {
+          outline: none;
+          border-color: $primary-gold;
+          box-shadow: 0 0 0 3px rgba($primary-gold, 0.1);
+        }
+      }
+
+      .image-preview {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: $primary-light;
+        border-radius: 12px;
+        border: 1px solid $border-color;
+
+        img {
+          max-width: 100%;
+          max-height: 300px;
+          border-radius: 8px;
+          object-fit: contain;
+          border: 1px solid $border-color;
+        }
+      }
+    }
+
+    // Dialog Actions
+    .dialog-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid $border-color;
+
+      .dialog-btn {
+        flex: 1;
+        padding: 0.875rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        outline: none;
+        font-size: 0.9375rem;
+
+        svg {
+          font-size: 1.125rem;
+        }
+
+        &.confirm {
+          background: $primary-gold;
+          color: white;
+          box-shadow: $shadow-sm;
+
+          &:hover:not(:disabled) {
+            background: darken($primary-gold, 5%);
+            transform: translateY(-1px);
+            box-shadow: $shadow-md;
+          }
+
+          &:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: $shadow-sm;
+          }
+        }
+
+        &.cancel {
+          background: $primary-light;
+          color: $primary-dark;
+          border: 1px solid $border-color;
+
+          &:hover:not(:disabled) {
+            background: darken($primary-light, 2%);
+            transform: translateY(-1px);
+          }
+
+          &:active:not(:disabled) {
+            transform: translateY(0);
+          }
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none !important;
+        }
+
+        .spinning {
+          animation: spin 1s linear infinite;
+        }
+      }
+    }
+
+    // Description text
+    p {
+      color: $primary-dark;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+    }
+  }
+}
+
+// Mobile Optimizations
+@media (max-width: 768px) {
+  .global-confirmation-overlay {
+    padding: 1rem;
+    padding-top: 2rem;
+    
+    .global-dialog {
+      margin-bottom: env(safe-area-inset-bottom, 0);
+      width: 100%;
+      max-width: none;
+      padding: 1.5rem;
+      animation: dialogSlideUp 0.3s ease-out;
+
+      .dialog-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .dialog-btn {
+          width: 100%;
+          padding: 1rem;
+        }
+      }
+    }
+  }
+}
+
+// Keyframe Animations
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dialogSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

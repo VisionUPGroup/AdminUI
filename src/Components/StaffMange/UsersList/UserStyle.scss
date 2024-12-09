@@ -373,7 +373,7 @@
               transition: all 0.3s ease;
               font-size: 1.1rem;
 
-              &.edit-btn {
+              &.view-orders-btn {
                 background: rgba($primary-gold, 0.1);
                 color: $primary-gold;
 
@@ -382,6 +382,9 @@
                   color: white;
                 }
               }
+
+            
+              
 
               &.delete-btn {
                 &:disabled {

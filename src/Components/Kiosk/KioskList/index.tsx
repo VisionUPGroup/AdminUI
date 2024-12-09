@@ -97,8 +97,8 @@ const Kiosk: React.FC = () => {
       toast.success("Orders moved successfully");
       setMoveModalOpen(false);
     } catch (error) {
-      toast.error("Failed to move orders");
-      console.error("Error moving orders:", error);
+      toast.error(error.response.data[0]);
+      console.error("Error moving orders:", error.response.data[0]);
     }
   };
 
@@ -381,14 +381,16 @@ const Kiosk: React.FC = () => {
                               <FaList />
                             </button>
                             <button
-                              className="move-btn"
-                              onClick={() => {
-                                setSelectedMoveKiosk(kiosk);
-                                setMoveModalOpen(true);
-                              }}
-                            >
-                              <FaExchangeAlt />
-                            </button>
+  className={`move-btn ${!kiosk.status ? 'disabled' : ''}`}
+  onClick={() => {
+    setSelectedMoveKiosk(kiosk);
+    setMoveModalOpen(true);
+  }}
+  disabled={!kiosk.status}
+  title={!kiosk.status ? "Cannot move orders from inactive kiosk" : "Move Orders"}
+>
+  <FaExchangeAlt />
+</button>
                             <button
                               className="edit-btn"
                               onClick={() => {
@@ -472,7 +474,7 @@ const Kiosk: React.FC = () => {
             setCurrentPage(1); // Reset page khi cập nhật
             setUpdateModalOpen(false);
           } catch (error) {
-            toast.error("Failed to update kiosk");
+            toast.error(error.response.data[0]);
           }
         }}
       />

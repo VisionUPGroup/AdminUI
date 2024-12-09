@@ -6,28 +6,29 @@ export const useKioskService = () => {
 
     // Lấy danh sách tất cả các ki-ốt
     const fetchAllKiosk = async () => {
-        return axios.get(`${baseUrl}/api/kiosks`)
-            .then(response => {
-                console.log("Kiosk Data:", response.data); // In ra dữ liệu nhận được từ API
-                return response.data || null;
-            })
-            .catch(error => {
-                console.error("Error fetching kiosks:", error); // In ra lỗi nếu có
-                return null;
-            });
+        try {
+            const response = await axios.get(`${baseUrl}/api/kiosks`);
+            console.log("Kiosk Data:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching kiosks:", error);
+            throw error;
+        }
     };
-    
-    
 
     // Lấy thông tin ki-ốt theo ID
     const fetchKioskById = async (id) => {
-        return axios.get(`${baseUrl}/api/kiosks/${id}`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        })
-        .then(response => response.data || null)
-        .catch(error => null);
+        try {
+            const response = await axios.get(`${baseUrl}/api/kiosks/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching kiosk:", error);
+            throw error;
+        }
     };
 
     // Tạo mới một ki-ốt
@@ -46,36 +47,51 @@ export const useKioskService = () => {
             throw error;
         }
     };
+
+    // Di chuyển orders giữa các kiosk
     const moveOrderKiosk = async (kioskData) => {
-        return axios.post(`${baseUrl}/api/kiosks/move-orders`, kioskData, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        })
-        .then(response => response.data || null)
-        .catch(error => null);
+        try {
+            const response = await axios.post(`${baseUrl}/api/kiosks/move-orders`, kioskData, {
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            // Đảm bảo ném lỗi để component có thể xử lý
+            console.error("Error moving orders:", error);
+            throw error; 
+        }
     };
 
     // Cập nhật ki-ốt
     const updateKiosk = async (kioskData) => {
-        return axios.put(`${baseUrl}/api/kiosks`, kioskData, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        })
-        .then(response => response.data || null)
-        .catch(error => null);
+        try {
+            const response = await axios.put(`${baseUrl}/api/kiosks`, kioskData, {
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error updating kiosk:", error);
+            throw error;
+        }
     };
 
     // Xóa ki-ốt theo ID
     const deleteKiosk = async (id) => {
-        return axios.delete(`${baseUrl}/api/kiosks/${id}`, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        })
-        .then(response => response.data || null)
-        .catch(error => null);
+        try {
+            const response = await axios.delete(`${baseUrl}/api/kiosks/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error deleting kiosk:", error);
+            throw error;
+        }
     };
 
     return {

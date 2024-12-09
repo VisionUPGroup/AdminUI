@@ -40,7 +40,7 @@ const MoveOrderModal: React.FC<MoveOrderModalProps> = ({
       });
       toggle();
     } catch (error) {
-      console.error("Error moving orders:", error);
+      console.error("Error moving orders:", error.response.data.message);
     } finally {
       setIsLoading(false);
     }

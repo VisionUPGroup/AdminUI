@@ -298,7 +298,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         <p>The requested order could not be found.</p>
         <button
           className="back-button"
-          onClick={() => router.push("/en/sales/orders")}
+          onClick={() => router.back()}
         >
           Back to Orders
         </button>
@@ -311,14 +311,14 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
       <div className="page-header">
         <div className="header-content">
           <h1>
-            Order Details #{order.code}
+            Order Details
             <span className="order-time">
               {formatDateTime(order.orderTime)}
             </span>
           </h1>
           <button
             className="back-button"
-            onClick={() => router.push("/en/sales/orders")}
+            onClick={() => router.back()}
           >
             Back to Orders
           </button>

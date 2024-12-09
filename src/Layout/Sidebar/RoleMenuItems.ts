@@ -179,7 +179,7 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
     active: false,
     children: [
       {
-        path: "/sales/orders",
+        path: "/sales/admin-orders",
         title: "Orders",
         type: "link",
         icon: Circle,

@@ -393,9 +393,21 @@
                   background: rgba($primary-gold, 0.1);
                   color: $primary-gold;
                 
-                  &:hover {
+                  &:hover:not(:disabled) {
                     background: $primary-gold;
                     color: white;
+                  }
+                
+                  &.disabled, &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    background: rgba($primary-dark, 0.05) !important;
+                    color: rgba($primary-dark, 0.4) !important;
+                
+                    &:hover {
+                      background: rgba($primary-dark, 0.05) !important;
+                      color: rgba($primary-dark, 0.4) !important;
+                    }
                   }
                 }
               }

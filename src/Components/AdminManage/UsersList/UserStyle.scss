@@ -346,6 +346,15 @@
                 border: none;
                 transition: all 0.3s ease;
                 font-size: 1.1rem;
+                &.view-orders-btn {
+                  background: rgba($primary-gold, 0.1);
+                  color: $primary-gold;
+  
+                  &:hover {
+                    background: $primary-gold;
+                    color: white;
+                  }
+                }
   
                 &.edit-btn {
                   background: rgba($primary-gold, 0.1);
@@ -371,6 +380,7 @@
                     }
                   }
                 }
+                
               }
             }
           }

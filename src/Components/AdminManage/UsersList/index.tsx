@@ -7,6 +7,7 @@ import {
   FaRegUserCircle,
   FaPen,
   FaTrash,
+  FaShoppingCart,
 } from "react-icons/fa";
 import { useAccountService } from "../../../../Api/accountService";
 import { useAuthService } from "../../../../Api/authService";
@@ -15,6 +16,7 @@ import Pagination from "./Pagination";
 import Swal from "sweetalert2";
 import "./UserStyle.scss";
 import UserUpdateModal from "./UserUpdateModal";
+import { useRouter } from "next/navigation";
 
 interface Role {
   id: number;
@@ -49,6 +51,7 @@ const UsersList: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
   >("all");
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -161,6 +164,9 @@ const UsersList: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+  const handleViewCustomerOrders = (accountId: number) => {
+    router.push(`/en/sales/admin-orders?accountId=${accountId}`);
   };
 
   return (
@@ -309,6 +315,13 @@ const UsersList: React.FC = () => {
                               >
                                 <FaTrash />
                               </button>
+                              <button
+                              className="view-orders-btn"
+                              onClick={() => handleViewCustomerOrders(user.id)}
+                              title="View Customer Orders"
+                            >
+                              <FaShoppingCart />
+                            </button>
                             </div>
                           </td>
                         </tr>

@@ -22,6 +22,7 @@ import {
   FaBan,
   FaUser,
   FaClipboardCheck,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { useOrderService } from "../../../../Api/orderService";
 import { useVoucherService } from "../../../../Api/voucherService";
@@ -35,8 +36,7 @@ import "./FilterStyle.scss";
 import Pagination from "./Pagination";
 import FilterSelects from "./FilterSelect";
 import ReportManagement from "./ReportManagement";
-
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const SalesOrders: React.FC = () => {
   // States
@@ -113,6 +113,10 @@ const SalesOrders: React.FC = () => {
     kioskId?: string;
     orderId?: string;
   }
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const accountId = searchParams.get("accountId");
+  const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [orderData, setOrderData] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState<
@@ -172,6 +176,9 @@ const SalesOrders: React.FC = () => {
   const [revenueCanceled, setRevenueCanceled] = useState(0);
 
   const [totalItemsCanceled, setTotalItemsCanceled] = useState(0);
+  const [orderUsernames, setOrderUsernames] = useState<{
+    [key: number]: string;
+  }>({});
 
   // Services
   const { fetchAllOrder, countOrder, deleteOrder, updateOrderProcess } =
@@ -181,9 +188,22 @@ const SalesOrders: React.FC = () => {
   const { fetchLensById } = useLensService();
   const { fetchPaymentByOrderId } = usePaymentService();
   const { fetchAccountById } = useAccountService();
-  const router = useRouter();
 
   // Fetch Initial Data
+  useEffect(() => {
+    if (accountId) {
+      fetchCustomerInfo();
+    }
+  }, [accountId]);
+  const fetchCustomerInfo = async () => {
+    try {
+      const customerData = await fetchAccountById(parseInt(accountId!));
+      setCustomerInfo(customerData);
+    } catch (error) {
+      console.error("Error fetching customer info:", error);
+      toast.error("Failed to fetch customer information");
+    }
+  };
   useEffect(() => {
     fetchData();
     fetchRevenueCompleted();
@@ -210,14 +230,14 @@ const SalesOrders: React.FC = () => {
         depositParam = filterOptions.isDeposit ? "true" : "false";
       }
 
-      // Fetch data cho bảng orders chính
+      // Fetch main orders data
       const data = await fetchAllOrder(
         filterOptions.fromDate,
         filterOptions.toDate,
         searchTerm || "",
         statusFilter || "",
         currentPage,
-        "",
+        accountId || "",
         filterOptions.kioskId || "",
         filterOptions.placedByKioskId || "",
         filterOptions.shipperId || "",
@@ -226,14 +246,39 @@ const SalesOrders: React.FC = () => {
         filterOptions.orderId || ""
       );
 
-      // Fetch thêm dữ liệu thống kê với cùng điều kiện filter
+      // Fetch usernames for all orders
+      const usernamePromises = data.items.map(
+        async (order: { accountID: any; id: any }) => {
+          try {
+            const userData = await fetchAccountById(order.accountID);
+            return { orderId: order.id, username: userData.username };
+          } catch (error) {
+            console.error(
+              `Error fetching username for order ${order.id}:`,
+              error
+            );
+            return { orderId: order.id, username: "Unknown User" };
+          }
+        }
+      );
+
+      const usernameResults = await Promise.all(usernamePromises);
+      const usernameMap = usernameResults.reduce(
+        (acc, { orderId, username }) => {
+          acc[orderId] = username;
+          return acc;
+        },
+        {}
+      );
+
+      // Fetch completed orders stats
       const completedData = await fetchAllOrder(
         filterOptions.fromDate,
         filterOptions.toDate,
         "",
         "4", // completed status
         1,
-        "",
+        accountId || "",
         filterOptions.kioskId || "",
         filterOptions.placedByKioskId || "",
         filterOptions.shipperId || "",
@@ -242,13 +287,14 @@ const SalesOrders: React.FC = () => {
         filterOptions.orderId || ""
       );
 
+      // Fetch cancelled orders stats
       const canceledData = await fetchAllOrder(
         filterOptions.fromDate,
         filterOptions.toDate,
         "",
-        "5", // canceled status
+        "5", // cancelled status
         1,
-        "",
+        accountId || "",
         filterOptions.kioskId || "",
         filterOptions.placedByKioskId || "",
         filterOptions.shipperId || "",
@@ -257,7 +303,8 @@ const SalesOrders: React.FC = () => {
         filterOptions.orderId || ""
       );
 
-      // Cập nhật state
+      // Update all states
+      setOrderUsernames(usernameMap);
       setOrderData(data.items);
       setTotalItems(data.totalItems || 0);
 
@@ -271,13 +318,43 @@ const SalesOrders: React.FC = () => {
           revenue: canceledData.revenueCompleted || 0,
         },
       });
+
+      // Calculate total revenue
+      const totalRevenue =
+        (completedData.revenueCompleted || 0) +
+        (canceledData.revenueCompleted || 0);
+
+      // Update revenue states if you have them
+      setRevenueCompleted(completedData.revenueCompleted || 0);
+      setRevenueCanceled(canceledData.revenueCompleted || 0);
+
+      // Update count states
+      setTotalItemsCompleted(completedData.totalItems || 0);
+      setTotalItemsCanceled(canceledData.totalItems || 0);
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to fetch orders");
+      // Show error toast with more specific message
+      if (error.response) {
+        toast.error(`Failed to fetch orders: ${error.response.data.message}`);
+      } else if (error.request) {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error("Failed to fetch orders. Please try again.");
+      }
+
+      // Reset states on error
+      setOrderData([]);
+      setTotalItems(0);
+      setOrderStats({
+        completed: { count: 0, revenue: 0 },
+        canceled: { count: 0, revenue: 0 },
+      });
+      setOrderUsernames({});
     } finally {
       setIsLoading(false);
     }
   };
+
   const fetchRevenueCompleted = async () => {
     try {
       setIsLoading(true);
@@ -504,12 +581,33 @@ const SalesOrders: React.FC = () => {
     <div className="orders-dashboard">
       <div className="dashboard-container">
         {/* Header Section */}
+        {accountId && customerInfo && (
+          <div className="customer-view-header">
+            <button className="back-button" onClick={() => router.back()}>
+              <FaArrowLeft /> Back to Users
+            </button>
+            <div className="customer-info">
+              <h2>Orders for Customer: {customerInfo.username}</h2>
+              <div className="customer-details">
+                <span>
+                  <FaUser /> ID: {customerInfo.id}
+                </span>
+                <span>Email: {customerInfo.email}</span>
+                <span>Phone: {customerInfo.phoneNumber}</span>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="dashboard-header">
           <div className="header-content">
             <div className="title-wrapper">
               <h1>
-                Orders Management
-                <p>Track and manage customer orders</p>
+                {accountId ? "Customer Orders" : "Orders Management"}
+                <p>
+                  {accountId
+                    ? "View and manage customer specific orders"
+                    : "Track and manage customer orders"}
+                </p>
               </h1>
             </div>
           </div>
@@ -538,42 +636,46 @@ const SalesOrders: React.FC = () => {
 
         {/* Stats Section */}
         <div className="stats-grid">
-  <div className="stat-card">
-    <div className="stat-content">
-      <div className="stat-value">{totalItems}</div>
-      <div className="stat-label">Total Orders</div>
-      <div className="stat-change">
-        <FaFirstOrder />
-        All Orders
-      </div>
-    </div>
-    <FaShoppingCart className="stat-icon" />
-  </div>
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">{totalItems}</div>
+              <div className="stat-label">Total Orders</div>
+              <div className="stat-change">
+                <FaFirstOrder />
+                All Orders
+              </div>
+            </div>
+            <FaShoppingCart className="stat-icon" />
+          </div>
 
-  <div className="stat-card">
-    <div className="stat-content">
-      <div className="stat-value">{formatCurrency(orderStats.completed.revenue)}</div>
-      <div className="stat-label">Completed Orders Revenue</div>
-      <div className="stat-change">
-        <FaCheckCircle />
-        {orderStats.completed.count} Orders completed
-      </div>
-    </div>
-    <FaMoneyBillWave className="stat-icon" />
-  </div>
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">
+                {formatCurrency(orderStats.completed.revenue)}
+              </div>
+              <div className="stat-label">Completed Orders Revenue</div>
+              <div className="stat-change">
+                <FaCheckCircle />
+                {orderStats.completed.count} Orders completed
+              </div>
+            </div>
+            <FaMoneyBillWave className="stat-icon" />
+          </div>
 
-  <div className="stat-card">
-    <div className="stat-content">
-      <div className="stat-value">{formatCurrency(orderStats.canceled.revenue)}</div>
-      <div className="stat-label">Canceled Orders Revenue</div>
-      <div className="stat-change">
-        <FaTimesCircle />
-        {orderStats.canceled.count} Orders canceled
-      </div>
-    </div>
-    <FaMoneyBillWave className="stat-icon" />
-  </div>
-</div>
+          <div className="stat-card">
+            <div className="stat-content">
+              <div className="stat-value">
+                {formatCurrency(orderStats.canceled.revenue)}
+              </div>
+              <div className="stat-label">Canceled Orders Revenue</div>
+              <div className="stat-change">
+                <FaTimesCircle />
+                {orderStats.canceled.count} Orders canceled
+              </div>
+            </div>
+            <FaMoneyBillWave className="stat-icon" />
+          </div>
+        </div>
 
         {selectedOrderId && (
           <ReportManagement
@@ -675,11 +777,15 @@ const SalesOrders: React.FC = () => {
                             <div className="order-id">
                               {/* <span className="code">{order.code}</span> */}
                               <span className="order-number">
-                                ID: {order.id}
+                                Order ID: {order.id}
                               </span>{" "}
                               {/* Thêm dòng này */}
                               <span className="username">
-                                <FaUser /> {order.username}
+                                Account ID: {order.accountID}
+                              </span>
+                              <span className="username">
+                                <FaUser />{" "}
+                                {orderUsernames[order.id] || "Loading..."}
                               </span>
                               <span className="time">
                                 {new Date(order.orderTime).toLocaleString()}
@@ -734,7 +840,9 @@ const SalesOrders: React.FC = () => {
                               <button
                                 className="view-btn"
                                 onClick={() =>
-                                  router.push(`/en/sales/${order.id}`)
+                                  router.push(
+                                    `/en/sales/admin-orderdetail/${order.id}`
+                                  )
                                 }
                               >
                                 View Details
