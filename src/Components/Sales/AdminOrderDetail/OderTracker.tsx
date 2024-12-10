@@ -115,7 +115,11 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   const handleCreatePayment = async () => {
     try {
       setIsUpdating(true);
-      const response = await createPaymentUrl(orderId);
+      console.log("orderId", orderId);
+      const paymentData = {
+        orderID: orderId
+      };
+      const response = await createPaymentUrl(paymentData);
 
       if (response && response.paymentUrl) {
         // Save current order state to session storage before redirecting
@@ -164,6 +168,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
       toast.error('Failed to upload delivery confirmation image');
     } finally {
       setIsUpdating(false);
+
     }
   };
 
@@ -395,11 +400,17 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
     if (isHomeDelivery) {
       return null;
     }
+    
     if (hasKioskInfo) {
+      console.log('Current Status:', status);
+      console.log('Is Deposit:', isDeposit);
+      console.log('Is Paid:', isPaid);
+      console.log('Remaining Amount:', remainingAmount);
+      
       return (
         <div className="status-actions">
-          {/* Show Next Status button for non-shipping states */}
-          {status < 4 && status !== 2 && (
+          {/* Chỉ hiển thị nút Next Status khi đang ở trạng thái Processing (status = 1) */}
+          {status === 1 && (
             <button
               className="action-btn next"
               onClick={() => initiateStatusUpdate(status + 1)}
@@ -409,9 +420,9 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
               Next Status
             </button>
           )}
-
-          {/* Show Payment button for deposit orders in shipping state */}
-          {status === 2 && isDeposit && !isPaid && remainingAmount > 0 && (
+  
+          {/* Hiển thị nút Payment cho trạng thái Pending hoặc Shipping */}
+          {(status === 0 || status === 2) && !isPaid && remainingAmount > 0 && (
             <button
               className="action-btn payment"
               onClick={() => setShowPaymentDialog(true)}
@@ -421,8 +432,8 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
               Pay Remaining: {formatCurrency(remainingAmount)}
             </button>
           )}
-
-          {/* Show Upload button after payment or for non-deposit orders */}
+  
+          {/* Hiển thị nút Upload khi ở trạng thái Shipping */}
           {status === 2 && !deliveryConfirmationImage && 
            ((isDeposit && isPaid) || !isDeposit || remainingAmount === 0) && (
             <button
@@ -434,8 +445,8 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
               Upload Delivery Image
             </button>
           )}
-
-          {/* Show Next Status after image upload in shipping state */}
+  
+          {/* Hiển thị nút Next Status sau khi upload ảnh ở trạng thái Shipping */}
           {status === 2 && deliveryConfirmationImage && (
             <button
               className="action-btn next"
@@ -446,8 +457,8 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
               Next Status
             </button>
           )}
-
-          {/* Show Cancel button only for pending orders */}
+  
+          {/* Hiển thị nút Cancel chỉ ở trạng thái Pending */}
           {status === 0 && (
             <button
               className="action-btn cancel"
@@ -461,7 +472,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
         </div>
       );
     }
-
+  
     return null;
   };
 
