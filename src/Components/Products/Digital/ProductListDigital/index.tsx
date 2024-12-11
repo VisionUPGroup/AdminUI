@@ -124,6 +124,16 @@ const EyeGlassList: React.FC = () => {
     fetchData(filterParams);
   }, []);
 
+  const sortEyeGlasses = (glasses: EyeGlass[]) => {
+    return [...glasses].sort((a, b) => {
+      // Sort by status first (active first, then inactive)
+      if (a.status !== b.status) {
+        return a.status ? -1 : 1;
+      }
+      // If status is the same, maintain original order
+      return 0;
+    });
+  };
 
   const handlePageChange = (page: number) => {
     const updatedParams = {
@@ -182,14 +192,14 @@ const EyeGlassList: React.FC = () => {
   const handleDelete = async (product: EyeGlass) => {
     try {
       const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: `Bạn có chắc chắn muốn xóa sản phẩm "${product.name}"?`,
+        title: 'Confirm Delete?',
+        text: `Are you sure you want to delete "${product.name}"?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy',
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
         showLoaderOnConfirm: true,
         preConfirm: async () => {
           try {
@@ -197,9 +207,9 @@ const EyeGlassList: React.FC = () => {
             if (response === true) {
               return response;
             }
-            throw new Error('Xóa sản phẩm thất bại');
+            throw new Error('Failed to delete product');
           } catch (error) {
-            Swal.showValidationMessage(`Lỗi: ${error.message}`);
+            Swal.showValidationMessage(`Error: ${error.message}`);
             throw error;
           }
         },
@@ -207,40 +217,40 @@ const EyeGlassList: React.FC = () => {
       });
   
       if (result.isConfirmed) {
-        // Cập nhật state local trước
+        // Update local state first
         setEyeGlasses(prevGlasses => 
           prevGlasses.filter(glass => glass.id !== product.id)
         );
         setTotalItems(prev => prev - 1);
   
-        // Hiển thị thông báo thành công
+        // Show success message
         await Swal.fire({
-          title: 'Đã xóa!',
-          text: 'Sản phẩm đã được xóa thành công.',
+          title: 'Deleted!',
+          text: 'Product has been deleted successfully.',
           icon: 'success',
           timer: 1500,
           showConfirmButton: false
         });
   
-        // Fetch lại data từ server
+        // Fetch updated data from server
         try {
           await fetchData(filterParams);
         } catch (error) {
           console.error('Error refreshing data:', error);
-          // Sử dụng Swal thay vì toast
+          // Use Swal instead of toast
           Swal.fire({
-            title: 'Lưu ý',
-            text: 'Đã xóa thành công nhưng không thể cập nhật danh sách mới nhất',
+            title: 'Note',
+            text: 'Successfully deleted but unable to fetch latest list',
             icon: 'warning',
-            confirmButtonText: 'Đóng'
+            confirmButtonText: 'Close'
           });
         }
       }
     } catch (error) {
       console.error('Error in delete process:', error);
       Swal.fire({
-        title: 'Lỗi!',
-        text: error.message || 'Không thể xóa sản phẩm. Vui lòng thử lại sau.',
+        title: 'Error!',
+        text: error.message || 'Unable to delete product. Please try again later.',
         icon: 'error',
         confirmButtonColor: '#dc3545'
       });
@@ -329,79 +339,92 @@ const EyeGlassList: React.FC = () => {
     if (isLoading) {
       return <div className={styles.loadingWrapper}><div className={styles.spinner} /></div>;
     }
-
+  
+    const sortedGlasses = sortEyeGlasses(eyeGlasses);
+  
     return (
       <Row className={styles.productsGrid}>
-        {eyeGlasses.map((product) => (
-        <Col key={product.id} lg={3} md={4} sm={6} xs={12}>
-          <Card className={`${styles.productCard} ${!product.status ? styles.inactive : ''}`}>
-            <div className={styles.imageWrapper}>
-              <div className={styles.productId}>#{product.id}</div>
-              <img
-                src={product.eyeGlassImages[0]?.url}
-                alt={product.name}
-                className={styles.productImage}
-              />
-            </div>
-            <CardBody className={styles.productDetails}>
-              <div className={styles.productHeader}>
-                <h5 className={styles.productName}>{product.name}</h5>
-                <Badge color={product.status ? 'success' : 'danger'}>
-                  {product.status ? 'Active' : 'Inactive'}
-                </Badge>
+        {sortedGlasses.map((product) => (
+          <Col key={product.id} lg={3} md={4} sm={6} xs={12}>
+            <Card className={`${styles.productCard} ${!product.status ? styles.inactive : ''}`}>
+              <div className={styles.imageWrapper}>
+                <div className={styles.productId}>#{product.id}</div>
+                <img
+                  src={product.eyeGlassImages[0]?.url}
+                  alt={product.name}
+                  className={styles.productImage}
+                />
+                {!product.status && (
+                  <div className={styles.inactiveOverlay}>
+                    <span>INACTIVE</span>
+                  </div>
+                )}
               </div>
-
-              <div className={styles.productSpecs}>
-                <span className={styles.specItem}>{product.style}</span>
-                <span className={styles.specDivider}>•</span>
-                <span className={styles.specItem}>{product.design}</span>
-              </div>
-
-              <div className={styles.typeAndRating}>
-                <span className={`${styles.typeTag} ${styles[product.eyeGlassTypes.glassType.toLowerCase()]}`}>
-                  {product.eyeGlassTypes.glassType}
-                </span>
-                <div className={styles.rating}>
-                  {renderStars(product.rate)}
-                  <span className={styles.rateCount}>({product.rateCount})</span>
+              <CardBody className={styles.productDetails}>
+                <div className={styles.productHeader}>
+                  <h5 className={styles.productName}>{product.name}</h5>
+                  <Badge color={product.status ? 'success' : 'danger'} className={styles.statusBadge}>
+                    {product.status ? 'Active' : 'Inactive'}
+                  </Badge>
                 </div>
-              </div>
-
-              <div className={styles.priceAndActions}>
-                <h4 className={styles.price}>{formatCurrency(product.price)}</h4>
-                <div className={styles.actionButtons}>
-                  <Button
-                    color="info"
-                    size="sm"
-                    title="View Details"
-                    onClick={() => handleView(product.id)}
-                  >
-                    <Eye size={14} />
-                  </Button>
-                  <Button
-                    color="primary"
-                    size="sm"
-                    title="Edit Product"
-                    onClick={() => handleEdit(product.id)}
-                  >
-                    <Edit2 size={14} />
-                  </Button>
-                  <Button
-                    color="danger"
-                    size="sm"
-                    title="Delete Product"
-                    onClick={() => handleDelete(product)}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
+  
+                <div className={styles.productSpecs}>
+                  <span className={styles.specItem}>{product.style}</span>
+                  <span className={styles.specDivider}>•</span>
+                  <span className={styles.specItem}>{product.design}</span>
                 </div>
-              </div>
-            </CardBody>
-          </Card>
-        </Col>
-      ))}
+  
+                <div className={styles.typeAndRating}>
+                  <span className={`${styles.typeTag} ${styles[product.eyeGlassTypes.glassType.toLowerCase()]}`}>
+                    {product.eyeGlassTypes.glassType}
+                  </span>
+                  <div className={styles.rating}>
+                    {renderStars(product.rate)}
+                    <span className={styles.rateCount}>({product.rateCount})</span>
+                  </div>
+                </div>
+  
+                <div className={styles.priceAndActions}>
+                  <h4 className={styles.price}>{formatCurrency(product.price)}</h4>
+                  <div className={styles.actionButtons}>
+                    <Button
+                      color="info"
+                      size="sm"
+                      title={product.status ? "View Details" : "Product Inactive"}
+                      onClick={() => product.status && handleView(product.id)}
+                      disabled={!product.status}
+                      className={!product.status ? styles.disabledButton : ''}
+                    >
+                      <Eye size={14} />
+                    </Button>
+                    <Button
+                      color="primary"
+                      size="sm"
+                      title={product.status ? "Edit Product" : "Product Inactive"}
+                      onClick={() => product.status && handleEdit(product.id)}
+                      disabled={!product.status}
+                      className={!product.status ? styles.disabledButton : ''}
+                    >
+                      <Edit2 size={14} />
+                    </Button>
+                    <Button
+                      color="danger"
+                      size="sm"
+                      title={product.status ? "Delete Product" : "Product Inactive"}
+                      onClick={() => product.status && handleDelete(product)}
+                      disabled={!product.status}
+                      className={!product.status ? styles.disabledButton : ''}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
+        ))}
       </Row>
-      );
+    );
   };
 
 

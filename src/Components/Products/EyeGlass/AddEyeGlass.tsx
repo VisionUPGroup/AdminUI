@@ -85,7 +85,7 @@ const AddEyeGlass: React.FC = () => {
     const [formData, setFormData] = useState({
         name: '',
         price: '',
-        quantity: '',
+        // quantity: '',
         material: '',
         color: '',
         style: '',
@@ -104,7 +104,7 @@ const AddEyeGlass: React.FC = () => {
     const [errors, setErrors] = useState({
         name: '',
         price: '',
-        quantity: '',
+        // quantity: '',
         eyeGlassTypeID: '',
         material: '',
         color: '',
@@ -262,7 +262,7 @@ const AddEyeGlass: React.FC = () => {
                 eyeGlassTypeID: parseInt(formData.eyeGlassTypeID),
                 name: formData.name,
                 price: parseFloat(formData.price),
-                quantity: parseInt(formData.quantity),
+                quantity: 1000,
                 material: formData.material,
                 color: parseInt(formData.color),
                 lensWidth: parseFloat(formData.lensWidth),
@@ -427,7 +427,7 @@ const AddEyeGlass: React.FC = () => {
                                                 </Row>
 
                                                 <Row className="g-4">
-                                                    <Col md={6}>
+                                                    {/* <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
                                                                 <Package className={styles.fieldIcon} size={18} />
@@ -443,7 +443,7 @@ const AddEyeGlass: React.FC = () => {
                                                                 {errors.quantity && <div className={styles.errorMessage}>{errors.quantity}</div>}
                                                             </div>
                                                         </div>
-                                                    </Col>
+                                                    </Col> */}
                                                     <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
@@ -555,7 +555,7 @@ const AddEyeGlass: React.FC = () => {
                                                     </Col>
                                                 </Row>
 
-                                                <div className={styles.modernSwitch}>
+                                                {/* <div className={styles.modernSwitch}>
                                                     <Input
                                                         id="status"
                                                         name="status"
@@ -567,7 +567,7 @@ const AddEyeGlass: React.FC = () => {
                                                         <Activity size={16} />
                                                         <span>Active Status</span>
                                                     </Label>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </TabPane>
 

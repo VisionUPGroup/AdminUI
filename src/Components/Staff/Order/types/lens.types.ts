@@ -78,6 +78,7 @@ export interface LensSelectionState {
     rateCount: number;
     status: boolean;
     features?: string[];
+    lensTypeID: number;
   }
   
   export interface LensImage {

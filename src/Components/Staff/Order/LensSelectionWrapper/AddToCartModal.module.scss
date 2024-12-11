@@ -1,0 +1,170 @@
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+  }
+  
+  .modalContent {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+  }
+  
+  .modalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+    }
+  
+    .closeButton {
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.2s;
+  
+      &:hover {
+        background-color: #f3f4f6;
+        color: #374151;
+      }
+    }
+  }
+  
+  .modalBody {
+    padding: 2rem;
+  
+    .cartIcon {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      color: #3b82f6;
+    }
+  
+    .lensDetails {
+      background-color: #f9fafb;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+  
+      h3 {
+        color: #374151;
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+      }
+  
+      .sameLensMode, .customLensMode {
+        .lensInfo {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem;
+          background-color: white;
+          border-radius: 6px;
+          margin-bottom: 0.5rem;
+  
+          .lensName {
+            font-weight: 500;
+            color: #111827;
+          }
+  
+          .price {
+            color: #3b82f6;
+            font-weight: 600;
+          }
+        }
+      }
+  
+      .eyeSection {
+        margin-bottom: 1rem;
+  
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+  
+      .totalSection {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+  
+        .totalLabel {
+          font-weight: 500;
+          color: #374151;
+        }
+  
+        .totalPrice {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #3b82f6;
+        }
+      }
+    }
+  
+    .message {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+  }
+  
+  .modalFooter {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    border-top: 1px solid #e5e7eb;
+  
+    button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      transition: all 0.2s;
+  
+      &.cancelButton {
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        color: #374151;
+  
+        &:hover {
+          background-color: #f9fafb;
+        }
+      }
+  
+      &.confirmButton {
+        background-color: #3b82f6;
+        border: none;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+  
+        &:hover {
+          background-color: #2563eb;
+        }
+      }
+    }
+  }

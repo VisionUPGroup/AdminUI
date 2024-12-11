@@ -272,11 +272,6 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                         </span>
                                     </div>
 
-                                    <div className={styles.rating}>
-                                        {renderStars(lens.rate)}
-                                        <span className={styles.rateCount}>({lens.rateCount} reviews)</span>
-                                    </div>
-
                                     <div className={styles.price}>
                                         <h3>{formatCurrency(lens.lensPrice)}</h3>
                                     </div>
@@ -290,14 +285,6 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                                 Overview
                                             </NavLink>
                                         </NavItem>
-                                        <NavItem>
-                                            <NavLink
-                                                className={activeTab === 'details' ? 'active' : ''}
-                                                onClick={() => setActiveTab('details')}
-                                            >
-                                                Details
-                                            </NavLink>
-                                        </NavItem>
                                     </Nav>
 
                                     <TabContent activeTab={activeTab}>
@@ -307,7 +294,7 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                                     <Shield size={20} />
                                                     <div>
                                                         <h6>Type</h6>
-                                                        {lens.lensType?.description?.split('.')[0] || 'N/A'}
+                                                        <p>{lens.lensType?.description?.split('.')[0] || 'N/A'}</p>
                                                     </div>
                                                 </div>
                                                 <div className={styles.overviewItem}>
@@ -317,24 +304,8 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                                         <p>{lens.eyeReflactive?.reflactiveName || 'N/A'}</p>
                                                     </div>
                                                 </div>
-                                                <div className={styles.overviewItem}>
-                                                    <Droplet size={20} />
-                                                    <div>
-                                                        <h6>Stock</h6>
-                                                        <p>{lens.quantity} units</p>
-                                                    </div>
-                                                </div>
-                                                <div className={styles.overviewItem}>
-                                                    <Award size={20} />
-                                                    <div>
-                                                        <h6>Rating</h6>
-                                                        <p>{lens.rate}/5 ({lens.rateCount} reviews)</p>
-                                                    </div>
-                                                </div>
                                             </div>
-                                        </TabPane>
 
-                                        <TabPane tabId="details">
                                             <div className={styles.detailsContent}>
                                                 <h5>Description</h5>
                                                 <p>{lens.lensDescription || 'N/A'}</p>
@@ -351,12 +322,6 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                                         <span className={styles.label}>Reflactive Coating</span>
                                                         <span className={styles.value}>
                                                             {lens.eyeReflactive?.reflactiveName || 'N/A'}
-                                                        </span>
-                                                    </div>
-                                                    <div className={styles.specItem}>
-                                                        <span className={styles.label}>Stock Level</span>
-                                                        <span className={styles.value}>
-                                                            {lens.quantity ? `${lens.quantity} units` : 'N/A'}
                                                         </span>
                                                     </div>
                                                 </div>

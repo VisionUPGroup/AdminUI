@@ -199,6 +199,39 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                     ]);
 
                     if (eyeGlassData) {
+                        // Xử lý danh sách ảnh
+                        let processedImages = [];
+                        if (imagesData && imagesData.length > 0) {
+                            // Map các ảnh hiện có
+                            processedImages = imagesData.map((img: EyeGlassImage) => ({
+                                ...img,
+                                url: img.url && img.url.trim() !== '' ? img.url : ''
+                            }));
+                            
+                            // Nếu số lượng ảnh < 5, thêm các ô trống
+                            if (processedImages.length < 5) {
+                                const emptySlots = 5 - processedImages.length;
+                                for (let i = 0; i < emptySlots; i++) {
+                                    processedImages.push({
+                                        id: Math.random() * -1000000, // ID tạm thời âm để tránh trùng
+                                        eyeGlassID: parseInt(id),
+                                        angleView: processedImages.length + i,
+                                        url: ''
+                                    });
+                                }
+                            }
+                        } else {
+                            // Nếu không có ảnh, tạo 5 ô trống
+                            for (let i = 0; i < 5; i++) {
+                                processedImages.push({
+                                    id: Math.random() * -1000000,
+                                    eyeGlassID: parseInt(id),
+                                    angleView: i,
+                                    url: ''
+                                });
+                            }
+                        }
+
                         setFormData(prevData => ({
                             ...prevData,
                             name: eyeGlassData.name,
@@ -209,17 +242,14 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                             style: eyeGlassData.style,
                             design: eyeGlassData.design,
                             eyeGlassTypeID: eyeGlassData.eyeGlassTypeID.toString(),
-                            status: eyeGlassData.status,
+                            status: true,
                             lensWidth: eyeGlassData.lensWidth.toString(),
                             lensHeight: eyeGlassData.lensHeight.toString(),
                             bridgeWidth: eyeGlassData.bridgeWidth.toString(),
                             templeLength: eyeGlassData.templeLength.toString(),
                             frameWidth: eyeGlassData.frameWidth.toString(),
                             weight: eyeGlassData.weight.toString(),
-                            images: imagesData ? imagesData.map((img: EyeGlassImage) => ({
-                                ...img,
-                                url: img.url && img.url.trim() !== '' ? img.url : ''
-                            })) : []
+                            images: processedImages
                         }));
                     }
 
@@ -365,7 +395,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                 eyeGlassTypeID: parseInt(formData.eyeGlassTypeID),
                 name: formData.name,
                 price: parseFloat(formData.price),
-                quantity: parseInt(formData.quantity),
+                quantity: 1000,
                 material: formData.material,
                 color: parseInt(formData.color),
                 lensWidth: parseFloat(formData.lensWidth),
@@ -547,7 +577,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                 </Row>
 
                                                 <Row className="g-4">
-                                                    <Col md={6}>
+                                                    {/* <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
                                                                 <Package className={styles.fieldIcon} size={18} />
@@ -563,7 +593,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                                 {errors.quantity && <div className={styles.errorMessage}>{errors.quantity}</div>}
                                                             </div>
                                                         </div>
-                                                    </Col>
+                                                    </Col> */}
                                                     <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
@@ -675,7 +705,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                     </Col>
                                                 </Row>
 
-                                                <div className={styles.modernSwitch}>
+                                                {/* <div className={styles.modernSwitch}>
                                                     <Input
                                                         id="status"
                                                         name="status"
@@ -687,7 +717,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                         <Activity size={16} />
                                                         <span>Active Status</span>
                                                     </Label>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </TabPane>
 

@@ -74,15 +74,15 @@ export const useLensService = () => {
     // Delete lens
     const deleteLens = async (id) => {
         try {
-            const response = await axios.delete(`${baseUrl}/api/lens/${id}`, {
+            await axios.delete(`${baseUrl}/api/lens/${id}`, {
                 headers: {
                     Authorization: `Bearer ${getToken()}`
                 }
             });
-            return response.data;
+            return true;
         } catch (error) {
             console.error("Error deleting lens:", error);
-            return null;
+            throw error;
         }
     };
 

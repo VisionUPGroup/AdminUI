@@ -193,6 +193,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
     try {
       setError(null);
 
+      console.log('Shipping Address:', shippingAddress);
+
       // Validate required fields
       if (shippingMethod === 'customer' && !shippingAddress) {
         throw new Error('Please complete shipping address');

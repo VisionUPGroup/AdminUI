@@ -876,3 +876,35 @@
     overflow: visible;
   }
 }
+
+.addressGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+
+  label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  input,
+  select {
+    padding: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 2px rgba($primary, 0.1);
+    }
+  }
+}
