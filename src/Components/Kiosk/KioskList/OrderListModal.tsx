@@ -65,15 +65,22 @@ const OrderListModal: React.FC<OrderListModalProps> = ({
   useEffect(() => {
     const loadOrders = async () => {
       if (!kioskId) return;
-
+  
       setLoading(true);
       try {
         const response = await fetchAllOrder(
-          "",
-          "",
-          "",
-          "",
-          kioskId
+          "",         // fromDate
+          "",         // toDate
+          "",         // username
+          "",         // process
+          currentPage, // pageIndex - đây là số
+          "",         // accountId
+          kioskId.toString(), // Convert kioskId từ number sang string
+          "",         // placedByKioskId
+          undefined,  // shipperId
+          "",         // isDeposit
+          "",         // issueType
+          ""          // orderId
         );
         setOrders(response.items);
         setTotalPages(Math.ceil(response.totalItems / 20));
@@ -83,7 +90,7 @@ const OrderListModal: React.FC<OrderListModalProps> = ({
         setLoading(false);
       }
     };
-
+  
     loadOrders();
   }, [kioskId, currentPage]);
 
@@ -121,7 +128,7 @@ const OrderListModal: React.FC<OrderListModalProps> = ({
                 <thead>
                   <tr>
                     <th>Order ID</th>
-                    <th>Order Code</th>
+            
                     <th>Order Time</th>
                     <th>Total</th>
                     <th>Process</th>
@@ -133,7 +140,7 @@ const OrderListModal: React.FC<OrderListModalProps> = ({
                     return (
                       <tr key={order.id}>
                         <td>{order.id}</td>
-                        <td>{order.code}</td>
+                      
                         <td>{formatDate(order.orderTime)}</td>
                         <td>{order.total.toLocaleString()} đ</td>
                         <td>

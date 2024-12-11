@@ -234,7 +234,7 @@ const ReportList: React.FC = () => {
       fetchReportsList();
     } catch (error) {
       console.error("Create report error:", error);
-      toast.error("Failed to create report");
+      toast.error(error.response.data[0]);
     }
   };
 
@@ -255,7 +255,7 @@ const ReportList: React.FC = () => {
       setUpdateReport({ feedback: "", status: 0 });
       fetchReportsList();
     } catch (error) {
-      toast.error("Failed to update report");
+      toast.error(error.response.data[0]);
     }
   };
 

@@ -115,12 +115,8 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   const handleCreatePayment = async () => {
     try {
       setIsUpdating(true);
-      console.log("orderId", orderId);
-      const paymentData = {
-        orderID: orderId
-      };
+      const paymentData = {orderID: orderId};
       const response = await createPaymentUrl(paymentData);
-
       if (response && response.paymentUrl) {
         // Save current order state to session storage before redirecting
         sessionStorage.setItem('lastOrderState', JSON.stringify({
