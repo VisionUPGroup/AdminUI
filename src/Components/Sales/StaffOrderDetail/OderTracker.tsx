@@ -448,7 +448,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
           )}
 
           {/* Show Cancel button only for pending orders */}
-          {status === 0 && (
+          {/* {status === 0 && (
             <button
               className="action-btn cancel"
               onClick={() => initiateStatusUpdate(5)}
@@ -457,7 +457,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
               <FaBan />
               Cancel Order
             </button>
-          )}
+          )} */}
         </div>
       );
     }

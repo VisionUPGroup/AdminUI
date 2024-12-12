@@ -37,14 +37,14 @@ export const STAFF_MENU_ITEMS: MenuItem[] = [
     children: [
       {
         path: "/staffmanage/list-user",
-        title: "User",
+        title: "Customer",
         type: "link",
         icon: Circle,
         active: false,
       },
       {
         path: "/products/exchange-eyeglass",
-        title: "ExchangeEyeGlass",
+        title: "Exchange EyeGlass",
         type: "link",
         icon: Circle,
         active: false,
@@ -121,7 +121,7 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
       },
       {
         path: "/products/exchange-eyeglass",
-        title: "ExchangeEyeGlass",
+        title: "Exchange EyeGlass",
         type: "link",
         icon: Circle,
         active: false,
@@ -158,7 +158,7 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
       },
       {
         path: "/adminmanage/list-user",
-        title: "User",
+        title: "Customer",
         type: "link",
         icon: Circle,
         active: false,

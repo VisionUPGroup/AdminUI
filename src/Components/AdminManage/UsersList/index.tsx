@@ -176,8 +176,8 @@ const UsersList: React.FC = () => {
         <div className="management-header">
           <div className="header-content">
             <div className="title-wrapper">
-              <h1>User Management</h1>
-              <p>Manage and monitor your user accounts</p>
+              <h1>Customer Management</h1>
+              <p>Manage and monitor customer accounts</p>
             </div>
           </div>
           <div className="header-actions">

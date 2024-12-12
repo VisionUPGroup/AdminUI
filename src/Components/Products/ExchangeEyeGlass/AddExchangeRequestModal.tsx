@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Input, Label, FormGroup, FormFeedback } from "reactstrap";
-import { Package, MapPin, Home, FileText, AlertTriangle } from "react-feather";
+import { AlertTriangle } from "react-feather";
 import "./ExchangeRequestModalStyles.scss";
 
 interface AddExchangeRequestModalProps {
@@ -15,7 +15,6 @@ interface AddExchangeRequestModalProps {
   }) => void;
 }
 
-// Thêm type cho input
 type InputType = "text" | "textarea" | "number" | "password" | "email" | "select" | "file" | "radio" | "checkbox" | "hidden";
 
 const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
@@ -50,7 +49,6 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     
-    // Prevent negative numbers for specific fields
     if ((name === 'productGlassID' || name === 'kioskID') && value.startsWith('-')) {
       return;
     }
@@ -60,7 +58,7 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
       [name]:
         name === "quantity" || name === "kioskID" || name === "productGlassID"
           ? value
-            ? Math.max(0, parseInt(value)) // Ensure non-negative values
+            ? Math.max(0, parseInt(value))
             : null
           : value,
       ...(name === "kioskID" && parseInt(value) > 0
@@ -106,8 +104,7 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
   const renderFormGroup = (
     label: string,
     name: string,
-    icon: React.ReactNode,
-    inputType: InputType,  // Thay đổi type thành inputType
+    inputType: InputType,
     placeholder: string,
     disabled: boolean = false,
     min?: string
@@ -117,23 +114,18 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
         {label}
       </Label>
       <div className="input-wrapper">
-        <div className="input-group">
-          <div className="input-icon-wrapper">
-            {icon}
-          </div>
-          <Input
-            type={inputType}  // Sử dụng inputType
-            name={name}
-            id={name}
-            value={formData[name as keyof typeof formData] ?? ""}
-            onChange={handleChange}
-            disabled={disabled}
-            invalid={!!errors[name]}
-            placeholder={placeholder}
-            min={min}
-            className="custom-input"
-          />
-        </div>
+        <Input
+          type={inputType}
+          name={name}
+          id={name}
+          value={formData[name as keyof typeof formData] ?? ""}
+          onChange={handleChange}
+          disabled={disabled}
+          invalid={!!errors[name]}
+          placeholder={placeholder}
+          min={min}
+          className="custom-input"
+        />
         {errors[name] && (
           <FormFeedback className="error-feedback">
             <AlertTriangle size={14} /> {errors[name]}
@@ -146,14 +138,12 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
   return (
     <Modal isOpen={isOpen} toggle={toggle} className="exchange-request-modal">
       <ModalHeader toggle={toggle}>
-        <span className="modal-title-icon"><Package /></span>
         Create Exchange Request
       </ModalHeader>
       <ModalBody>
         {renderFormGroup(
           "Product Glass ID",
           "productGlassID",
-          <Package size={18} />,
           "number",
           "Enter Product Glass ID",
           false,
@@ -163,7 +153,6 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
         {renderFormGroup(
           "Receiver Address",
           "receiverAddress",
-          <MapPin size={18} />,
           "text",
           "Enter delivery address",
           !!formData.kioskID
@@ -172,7 +161,6 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
         {renderFormGroup(
           "Kiosk ID",
           "kioskID",
-          <Home size={18} />,
           "number",
           "Enter Kiosk ID",
           !!formData.receiverAddress,
@@ -184,22 +172,17 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
             Reason
           </Label>
           <div className="input-wrapper">
-            <div className="input-group">
-              <div className="input-icon-wrapper">
-                <FileText size={18} />
-              </div>
-              <Input
-                type="textarea"
-                name="reason"
-                id="reason"
-                value={formData.reason}
-                onChange={handleChange}
-                invalid={!!errors.reason}
-                placeholder="Please provide reason for exchange"
-                rows={3}
-                className="custom-textarea"
-              />
-            </div>
+            <Input
+              type="textarea"
+              name="reason"
+              id="reason"
+              value={formData.reason}
+              onChange={handleChange}
+              invalid={!!errors.reason}
+              placeholder="Please provide reason for exchange"
+              rows={3}
+              className="custom-textarea"
+            />
             {errors.reason && (
               <FormFeedback className="error-feedback">
                 <AlertTriangle size={14} /> {errors.reason}
@@ -211,7 +194,6 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
         {renderFormGroup(
           "Quantity",
           "quantity",
-          <Package size={18} />,
           "number",
           "Enter quantity",
           false,

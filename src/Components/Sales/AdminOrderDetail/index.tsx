@@ -154,7 +154,9 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
   const { fetchVoucherById } = useVoucherService();
   const { fetchLensById } = useLensService();
   const { fetchPaymentByOrderId } = usePaymentService();
-  const [productGlassDetails, setProductGlassDetails] = useState<{ [key: number]: ProductGlass }>({});
+  const [productGlassDetails, setProductGlassDetails] = useState<{
+    [key: number]: ProductGlass;
+  }>({});
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [voucherName, setVoucherName] = useState<string | null>(null);
   const [lensInfo, setLensInfo] = useState<LensInfo>({});
@@ -168,33 +170,40 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         // Fetch order data
         const orderData = await fetchOrderById(Number(id));
 
-        // Fetch payment information 
+        // Fetch payment information
         const paymentData = await fetchPaymentByOrderId(Number(id));
         setPaymentInfo(paymentData);
 
         // Fetch product glass details
         const { fetchProductGlassById } = useProductGlassService();
-        const productGlassPromises = orderData.orderDetails.map(async (detail: { productGlass: { id: any; }; id: any; }) => {
-          try {
-            const productGlassData = await fetchProductGlassById(detail.productGlass.id);
-            return {
-              orderDetailId: detail.id,
-              productGlass: productGlassData
-            };
-          } catch (error) {
-            console.error(`Error fetching product glass data:`, error);
-            return {
-              orderDetailId: detail.id,
-              productGlass: null
-            };
+        const productGlassPromises = orderData.orderDetails.map(
+          async (detail: { productGlass: { id: any }; id: any }) => {
+            try {
+              const productGlassData = await fetchProductGlassById(
+                detail.productGlass.id
+              );
+              return {
+                orderDetailId: detail.id,
+                productGlass: productGlassData,
+              };
+            } catch (error) {
+              console.error(`Error fetching product glass data:`, error);
+              return {
+                orderDetailId: detail.id,
+                productGlass: null,
+              };
+            }
           }
-        });
+        );
 
         const productGlassResults = await Promise.all(productGlassPromises);
-        const newProductGlassDetails = productGlassResults.reduce((acc, curr) => {
-          acc[curr.orderDetailId] = curr.productGlass;
-          return acc;
-        }, {} as { [key: number]: ProductGlass });
+        const newProductGlassDetails = productGlassResults.reduce(
+          (acc, curr) => {
+            acc[curr.orderDetailId] = curr.productGlass;
+            return acc;
+          },
+          {} as { [key: number]: ProductGlass }
+        );
 
         setProductGlassDetails(newProductGlassDetails);
 
@@ -296,10 +305,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         <FaTimesCircle className="error-icon" />
         <h3>Order not found</h3>
         <p>The requested order could not be found.</p>
-        <button
-          className="back-button"
-          onClick={() => router.back()}
-        >
+        <button className="back-button" onClick={() => router.back()}>
           Back to Orders
         </button>
       </div>
@@ -332,8 +338,9 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               <span className="label">Order ID:</span>
               <span className="value">#{order.id}</span>
               <span
-                className={`status-badge ${order.status ? "active" : "inactive"
-                  }`}
+                className={`status-badge ${
+                  order.status ? "active" : "inactive"
+                }`}
               >
                 {order.status ? "Active" : "Inactive"}
               </span>
@@ -476,7 +483,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               </div>
               <div className="product-list">
                 {order?.orderDetails.map((orderDetail, index) => {
-                  const productGlassDetail = productGlassDetails[orderDetail.id];
+                  const productGlassDetail =
+                    productGlassDetails[orderDetail.id];
 
                   return (
                     <div key={orderDetail.id} className="product-item">
@@ -487,37 +495,55 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                             <div className="spec-group">
                               <h5>Right Eye (OD)</h5>
                               <div>
-                                Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD}
+                                Sphere:{" "}
+                                {productGlassDetail?.sphereOD ||
+                                  orderDetail.productGlass.sphereOD}
                               </div>
                               <div>
-                                Cylinder: {productGlassDetail?.cylinderOD || orderDetail.productGlass.cylinderOD}
+                                Cylinder:{" "}
+                                {productGlassDetail?.cylinderOD ||
+                                  orderDetail.productGlass.cylinderOD}
                               </div>
                               <div>
-                                Axis: {productGlassDetail?.axisOD || orderDetail.productGlass.axisOD}
+                                Axis:{" "}
+                                {productGlassDetail?.axisOD ||
+                                  orderDetail.productGlass.axisOD}
                               </div>
                               <div>
-                                Add: {productGlassDetail?.addOD || orderDetail.productGlass.addOD}
+                                Add:{" "}
+                                {productGlassDetail?.addOD ||
+                                  orderDetail.productGlass.addOD}
                               </div>
                             </div>
                             <div className="spec-group">
                               <h5>Left Eye (OS)</h5>
                               <div>
-                                Sphere: {productGlassDetail?.sphereOS || orderDetail.productGlass.sphereOS}
+                                Sphere:{" "}
+                                {productGlassDetail?.sphereOS ||
+                                  orderDetail.productGlass.sphereOS}
                               </div>
                               <div>
-                                Cylinder: {productGlassDetail?.cylinderOS || orderDetail.productGlass.cylinderOS}
+                                Cylinder:{" "}
+                                {productGlassDetail?.cylinderOS ||
+                                  orderDetail.productGlass.cylinderOS}
                               </div>
                               <div>
-                                Axis: {productGlassDetail?.axisOS || orderDetail.productGlass.axisOS}
+                                Axis:{" "}
+                                {productGlassDetail?.axisOS ||
+                                  orderDetail.productGlass.axisOS}
                               </div>
                               <div>
-                                Add: {productGlassDetail?.addOS || orderDetail.productGlass.addOS}
+                                Add:{" "}
+                                {productGlassDetail?.addOS ||
+                                  orderDetail.productGlass.addOS}
                               </div>
                             </div>
                             <div className="spec-group">
                               <h5>Additional Info</h5>
                               <div>
-                                PD: {productGlassDetail?.pd || orderDetail.productGlass.pd}
+                                PD:{" "}
+                                {productGlassDetail?.pd ||
+                                  orderDetail.productGlass.pd}
                               </div>
                             </div>
                           </div>
@@ -528,7 +554,19 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 })}
               </div>
             </div>
-            {paymentInfo && <ProductAndPaymentInfo paymentInfo={paymentInfo} />}
+            {paymentInfo && (
+              <ProductAndPaymentInfo
+                paymentInfo={{
+                  ...paymentInfo,
+                  voucher: order.voucherID
+                    ? {
+                        id: order.voucherID,
+                        // Thêm các thông tin voucher khác nếu có
+                      }
+                    : null,
+                }}
+              />
+            )}
 
             {/* Order Status Tracker */}
             <OrderStatusTracker
@@ -538,7 +576,9 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 try {
                   // Reload both order and payment data
                   const updatedOrder = await fetchOrderById(Number(id));
-                  const updatedPayment = await fetchPaymentByOrderId(Number(id));
+                  const updatedPayment = await fetchPaymentByOrderId(
+                    Number(id)
+                  );
                   setOrder(updatedOrder);
                   setPaymentInfo(updatedPayment);
                 } catch (error) {

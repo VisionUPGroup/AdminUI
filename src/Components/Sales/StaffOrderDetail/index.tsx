@@ -528,7 +528,19 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 })}
               </div>
             </div>
-            {paymentInfo && <ProductAndPaymentInfo paymentInfo={paymentInfo} />}
+            {paymentInfo && (
+              <ProductAndPaymentInfo
+                paymentInfo={{
+                  ...paymentInfo,
+                  voucher: order.voucherID
+                    ? {
+                        id: order.voucherID,
+                        // Thêm các thông tin voucher khác nếu có
+                      }
+                    : null,
+                }}
+              />
+            )}
 
             {/* Order Status Tracker */}
             <OrderStatusTracker

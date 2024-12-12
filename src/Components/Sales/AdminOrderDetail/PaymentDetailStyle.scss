@@ -1,59 +1,113 @@
+// PaymentDetailStyle.scss
+
+// Variables
+$primary-color: #2196f3;
+$success-color: #27ae60;
+$warning-color: #e74c3c;
+$border-color: #e0e0e0;
+$bg-light: #f8f9fa;
+$text-dark: #333;
+$text-muted: #666;
+$shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+$border-radius: 8px;
+$spacing-unit: 1rem;
+
+// Animations
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Main Container
 .payment-details {
-  padding: 2rem;
+  padding: $spacing-unit * 2;
   background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: $border-radius;
+  box-shadow: $shadow;
 
-  .loading {
-    padding: 2rem;
-    text-align: center;
-    color: #666;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    margin: 1rem 0;
-  }
-
-  .section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #f0f0f0;
+  // Loading State
+  .loading-state {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    padding: $spacing-unit * 3;
+    background-color: $bg-light;
+    border-radius: $border-radius;
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid $primary-color;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: $spacing-unit;
+    }
 
-    .section-icon {
-      color: #2196f3;
+    p {
+      color: $text-muted;
+      font-size: 1rem;
     }
   }
 
-  // Payment Summary Styles
+  // Error State
+  .error-state {
+    padding: $spacing-unit * 2;
+    text-align: center;
+    background-color: #fff5f5;
+    border-radius: $border-radius;
+    border: 1px dashed #feb2b2;
+    margin: $spacing-unit 0;
+
+    .error-message {
+      color: $warning-color;
+      font-size: 1rem;
+    }
+  }
+
+  // Section Titles
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $text-dark;
+    margin-bottom: $spacing-unit * 1.5;
+    padding-bottom: $spacing-unit * 0.5;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-unit * 0.5;
+
+    .section-icon {
+      color: $primary-color;
+    }
+  }
+
+  // Payment Summary Section
   .payment-summary {
-    margin-bottom: 2rem;
+    margin-bottom: $spacing-unit * 2;
     
     .summary-grid {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      padding: 1.5rem;
+      background-color: $bg-light;
+      border-radius: $border-radius;
+      padding: $spacing-unit * 1.5;
 
       .summary-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #e0e0e0;
+        padding: $spacing-unit * 0.75 0;
+        border-bottom: 1px solid $border-color;
 
         &:last-child {
           border-bottom: none;
         }
 
         .label {
-          color: #666;
+          color: $text-muted;
           display: flex;
           align-items: center;
-          gap: 0.5rem;
+          gap: $spacing-unit * 0.5;
           font-size: 0.95rem;
         }
 
@@ -61,36 +115,99 @@
           font-weight: 600;
           font-size: 1.1rem;
 
-          &.success {
-            color: #27ae60;
-          }
-
-          &.warning {
-            color: #e74c3c;
-          }
+          &.success { color: $success-color; }
+          &.warning { color: $warning-color; }
+          &.deposit { color: #f39c12; }
+          &.full-payment { color: $success-color; }
         }
 
+        // Voucher Styles
         &.voucher {
-          margin-top: 0.5rem;
-          padding-top: 1rem;
-          border-top: 1px dashed #e0e0e0;
+          .voucher-details {
+            width: 100%;
 
-          .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background-color: #e3f2fd;
-            color: #1976d2;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-
-            .discount {
-              display: inline-flex;
+            .voucher-header {
+              display: flex;
               align-items: center;
-              gap: 0.25rem;
-              padding-left: 0.5rem;
-              border-left: 1px solid #90caf9;
+              justify-content: space-between;
+              margin-bottom: $spacing-unit * 0.5;
+
+              .tag {
+                display: inline-flex;
+                align-items: center;
+                background-color: #ebf8ff;
+                color: #2c5282;
+                padding: $spacing-unit * 0.5 $spacing-unit;
+                border-radius: 20px;
+                font-size: 0.9rem;
+
+                .tag-icon {
+                  margin-right: $spacing-unit * 0.5;
+                  color: #4299e1;
+                }
+              }
+
+              .discount {
+                display: inline-flex;
+                align-items: center;
+                background-color: #f0fff4;
+                color: #276749;
+                padding: $spacing-unit * 0.5 $spacing-unit;
+                border-radius: 20px;
+                font-size: 0.9rem;
+
+                .percent-icon {
+                  margin-right: $spacing-unit * 0.25;
+                  font-size: 0.8rem;
+                  color: #48bb78;
+                }
+              }
+            }
+
+            .voucher-info {
+              padding: $spacing-unit * 0.75;
+              background-color: #f7fafc;
+              border-radius: $border-radius;
+              margin-top: $spacing-unit * 0.5;
+
+              .voucher-name {
+                display: block;
+                font-weight: 600;
+                color: #2d3748;
+                margin-bottom: $spacing-unit * 0.25;
+              }
+
+              .voucher-quantity {
+                display: inline-block;
+                font-size: 0.85rem;
+                color: #718096;
+                margin-left: $spacing-unit * 0.5;
+              }
+
+              .discount-amount {
+                margin-top: $spacing-unit * 0.5;
+                padding-top: $spacing-unit * 0.5;
+                border-top: 1px dashed #e2e8f0;
+                color: #2c5282;
+                font-weight: 500;
+              }
+            }
+          }
+
+          .no-voucher {
+            color: #718096;
+            font-style: italic;
+          }
+
+          .voucher-error {
+            color: $warning-color;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: $spacing-unit * 0.5;
+
+            &::before {
+              content: "⚠️";
             }
           }
         }
@@ -98,18 +215,18 @@
     }
   }
 
-  // Product Section Styles
+  // Product Section
   .product-section {
-    margin-bottom: 2rem;
+    margin-bottom: $spacing-unit * 2;
 
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
+      gap: $spacing-unit * 1.5;
 
       .product-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
         overflow: hidden;
         transition: transform 0.2s, box-shadow 0.2s;
         background-color: #fff;
@@ -122,8 +239,8 @@
         .product-image {
           height: 200px;
           overflow: hidden;
-          background-color: #f8f9fa;
-          border-bottom: 1px solid #e0e0e0;
+          background-color: $bg-light;
+          border-bottom: 1px solid $border-color;
           
           img {
             width: 100%;
@@ -138,64 +255,20 @@
         }
 
         .product-info {
-          padding: 1.5rem;
+          padding: $spacing-unit * 1.5;
 
           .product-name {
             font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: $spacing-unit;
             color: #2c3e50;
           }
 
-          .lens-prices {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-
-            .lens-info {
-              padding-bottom: 1rem;
-              margin-bottom: 1rem;
-              border-bottom: 1px solid #e0e0e0;
-
-              &:last-child {
-                padding-bottom: 0;
-                margin-bottom: 0;
-                border-bottom: none;
-              }
-
-              h4 {
-                font-size: 1rem;
-                font-weight: 500;
-                color: #34495e;
-                margin-bottom: 0.5rem;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-              }
-
-              .lens-details {
-                .lens-name {
-                  display: block;
-                  font-weight: 500;
-                  color: #2c3e50;
-                  margin-bottom: 0.5rem;
-                }
-
-                .lens-price {
-                  font-size: 1.1rem;
-                  color: #2196f3;
-                  font-weight: 600;
-                }
-              }
-            }
-          }
-
-          .total-lens-price {
-            margin-top: 1rem;
-            padding: 1rem;
+          .eyeglass-price {
+            margin: $spacing-unit 0;
+            padding: $spacing-unit;
             background-color: #e3f2fd;
-            border-radius: 8px;
+            border-radius: $border-radius;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -213,76 +286,123 @@
               }
             }
           }
+
+          .lens-prices {
+            background-color: $bg-light;
+            border-radius: $border-radius;
+            padding: $spacing-unit;
+            margin-bottom: $spacing-unit;
+
+            .lens-info {
+              padding-bottom: $spacing-unit;
+              margin-bottom: $spacing-unit;
+              border-bottom: 1px solid $border-color;
+
+              &:last-child {
+                padding-bottom: 0;
+                margin-bottom: 0;
+                border-bottom: none;
+              }
+
+              h4 {
+                font-size: 1rem;
+                font-weight: 500;
+                color: #34495e;
+                margin-bottom: $spacing-unit * 0.5;
+              }
+
+              .lens-price {
+                color: $primary-color;
+                font-weight: 500;
+              }
+            }
+          }
+
+          .total-price {
+            margin-top: $spacing-unit;
+            padding: $spacing-unit;
+            background-color: #fdf2f2;
+            border-radius: $border-radius;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            span {
+              &:first-child {
+                color: #c53030;
+                font-weight: 500;
+              }
+
+              &.price {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #e53e3e;
+              }
+            }
+          }
         }
       }
     }
   }
 
-  // Payment History Styles
+  // Payment History Section
   .payment-history {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-   
     .history-list {
       .history-item {
-        padding: 1.25rem;
-        margin-bottom: 1rem;
+        padding: $spacing-unit * 1.25;
+        margin-bottom: $spacing-unit;
+        border-bottom: 1px solid $border-color;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        &:last-child {
+          border-bottom: none;
+          margin-bottom: 0;
+        }
         
         .payment-info {
           .code {
             font-size: 1.125rem;
             font-weight: 600;
             color: #1e293b;
-            margin-bottom: 0.5rem;
+            margin-bottom: $spacing-unit * 0.5;
             display: block;
           }
      
           .date {
+            color: $text-muted;
             font-size: 1rem;
-            margin-bottom: 0.5rem;
+            margin-right: $spacing-unit;
           }
      
           .method {
+            color: $primary-color;
             font-size: 1rem;
-            padding: 0.5rem 1rem;
+            padding: $spacing-unit * 0.5 $spacing-unit;
+            background-color: #e3f2fd;
+            border-radius: 20px;
           }
         }
      
         .amount {
           font-size: 1.25rem;
           font-weight: 700;
+          color: $success-color;
         }
       }
-     }
+    }
+
     .no-payments {
       text-align: center;
-      padding: 2rem;
+      padding: $spacing-unit * 2;
       color: #64748b;
       font-size: 0.875rem;
       background: #f8fafc;
-      border-radius: 8px;
+      border-radius: $border-radius;
       border: 1px dashed rgba(0,0,0,0.1);
     }
-   }
-   
-   @media (max-width: 768px) {
-    .payment-history {
-      padding: 1rem;
-   
-      .history-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-   
-        .amount {
-          align-self: flex-end;
-        }
-      }
-    }
-   }
+  }
 }
 
 // Responsive Styles
@@ -298,7 +418,7 @@
 
 @media (max-width: 768px) {
   .payment-details {
-    padding: 1rem;
+    padding: $spacing-unit;
 
     .section-title {
       font-size: 1.3rem;
@@ -306,21 +426,37 @@
 
     .payment-summary {
       .summary-grid {
-        padding: 1rem;
+        padding: $spacing-unit;
 
         .summary-item {
           flex-direction: column;
           align-items: flex-start;
-          gap: 0.5rem;
+          gap: $spacing-unit * 0.5;
 
           .value {
             align-self: flex-end;
           }
 
           &.voucher {
-            .tag {
-              width: 100%;
-              justify-content: center;
+            .voucher-details {
+              .voucher-header {
+                flex-direction: column;
+                gap: $spacing-unit * 0.5;
+
+                .tag, .discount {
+                  width: 100%;
+                  justify-content: center;
+                }
+              }
+
+              .voucher-info {
+                text-align: center;
+
+                .voucher-quantity {
+                  display: block;
+                  margin: $spacing-unit * 0.25 0;
+                }
+              }
             }
           }
         }
@@ -330,7 +466,7 @@
     .product-section {
       .product-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: $spacing-unit;
 
         .product-card {
           .product-image {
@@ -343,17 +479,21 @@
     .payment-history {
       .history-list {
         .history-item {
-          padding: 1rem;
           flex-direction: column;
-          gap: 0.5rem;
-          text-align: center;
-
+          gap: $spacing-unit * 0.5;
+          
           .payment-info {
-            align-items: center;
+            width: 100%;
+            text-align: center;
 
             .method {
-              justify-content: center;
+              display: inline-block;
+              margin-top: $spacing-unit * 0.5;
             }
+          }
+
+          .amount {
+            align-self: center;
           }
         }
       }
@@ -374,90 +514,42 @@
         }
 
         .product-info {
-          padding: 1rem;
+          padding: $spacing-unit;
 
           .lens-prices {
-            padding: 0.75rem;
+            padding: $spacing-unit * 0.75;
+          }
+
+          .eyeglass-price,
+          .total-price {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $spacing-unit * 0.5;
+
+            span.price {
+              align-self: flex-end;
+            }
           }
         }
       }
     }
-  }
-}
-.eyeglass-price {
-  margin: 1rem 0;
-  padding: 1rem;
-  background-color: #e3f2fd;  // Thay đổi màu background để phù hợp với design
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 
-  span {
-    &:first-child {
-      color: #1976d2;
-      font-weight: 500;
-    }
+    .payment-summary {
+      .summary-item {
+        &.voucher {
+          .voucher-details {
+            .voucher-header {
+              .tag, .discount {
+                font-size: 0.85rem;
+                padding: $spacing-unit * 0.4 $spacing-unit * 0.8;
+              }
+            }
 
-    &.price {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #1976d2;
-    }
-  }
-}
-
-.total-price {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #fdf2f2;  // Thêm background color
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1.1rem;
-
-  span {
-    &:first-child {
-      color: #c53030;
-      font-weight: 500;
-    }
-
-    &.price {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #e53e3e;
-    }
-  }
-}
-
-// Responsive styles cho các phần mới
-@media (max-width: 768px) {
-  .payment-details {
-    .eyeglass-price,
-    .total-price {
-      padding: 0.75rem;
-      
-      span {
-        &.price {
-          font-size: 1.1rem;
-        }
-      }
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .payment-details {
-    .eyeglass-price,
-    .total-price {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-
-      span {
-        &.price {
-          align-self: flex-end;
+            .voucher-info {
+              padding: $spacing-unit * 0.5;
+              font-size: 0.9rem;
+            }
+          }
         }
       }
     }

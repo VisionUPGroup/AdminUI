@@ -44,7 +44,8 @@ export const useExchangeEyeGlassService = () => {
     const createExchangeEyeGlass = async (exchangeEyeGlassData) => {
         return axios.post(`${baseUrl}/api/exchange-eyeglass`, exchangeEyeGlassData, {
             headers: {
-                'Authorization': `Bearer ${getToken()}`
+                'Authorization': `Bearer ${getToken()}`,
+                'Content-Type': 'application/json'
             }
         })
         .then(response => response.data || null)

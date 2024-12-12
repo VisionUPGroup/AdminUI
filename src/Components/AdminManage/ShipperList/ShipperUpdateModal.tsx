@@ -210,7 +210,7 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
   return (
     <Modal isOpen={isOpen} toggle={toggle} className="user-modal">
       <ModalHeader toggle={toggle}>
-        <FaUserEdit className="modal-icon" /> Update Staff Information
+        <FaUserEdit className="modal-icon" /> Update Shipper Information
       </ModalHeader>
       
       <ModalBody>

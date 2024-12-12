@@ -333,10 +333,10 @@ const ViewExchangeDetailModal: React.FC<ViewExchangeDetailModalProps> = ({
                 <div className="label">Order ID</div>
                 <div className="value">#{exchangeDetail.order.id}</div>
               </div>
-              <div className="detail-item">
+              {/* <div className="detail-item">
                 <div className="label">Order Code</div>
                 <div className="value">{exchangeDetail.order.code}</div>
-              </div>
+              </div> */}
               <div className="detail-item">
                 <div className="label">Process Status</div>
                 <div className={`value status ${getProcessStatus(exchangeDetail.order.process).class}`}>

@@ -387,7 +387,7 @@ const ExchangeEyeGlass: React.FC = () => {
                                 >
                                   <Eye size={16} />
                                 </Button>
-                                <Button
+                                {/* <Button
                                   className={`action-button delete-button ${
                                     !item.status ? "disabled" : ""
                                   }`}
@@ -400,7 +400,7 @@ const ExchangeEyeGlass: React.FC = () => {
                                   }
                                 >
                                   <Trash2 size={16} />
-                                </Button>
+                                </Button> */}
                               </div>
                             </td>
                           </tr>
