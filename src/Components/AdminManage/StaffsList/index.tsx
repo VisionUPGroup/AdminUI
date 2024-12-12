@@ -12,7 +12,7 @@ import { useAccountService } from "../../../../Api/accountService";
 import Pagination from "./Pagination"; // Import Pagination component
 import "./StaffStyle.scss";
 import Swal from "sweetalert2";
-import StaffUpdateModal from './StaffUpdateModal';
+import StaffUpdateModal from "./StaffUpdateModal";
 
 interface Role {
   id: number;
@@ -50,7 +50,7 @@ const StaffsList: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
 
   // Main function to fetch staff data
   const fetchStaffData = async (
@@ -97,7 +97,6 @@ const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
   const handleUpdateSuccess = () => {
     fetchStaffData(currentPage, searchTerm, filterStatus);
   };
-  
 
   // Handle Enter key press for search
   const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -225,19 +224,25 @@ const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
             {/* Filter Buttons */}
             <div className="filters">
               <button
-                className={`filter-btn ${filterStatus === "all" ? "active" : ""}`}
+                className={`filter-btn ${
+                  filterStatus === "all" ? "active" : ""
+                }`}
                 onClick={() => handleFilter("all")}
               >
                 All Staff
               </button>
               <button
-                className={`filter-btn ${filterStatus === "active" ? "active" : ""}`}
+                className={`filter-btn ${
+                  filterStatus === "active" ? "active" : ""
+                }`}
                 onClick={() => handleFilter("active")}
               >
                 Active
               </button>
               <button
-                className={`filter-btn ${filterStatus === "inactive" ? "active" : ""}`}
+                className={`filter-btn ${
+                  filterStatus === "inactive" ? "active" : ""
+                }`}
                 onClick={() => handleFilter("inactive")}
               >
                 Inactive
@@ -273,7 +278,7 @@ const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
                                 <FaRegUserCircle />
                               </div>
                               <div className="staff-details">
-                              <div className="name">ID: {staff.id}</div>
+                                <div className="name">ID: {staff.id}</div>
                                 <div className="name">{staff.username}</div>
                                 <div className="email">{staff.email}</div>
                                 <div className="phone">{staff.phoneNumber}</div>
@@ -292,20 +297,28 @@ const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
                           </td>
                           <td>
                             <div className="actions">
-                            <button 
-  className="edit-btn"
-  onClick={() => handleOpenUpdateModal(staff)}
->
-  <FaPen />
-</button>
-                              <button 
-                                className={`delete-btn ${!staff.status ? 'disabled' : ''}`}
+                              <button
+                                className="edit-btn"
+                                onClick={() => handleOpenUpdateModal(staff)}
+                              >
+                                <FaPen />
+                              </button>
+                              {/* <button
+                                className={`delete-btn ${
+                                  !staff.status ? "disabled" : ""
+                                }`}
                                 disabled={!staff.status}
-                                onClick={() => staff.status && handleDelete(staff)}
-                                title={!staff.status ? "Cannot delete inactive staff" : "Delete staff"}
+                                onClick={() =>
+                                  staff.status && handleDelete(staff)
+                                }
+                                title={
+                                  !staff.status
+                                    ? "Cannot delete inactive staff"
+                                    : "Delete staff"
+                                }
                               >
                                 <FaTrash />
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>
@@ -337,11 +350,11 @@ const [selectedStaff, setSelectedStaff] = useState<StaffData | null>(null);
         </div>
       </div>
       <StaffUpdateModal
-  isOpen={isUpdateModalOpen}
-  toggle={() => setIsUpdateModalOpen(false)}
-  onSuccess={handleUpdateSuccess}
-  staffData={selectedStaff}
-/>
+        isOpen={isUpdateModalOpen}
+        toggle={() => setIsUpdateModalOpen(false)}
+        onSuccess={handleUpdateSuccess}
+        staffData={selectedStaff}
+      />
     </div>
   );
 };

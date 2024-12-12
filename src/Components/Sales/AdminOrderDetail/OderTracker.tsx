@@ -177,7 +177,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
       setIsUpdating(true);
 
       if (status !== 0) {
-        toast.error("Only pending orders can be cancelled");
+        toast.error("No reason to cancel order");
         return;
       }
 
@@ -458,17 +458,15 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
             </button>
           )}
   
-          {/* Hiển thị nút Cancel chỉ ở trạng thái Pending */}
-          {status === 0 && (
-            <button
-              className="action-btn cancel"
-              onClick={() => initiateStatusUpdate(5)}
-              disabled={isUpdating}
-            >
-              <FaBan />
-              Cancel Order
-            </button>
-          )}
+          {/* Hiển thị nút Cancel cho tất cả trạng thái */}
+          <button
+            className="action-btn cancel"
+            onClick={() => initiateStatusUpdate(5)}
+            disabled={isUpdating}
+          >
+            <FaBan />
+            Cancel Order
+          </button>
         </div>
       );
     }

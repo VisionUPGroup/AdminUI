@@ -27,6 +27,7 @@ export const useOrderService = () => {
       const response = await axios.get(`${baseUrl}/api/admin/orders`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         params: {
           Username: username,
@@ -74,6 +75,7 @@ export const useOrderService = () => {
       const response = await axios.get(`${baseUrl}/api/orders/my-kiosk`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         params: {
           Username: username,
@@ -112,6 +114,7 @@ export const useOrderService = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -129,6 +132,7 @@ export const useOrderService = () => {
       const response = await axios.delete(`${baseUrl}/api/orders/${orderId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
       console.log("Order deleted successfully:", response.data);
@@ -152,6 +156,7 @@ export const useOrderService = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -176,6 +181,7 @@ export const useOrderService = () => {
         params,
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
       return response.data;
@@ -195,6 +201,7 @@ export const useOrderService = () => {
           params,
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -235,6 +242,7 @@ export const useOrderService = () => {
       const response = await axios.get(`${baseUrl}/api/orders/${orderId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       });
       return response.data; // Return the order data

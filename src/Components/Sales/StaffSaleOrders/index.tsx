@@ -797,7 +797,7 @@ const SalesOrders: React.FC = () => {
                             <div className="customer-info">
                               <span className="address">
                                 <FaMapMarkerAlt />
-                                {order.receiverAddress}
+                                {order.receiverAddress||"Kiosk Address"}
                               </span>
                             </div>
                           </td>
