@@ -8,6 +8,7 @@ import { useVoucherService } from '../../../../Api/voucherService';
 import VoucherModal from './VoucherModal';
 import { toast } from 'react-toastify';
 import { Copy } from 'react-feather';
+import Swal from 'sweetalert2'; // Add this import
 
 interface Voucher {
   id: number;
@@ -108,14 +109,50 @@ const VoucherList: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this voucher?')) {
-      try {
-        await deleteVoucher(id);
+    try {
+      const result = await Swal.fire({
+        title: 'Confirm Delete?',
+        text: 'Are you sure you want to delete this voucher?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+          try {
+            await deleteVoucher(id);
+            return true;
+          } catch (error) {
+            Swal.showValidationMessage(`Error: ${error.message}`);
+            throw error;
+          }
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      });
+
+      if (result.isConfirmed) {
+        setVouchers(prevVouchers => prevVouchers.filter(voucher => voucher.id !== id));
+
+        await Swal.fire({
+          title: 'Deleted!',
+          text: 'Voucher has been deleted successfully.',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
         await loadVouchers();
-      } catch (error) {
-        console.error('Error deleting voucher:', error);
-        // Handle error (show toast, etc.)
       }
+    } catch (error) {
+      console.error('Error deleting voucher:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: error.message || 'Unable to delete voucher. Please try again later.',
+        icon: 'error',
+        confirmButtonColor: '#dc3545'
+      });
     }
   };
 

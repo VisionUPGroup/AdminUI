@@ -20,6 +20,7 @@ export interface CartItem {
   rightLens: Lens;
   prescriptionData: PrescriptionData;
   quantity: number;
+  isReadyToWear: boolean; 
 }
 
 interface CartState {

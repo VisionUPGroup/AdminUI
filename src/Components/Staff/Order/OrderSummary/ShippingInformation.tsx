@@ -21,12 +21,6 @@ interface Kiosk {
   status: boolean;
 }
 
-interface Province {
-  code: string;
-  name: string;
-  division_type: string;
-}
-
 interface District {
   code: string;
   name: string;
@@ -51,68 +45,49 @@ const StaffShippingInformation: React.FC<ShippingInformationProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Address states
-  const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  // Set selectedProvince to Ho Chi Minh City code '79'
+  const [selectedProvince] = useState<string>('79');
   const [selectedDistrict, setSelectedDistrict] = useState<string>('');
   const [selectedWard, setSelectedWard] = useState<string>('');
   const [streetAddress, setStreetAddress] = useState<string>('');
 
   const { fetchAllKiosk } = useKioskService();
 
-  // Fetch provinces on component mount
-  useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        const response = await fetch('https://provinces.open-api.vn/api/p/');
-        const data = await response.json();
-        setProvinces(data);
-      } catch (err) {
-        console.error('Error fetching provinces:', err);
-        setError('Không thể tải danh sách tỉnh/thành phố');
-      }
-    };
-    fetchProvinces();
-  }, []);
-
-  // Fetch districts when province is selected
+  // Fetch districts for Ho Chi Minh City
   useEffect(() => {
     const fetchDistricts = async () => {
-      if (!selectedProvince) {
-        setDistricts([]);
-        return;
-      }
       try {
-        const response = await fetch(`https://provinces.open-api.vn/api/p/${selectedProvince}?depth=2`);
+        const response = await fetch(`https://provinces.open-api.vn/api/p/79?depth=2`);
         const data = await response.json();
         setDistricts(data.districts);
       } catch (err) {
         console.error('Error fetching districts:', err);
-        setError('Không thể tải danh sách quận/huyện');
+        setError('Cannot load districts');
       }
     };
     fetchDistricts();
-  }, [selectedProvince]);
+  }, []);
 
   // Fetch wards when district is selected
   useEffect(() => {
-    const fetchWards = async () => {
-      if (!selectedDistrict) {
-        setWards([]);
-        return;
-      }
-      try {
+    if (!selectedDistrict) {
+      setWards([]);
+      return;
+    }
+    try {
+      const fetchWards = async () => {
         const response = await fetch(`https://provinces.open-api.vn/api/d/${selectedDistrict}?depth=2`);
         const data = await response.json();
         setWards(data.wards);
-      } catch (err) {
-        console.error('Error fetching wards:', err);
-        setError('Không thể tải danh sách phường/xã');
-      }
-    };
-    fetchWards();
+      };
+      fetchWards();
+    } catch (err) {
+      console.error('Error fetching wards:', err);
+      setError('Cannot load wards');
+    }
   }, [selectedDistrict]);
 
   // Fetch kiosks data
@@ -124,7 +99,7 @@ const StaffShippingInformation: React.FC<ShippingInformationProps> = ({
         const activeKiosks = kioskData.filter((kiosk: Kiosk) => kiosk.status);
         setKiosks(activeKiosks);
       } catch (err) {
-        setError('Không thể tải danh sách cửa hàng');
+        setError('Cannot load kiosks');
       } finally {
         setIsLoading(false);
       }
@@ -135,27 +110,26 @@ const StaffShippingInformation: React.FC<ShippingInformationProps> = ({
   // Update full address when any address component changes
   useEffect(() => {
     if (selectedMethod === 'customer') {
-      const province = provinces.find(p => p.code === selectedProvince)?.name || '';
-      const district = districts.find(d => d.code === selectedDistrict)?.name || '';
-      const ward = wards.find(w => w.code === selectedWard)?.name || '';
+      const district = districts.find(d => d.code.toString() === selectedDistrict)?.name || '';
+      const ward = wards.find(w => w.code.toString() === selectedWard)?.name || '';
       
       const fullAddress = [
         streetAddress,
         ward,
         district,
-        province
+        'Hồ Chí Minh'
       ].filter(Boolean).join(', ');
+      console.log('fullAddress', fullAddress);
 
       onAddressSelect(fullAddress);
     }
-  }, [streetAddress, selectedWard, selectedDistrict, selectedProvince]);
+  }, [streetAddress, selectedWard, selectedDistrict]);
 
   const handleShippingMethodChange = (method: 'customer' | 'kiosk') => {
     onMethodSelect(method);
     if (method === 'kiosk') {
       // Reset address when switching to kiosk
       setStreetAddress('');
-      setSelectedProvince('');
       setSelectedDistrict('');
       setSelectedWard('');
     } else {
@@ -229,8 +203,7 @@ const StaffShippingInformation: React.FC<ShippingInformationProps> = ({
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <div className={styles.addressGrid}>
-              <div className={styles.formGroup}>
+            <div className={styles.formGroup}>
                 <label>Street Address *</label>
                 <input
                   type="text"
@@ -239,46 +212,28 @@ const StaffShippingInformation: React.FC<ShippingInformationProps> = ({
                   placeholder="Enter street address"
                 />
               </div>
+            <div className={styles.addressGrid}>
+              {/* Street Address */}
               
-              <div className={styles.formGroupRow}>
-                <div className={styles.formGroup}>
-                  <label>Province/City *</label>
-                  <select
-                    value={selectedProvince}
-                    onChange={(e) => {
-                      setSelectedProvince(e.target.value);
-                      setSelectedDistrict('');
-                      setSelectedWard('');
-                    }}
-                  >
-                    <option value="">Select province/city</option>
-                    {provinces.map((province) => (
-                      <option key={province.code} value={province.code}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className={styles.formGroup}>
-                  <label>District *</label>
-                  <select
-                    value={selectedDistrict}
-                    onChange={(e) => {
-                      setSelectedDistrict(e.target.value);
-                      setSelectedWard('');
-                    }}
-                    disabled={!selectedProvince}
-                  >
-                    <option value="">Select district</option>
-                    {districts.map((district) => (
-                      <option key={district.code} value={district.code}>
-                        {district.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* District */}
+              <div className={styles.formGroup}>
+                <label>District *</label>
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => {
+                    setSelectedDistrict(e.target.value);
+                    setSelectedWard('');
+                  }}
+                >
+                  <option value="">Select district</option>
+                  {districts.map((district) => (
+                    <option key={district.code} value={district.code}>
+                      {district.name}
+                    </option>
+                  ))}
+                </select>
               </div>
-
+              {/* Ward */}
               <div className={styles.formGroup}>
                 <label>Ward *</label>
                 <select

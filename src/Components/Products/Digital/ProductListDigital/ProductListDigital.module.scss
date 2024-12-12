@@ -297,36 +297,60 @@ $dark-gradient: linear-gradient(135deg, $dark-gray 0%, $medium-gray 100%);
 
       // Thêm styles cho sản phẩm inactive - THÊM ĐOẠN NÀY
       &.inactive {
-        opacity: 0.6;
-        filter: grayscale(50%);
-
-        &:hover {
-          opacity: 0.8;
-          filter: grayscale(30%);
-        }
-
-        .productImage {
-          filter: grayscale(50%);
-        }
-
-        .productDetails {
+        opacity: 0.85;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        
+        .imageWrapper {
           position: relative;
-
-          &::after {
-            content: 'Inactive';
+          
+          .inactiveOverlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 24px;
-            font-weight: 600;
-            color: rgba(220, 53, 69, 0.3);
-            text-transform: uppercase;
-            pointer-events: none;
-            z-index: 1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(33, 37, 41, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            
+            span {
+              background: rgba(220, 53, 69, 0.9);
+              color: white;
+              padding: 8px 16px;
+              border-radius: 4px;
+              font-weight: 600;
+              letter-spacing: 1px;
+              transform: rotate(-15deg);
+              font-size: 1.2rem;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+          }
+    
+          .productImage {
+            filter: grayscale(60%);
+          }
+        }
+    
+        .productDetails {
+          background-color: #f8f9fa;
+          
+          .productName {
+            color: #6c757d;
+          }
+          
+          .statusBadge {
+            background-color: #dc3545 !important;
+          }
+          
+          .price {
+            color: #6c757d;
           }
         }
       }
+    
 
       &:hover {
         transform: translateY(-5px);
@@ -384,6 +408,20 @@ $dark-gradient: linear-gradient(135deg, $dark-gray 0%, $medium-gray 100%);
 
         &:hover .productImage {
           transform: scale(1.05);
+        }
+      }
+
+      .disabledButton {
+        opacity: 0.5;
+        cursor: not-allowed !important;
+        
+        &:hover {
+          transform: none !important;
+          box-shadow: none !important;
+        }
+        
+        svg {
+          color: #adb5bd;
         }
       }
 
@@ -637,178 +675,32 @@ $dark-gradient: linear-gradient(135deg, $dark-gray 0%, $medium-gray 100%);
 
   // Table View
   .productTable {
-    background-color: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-
     :global {
       .rdt_TableRow {
         &.inactive {
-          opacity: 0.7;
           background-color: #f8f9fa;
-
-          &:hover {
-            opacity: 0.8;
+          opacity: 0.85;
+          
+          td {
+            color: #6c757d;
           }
-
+          
           img {
-            filter: grayscale(50%);
+            filter: grayscale(60%);
           }
-        }
-      }
-
-      .rdt_TableHeader {
-        background-color: #f8fafc;
-        padding: 16px 24px;
-        font-size: 20px;
-        font-weight: 600;
-        color: #1e293b;
-      }
-
-      .rdt_TableHeadRow {
-        background-color: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-        padding: 12px 20px;
-
-        div {
-          font-weight: 600;
-          color: #475569;
-          font-size: 14px;
-        }
-      }
-
-      .rdt_TableRow {
-        padding: 16px 20px;
-        border-bottom: 1px solid #e2e8f0;
-
-        &:hover {
-          background-color: #f8fafc;
-        }
-      }
-
-      .rdt_Pagination {
-        border-top: 1px solid #e2e8f0;
-        padding: 16px;
-
-        select {
-          padding: 6px 12px;
-          border-radius: 6px;
-          border: 1px solid #e2e8f0;
-        }
-      }
-    }
-
-    .tableImage {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-
-    .productNameCell {
-      .name {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 500;
-        color: #1e293b;
-        margin-bottom: 4px;
-      }
-
-      .specs {
-        font-size: 12px;
-        color: #64748b;
-      }
-    }
-
-    .statusCell {
-      .badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-      }
-
-      .ratingInfo {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-
-        i {
-          font-size: 12px;
-
-          &.starFilled {
-            color: #ffc107;
-          }
-
-          &.starEmpty {
-            color: #e2e8f0;
-          }
-        }
-
-        .rateCount {
-          font-size: 12px;
-          color: #64748b;
-        }
-      }
-    }
-
-    .priceCell {
-      font-size: 14px;
-      font-weight: 600;
-      color: #7366ff;
-    }
-
-    .actionCell {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-
-      .actionBtn {
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        border: none;
-
-        svg {
-          width: 14px;
-          height: 14px;
-          color: white;
-        }
-
-        &[color="info"] {
-          background-color: #00b8d9;
-
-          &:hover {
-            background-color: darken(#00b8d9, 10%);
-            transform: translateY(-2px);
-          }
-        }
-
-        &[color="primary"] {
-          background-color: #7366ff;
-
-          &:hover {
-            background-color: darken(#7366ff, 10%);
-            transform: translateY(-2px);
-          }
-        }
-
-        &[color="danger"] {
-          background-color: #ff5630;
-
-          &:hover {
-            background-color: darken(#ff5630, 10%);
-            transform: translateY(-2px);
+          
+          .actionBtn {
+            opacity: 0.5;
+            cursor: not-allowed;
+            
+            &:hover {
+              transform: none;
+              box-shadow: none;
+            }
+            
+            svg {
+              color: #adb5bd;
+            }
           }
         }
       }

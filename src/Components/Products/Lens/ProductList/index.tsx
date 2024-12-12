@@ -64,6 +64,17 @@ const LensList: React.FC = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
+  const sortLenses = (lenses: Lens[]) => {
+    return [...lenses].sort((a, b) => {
+      // Sort by status first (active first, then inactive)
+      if (a.status !== b.status) {
+        return a.status ? -1 : 1;
+      }
+      // If status is the same, maintain original order
+      return 0;
+    });
+  };
+
   useEffect(() => {
     const params = {
       PageIndex: 1,
@@ -132,24 +143,24 @@ const LensList: React.FC = () => {
   const handleDelete = async (lens: Lens) => {
     try {
       const result = await Swal.fire({
-        title: 'Xác nhận xóa?',
-        text: `Bạn có chắc chắn muốn xóa lens "${lens.lensName}"?`,
+        title: 'Confirm Delete?',
+        text: `Are you sure you want to delete lens "${lens.lensName}"?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc3545',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy',
+        confirmButtonText: 'Delete',
+        cancelButtonText: 'Cancel',
         showLoaderOnConfirm: true,
         preConfirm: async () => {
           try {
             const response = await deleteLens(lens.id);
             if (response === true) {
-              return response;
+              return true;
             }
-            throw new Error('Xóa lens thất bại');
+            throw new Error('Failed to delete lens');
           } catch (error) {
-            Swal.showValidationMessage(`Lỗi: ${error.message}`);
+            Swal.showValidationMessage(`Error: ${error.message}`);
             throw error;
           }
         },
@@ -163,8 +174,8 @@ const LensList: React.FC = () => {
         setTotalItems(prev => prev - 1);
 
         await Swal.fire({
-          title: 'Đã xóa!',
-          text: 'Lens đã được xóa thành công.',
+          title: 'Deleted!',
+          text: 'Lens has been deleted successfully.',
           icon: 'success',
           timer: 1500,
           showConfirmButton: false
@@ -175,18 +186,18 @@ const LensList: React.FC = () => {
         } catch (error) {
           console.error('Error refreshing data:', error);
           Swal.fire({
-            title: 'Lưu ý',
-            text: 'Đã xóa thành công nhưng không thể cập nhật danh sách mới nhất',
+            title: 'Note',
+            text: 'Successfully deleted but unable to fetch latest list',
             icon: 'warning',
-            confirmButtonText: 'Đóng'
+            confirmButtonText: 'Close'
           });
         }
       }
     } catch (error) {
       console.error('Error in delete process:', error);
       Swal.fire({
-        title: 'Lỗi!',
-        text: 'Không thể xóa lens. Vui lòng thử lại sau.',
+        title: 'Error!',
+        text: 'Unable to delete lens. Please try again later.',
         icon: 'error',
         confirmButtonColor: '#dc3545'
       });
@@ -287,27 +298,30 @@ const LensList: React.FC = () => {
           <Button
             color="info"
             size="sm"
-            className={styles.actionBtn}
-            title="View Details"
-            onClick={() => handleView(row.id)}
+            className={`${styles.actionBtn} ${!row.status ? styles.disabledButton : ''}`}
+            title={row.status ? "View Details" : "Lens Inactive"}
+            onClick={() => row.status && handleView(row.id)}
+            disabled={!row.status}
           >
             <Eye size={14} />
           </Button>
           <Button
             color="primary"
             size="sm"
-            className={styles.actionBtn}
-            title="Edit Product"
-            onClick={() => handleEdit(row.id)}
+            className={`${styles.actionBtn} ${!row.status ? styles.disabledButton : ''}`}
+            title={row.status ? "Edit Lens" : "Lens Inactive"}
+            onClick={() => row.status && handleEdit(row.id)}
+            disabled={!row.status}
           >
             <Edit2 size={14} />
           </Button>
           <Button
             color="danger"
             size="sm"
-            className={styles.actionBtn}
-            title="Delete Product"
-            onClick={() => handleDelete(row)}
+            className={`${styles.actionBtn} ${!row.status ? styles.disabledButton : ''}`}
+            title={row.status ? "Delete Lens" : "Lens Inactive"}
+            onClick={() => row.status && handleDelete(row)}
+            disabled={!row.status}
           >
             <Trash2 size={14} />
           </Button>
@@ -315,7 +329,7 @@ const LensList: React.FC = () => {
       ),
       width: '150px',
       right: true,
-    },
+    }
   ];
 
   const memoizedTableColumns = useMemo(() => tableColumns, []);
@@ -324,10 +338,12 @@ const LensList: React.FC = () => {
     if (isLoading) {
       return <div className={styles.loadingWrapper}><div className={styles.spinner} /></div>;
     }
-
+  
+    const sortedLenses = sortLenses(lenses);
+  
     return (
       <Row className={styles.productsGrid}>
-        {lenses.map((lens) => (
+        {sortedLenses.map((lens) => (
           <Col key={lens.id} lg={3} md={4} sm={6} xs={12}>
             <Card className={`${styles.productCard} ${!lens.status ? styles.inactive : ''}`}>
               <div className={styles.imageWrapper}>
@@ -337,53 +353,64 @@ const LensList: React.FC = () => {
                   alt={lens.lensName}
                   className={styles.productImage}
                 />
+                {!lens.status && (
+                  <div className={styles.inactiveOverlay}>
+                    <span>INACTIVE</span>
+                  </div>
+                )}
               </div>
               <CardBody className={styles.productDetails}>
                 <div className={styles.productHeader}>
                   <h5 className={styles.productName}>{lens.lensName}</h5>
-                  <Badge color={lens.status ? 'success' : 'danger'}>
+                  <Badge color={lens.status ? 'success' : 'danger'} className={styles.statusBadge}>
                     {lens.status ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
-
+  
                 <div className={styles.productSpecs}>
                   <span className={styles.specItem}>{lens.lensDescription}</span>
                 </div>
-
+  
                 <div className={styles.typeAndRating}>
                   <span className={`${styles.typeTag} ${styles[lens.lensType?.description?.toLowerCase()]}`}>
                     {lens.lensType?.description}
                   </span>
-                  <div className={styles.rating}>
+                  {/* <div className={styles.rating}>
                     {renderStars(lens.rate)}
                     <span className={styles.rateCount}>({lens.rateCount})</span>
-                  </div>
+                  </div> */}
                 </div>
-
+  
                 <div className={styles.priceAndActions}>
                   <h4 className={styles.price}>{formatCurrency(lens.lensPrice)}</h4>
                   <div className={styles.actionButtons}>
                     <Button
                       color="info"
                       size="sm"
-                      title="View Details"
-                      onClick={() => handleView(lens.id)}
+                      title={lens.status ? "View Details" : "Lens Inactive"}
+                      onClick={() => lens.status && handleView(lens.id)}
+                      disabled={!lens.status}
+                      className={!lens.status ? styles.disabledButton : ''}
                     >
                       <Eye size={14} />
                     </Button>
                     <Button
                       color="primary"
                       size="sm"
-                      title="Edit Product"
-                      onClick={() => handleEdit(lens.id)}
+                      title={lens.status ? "Edit Lens" : "Lens Inactive"}
+                      onClick={() => lens.status && handleEdit(lens.id)}
+                      disabled={!lens.status}
+                      className={!lens.status ? styles.disabledButton : ''}
                     >
                       <Edit2 size={14} />
                     </Button>
                     <Button
                       color="danger"
                       size="sm"
-                      title="Delete Product"
-                      onClick={() => handleDelete(lens)}
+                      title={lens.status ? "Delete Lens" : "Lens Inactive"}
+                      onClick={() => lens.status && handleDelete(lens)}
+                      disabled={!lens.status}
+                      className={!lens.status ? styles.disabledButton : ''}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -398,32 +425,27 @@ const LensList: React.FC = () => {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && !lenses.length) {
       return (
         <div className={styles.loadingWrapper}>
           <div className={styles.spinner}></div>
         </div>
       );
     }
-    if (!lenses.length) {
-      return (
-        <div className={styles.loadingWrapper}>
-          <p>No lenses found</p>
-        </div>
-      );
-    }
-
+  
+    const sortedLenses = sortLenses(lenses);
+  
     return (
       <>
         <div className={styles.resultSummary}>
           <span>{totalItems} lenses found</span>
         </div>
-
+  
         {viewMode === 'table' ? (
           <div className={`${styles.tableWrapper} ${isLoading ? styles.loadingOverlay : ''}`}>
             <CustomTable
               columns={memoizedTableColumns}
-              data={lenses}
+              data={sortedLenses}
               pagination
               paginationServer
               paginationTotalRows={totalItems}

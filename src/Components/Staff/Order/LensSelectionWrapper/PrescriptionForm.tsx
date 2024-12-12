@@ -1,15 +1,17 @@
 // components/LensSelection/ModernPrescriptionForm.tsx
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, 
-  Eye, 
-  AlertCircle, 
-  Save, 
-  RefreshCw, 
+import {
+  ArrowLeft,
+  Eye,
+  AlertCircle,
+  Save,
+  RefreshCw,
   Info,
-  CheckCircle ,
-  ChevronRight
+  CheckCircle,
+  ChevronRight,
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,13 +25,18 @@ interface PrescriptionFormProps {
   onComplete: (data: PrescriptionData) => void;
   onBack: () => void;
   lensMode: LensMode;
+  lensTypeInfo: {
+    leftEyeType: number | undefined;
+    rightEyeType: number | undefined;
+  };
 }
 
 const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
   initialData = [],
   onComplete,
   onBack,
-  lensMode 
+  lensMode,
+  lensTypeInfo
 }) => {
   const [prescriptionData, setPrescriptionData] = useState<PrescriptionData>({
     sphereOD: 0,
@@ -46,6 +53,12 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
   const [activeEye, setActiveEye] = useState<'OD' | 'OS'>('OD');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const isEyeDisabled = (eye: 'OD' | 'OS') => {
+    return eye === 'OD'
+      ? lensTypeInfo.rightEyeType === 4
+      : lensTypeInfo.leftEyeType === 4;
+  };
 
   // Field descriptions for tooltips
   const fieldDescriptions = {
@@ -102,12 +115,12 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
 
   const handleInputChange = (field: keyof PrescriptionData, value: string) => {
     const numValue = parseFloat(value) || 0;
-    
+
     setPrescriptionData(prev => ({
       ...prev,
       [field]: numValue
     }));
-  
+
     if (errors[field]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -116,34 +129,54 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
       });
     }
   };
-  
+
 
   const handleSubmit = async () => {
-    // Validate tất cả các trường khi submit
     const newErrors: Record<string, string> = {};
     let hasValidationErrors = false;
-  
+
+    // Only validate fields for non-type-4 lenses
     Object.entries(prescriptionData).forEach(([key, value]) => {
+      // Skip validation for disabled eyes
+      if (key.includes('OD') && lensTypeInfo.rightEyeType === 4) return;
+      if (key.includes('OS') && lensTypeInfo.leftEyeType === 4) return;
+
       const error = validateField(key, value);
       if (error) {
         newErrors[key] = error;
         hasValidationErrors = true;
       }
     });
-  
+
     if (hasValidationErrors) {
       setErrors(newErrors);
-      // Show thông báo lỗi nếu cần
       toast.error('Please check your prescription values');
       return;
     }
-  
-    // Nếu không có lỗi, tiếp tục submit
+
     setShowSuccess(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    onComplete(prescriptionData);
+
+    // Set default values for type 4 lenses
+    const finalPrescriptionData = {
+      ...prescriptionData,
+      ...(lensTypeInfo.rightEyeType === 4 && {
+        sphereOD: 0,
+        cylinderOD: 0,
+        axisOD: 0,
+        addOD: 0
+      }),
+      ...(lensTypeInfo.leftEyeType === 4 && {
+        sphereOS: 0,
+        cylinderOS: 0,
+        axisOS: 0,
+        addOS: 0
+      })
+    };
+
+    onComplete(finalPrescriptionData);
   };
-  
+
 
   const handleReset = () => {
     setPrescriptionData({
@@ -163,31 +196,101 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
 
   const renderEyeSelector = () => (
     <div className={styles.eyeSelector}>
-      {['OD', 'OS'].map((eye) => (
-        <motion.button
-          key={eye}
-          className={`${styles.eyeButton} ${activeEye === eye ? styles.active : ''}`}
-          onClick={() => setActiveEye(eye as 'OD' | 'OS')}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div className={styles.eyeContent}>
-            <Eye size={24} />
-            <div className={styles.eyeInfo}>
-              <span>{eye === 'OD' ? 'Right Eye (OD)' : 'Left Eye (OS)'}</span>
-              <small>{eye === 'OD' ? 'Oculus Dexter' : 'Oculus Sinister'}</small>
+      {['OD', 'OS'].map((eye) => {
+        const isDisabled = isEyeDisabled(eye as 'OD' | 'OS');
+
+        return (
+          <motion.button
+            key={eye}
+            className={`${styles.eyeButton} 
+              ${activeEye === eye ? styles.active : ''} 
+              ${isDisabled ? styles.disabled : ''}`}
+            onClick={() => !isDisabled && setActiveEye(eye as 'OD' | 'OS')}
+            whileHover={{ scale: isDisabled ? 1 : 1.02 }}
+            whileTap={{ scale: isDisabled ? 1 : 0.98 }}
+          >
+            {isDisabled && (
+              <motion.div
+                className={styles.nonPrescriptionBadge}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <ShieldCheck size={14} />
+                <span>Non-Prescription</span>
+              </motion.div>
+            )}
+
+            <div className={styles.eyeContent}>
+              <Eye size={24} />
+              <div className={styles.eyeInfo}>
+                <span>{eye === 'OD' ? 'Right Eye (OD)' : 'Left Eye (OS)'}</span>
+                <small>
+                  {isDisabled
+                    ? 'No prescription required'
+                    : eye === 'OD' ? 'Oculus Dexter' : 'Oculus Sinister'}
+                </small>
+              </div>
             </div>
-          </div>
-          {activeEye === eye && (
-            <motion.div 
-              className={styles.activeIndicator}
-              layoutId="activeEye"
-            />
-          )}
-        </motion.button>
-      ))}
+
+            {isDisabled && (
+              <motion.div
+                className={styles.disabledMessage}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <CheckCircle2 size={16} />
+                <span>Type 4 lens selected - No prescription needed</span>
+              </motion.div>
+            )}
+
+            {activeEye === eye && !isDisabled && (
+              <motion.div
+                className={styles.activeIndicator}
+                layoutId="activeEye"
+              />
+            )}
+          </motion.button>
+        );
+      })}
     </div>
   );
+
+  const renderPrescriptionForm = () => {
+    const isCurrentEyeDisabled = isEyeDisabled(activeEye);
+
+    return (
+      <motion.div
+        className={`${styles.formGrid} ${isCurrentEyeDisabled ? styles.disabled : ''}`}
+        key={activeEye}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.3 }}
+      >
+        {isCurrentEyeDisabled && (
+          <div className={styles.formOverlay}>
+            <CheckCircle className={styles.icon} size={32} />
+            <h4>Non-Prescription Lens Selected</h4>
+            <p>This lens type doesn't require prescription values</p>
+          </div>
+        )}
+
+        <div className={styles.column}>
+          <h3>Sphere & Cylinder</h3>
+          {renderInputField('Sphere (SPH)', `sphere${activeEye}`, fieldDescriptions.sphere)}
+          {renderInputField('Cylinder (CYL)', `cylinder${activeEye}`, fieldDescriptions.cylinder)}
+        </div>
+
+        <div className={styles.column}>
+          <h3>Axis & Add Power</h3>
+          {renderInputField('Axis', `axis${activeEye}`, fieldDescriptions.axis)}
+          {renderInputField('Add Power', `add${activeEye}`, fieldDescriptions.add)}
+        </div>
+      </motion.div>
+    );
+  };
 
   const renderInputField = (label: string, field: keyof PrescriptionData, description: string) => (
     <div className={styles.inputGroup}>
@@ -206,9 +309,9 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
           className={errors[field] ? styles.error : ''}
         />
         <span className={styles.unit}>
-          {field.includes('axis') ? '°' : 
-           field === 'pd' ? 'mm' : 
-           'D'}
+          {field.includes('axis') ? '°' :
+            field === 'pd' ? 'mm' :
+              'D'}
         </span>
       </div>
       <AnimatePresence>
@@ -224,10 +327,10 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
         )}
       </AnimatePresence>
       <span className={styles.range}>
-        {field.includes('axis') ? '0° to 180°' : 
-         field.includes('add') ? '0.00 to +4.00' :
-         field === 'pd' ? '50mm to 80mm' : 
-         '-12.00 to +12.00'}
+        {field.includes('axis') ? '0° to 180°' :
+          field.includes('add') ? '0.00 to +4.00' :
+            field === 'pd' ? '50mm to 80mm' :
+              '-12.00 to +12.00'}
       </span>
     </div>
   );
@@ -259,26 +362,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
 
         <div className={styles.prescriptionDetails}>
           <AnimatePresence mode="wait">
-            <motion.div 
-              className={styles.formGrid}
-              key={activeEye}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className={styles.column}>
-                <h3>Sphere & Cylinder</h3>
-                {renderInputField('Sphere (SPH)', `sphere${activeEye}`, fieldDescriptions.sphere)}
-                {renderInputField('Cylinder (CYL)', `cylinder${activeEye}`, fieldDescriptions.cylinder)}
-              </div>
-              
-              <div className={styles.column}>
-                <h3>Axis & Add Power</h3>
-                {renderInputField('Axis', `axis${activeEye}`, fieldDescriptions.axis)}
-                {renderInputField('Add Power', `add${activeEye}`, fieldDescriptions.add)}
-              </div>
-            </motion.div>
+            {renderPrescriptionForm()}
           </AnimatePresence>
 
           <div className={styles.pdSection}>
@@ -288,7 +372,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
         </div>
 
         <footer className={styles.footer}>
-          <button 
+          <button
             className={styles.resetButton}
             onClick={handleReset}
           >
@@ -296,7 +380,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
             <span>Reset</span>
           </button>
 
-          <button 
+          <button
             className={styles.submitButton}
             onClick={handleSubmit}
           >

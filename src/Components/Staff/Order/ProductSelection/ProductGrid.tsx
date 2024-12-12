@@ -169,24 +169,25 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductSelect }) => {
       </div>
 
       {loading ? (
-        <div className={styles.loading}>
-          <div className={styles.spinner} />
-          <span>Loading products...</span>
-        </div>
-      ) : (
-        <div className={styles.grid}>
-          {products.map((product) => {
-            const activeImageIndex = selectedImages[product.id] || 0;
-            const activeImage = product.eyeGlassImages[activeImageIndex]?.url || 'https://cdn-icons-png.flaticon.com/512/187/187527.png';
+      <div className={styles.loading}>
+        <div className={styles.spinner} />
+        <span>Loading products...</span>
+      </div>
+    ) : (
+      <div className={styles.grid}>
+        {products.map((product) => {
+          const activeImageIndex = selectedImages[product.id] || 0;
+          const activeImage = product.eyeGlassImages[activeImageIndex]?.url || 'default-image-url';
 
-            return (
-              <div key={product.id} className={styles.productCard}>
-                <div className={styles.imageContainer}>
-                  <img src={activeImage} alt={product.name} />
+          return (
+            <div key={product.id} className={styles.productCard}>
+              <div className={styles.imageContainer}>
+                <img src={activeImage} alt={product.name} />
+                {product.eyeGlassImages.length > 1 && (
                   <div className={styles.imageGallery}>
                     {product.eyeGlassImages
                       .filter(img => img.url)
-                      .slice(0, 5)
+                      .slice(0, 4)
                       .map((image, index) => (
                         <button
                           key={image.id}
@@ -202,69 +203,60 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductSelect }) => {
                         </button>
                       ))}
                   </div>
-                </div>
-                <div className={styles.productInfo}>
-                  <h3 className={styles.title}>{product.name}</h3>
-                  <div className={styles.specs}>
-                    <div className={styles.specItem}>
-                      <Ruler className={styles.icon} />
-                      <span className={styles.label}>Width</span>
-                      <span className={styles.value}>{product.frameWidth}mm</span>
-                    </div>
-                    <div className={styles.specItem}>
-                      <Package className={styles.icon} />
-                      <span className={styles.label}>Material</span>
-                      <span className={styles.value}>
-                        {product.material.split('-').map(word => 
-                          word.charAt(0).toUpperCase() + word.slice(1)
-                        ).join(' ')}
-                      </span>
-                    </div>
-                    <div className={styles.specItem}>
-                      <Palette className={styles.icon} />
-                      <span className={styles.label}>Color</span>
-                      <span className={styles.value}>{product.color}</span>
-                    </div>
-                    <div className={styles.specItem}>
-                      <Scale className={styles.icon} />
-                      <span className={styles.label}>Weight</span>
-                      <span className={styles.value}>{product.weight}g</span>
-                    </div>
-                  </div>
-                  <div className={styles.footer}>
-                    <span className={styles.price}>
-                      {new Intl.NumberFormat('vi-VN', {
-                        style: 'currency',
-                        currency: 'VND'
-                      }).format(product.price)}
-                    </span>
-                    <button 
-                      className={styles.selectButton}
-                      onClick={() => onProductSelect(product)}
-                    >
-                      Select Frame
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
-            );
-          })}
 
-          {products.length === 0 && !loading && (
-            <div className={styles.noResults}>
-              <div className={styles.noResultsContent}>
-                <Search size={48} />
-                <h3>No products found</h3>
-                <p>Try adjusting your search or filters</p>
-                <button className={styles.resetButton} onClick={resetFilters}>
-                  Reset All Filters
-                </button>
+              <div className={styles.productInfo}>
+                <h3 className={styles.title}>{product.name}</h3>
+                
+                <div className={styles.specs}>
+                  <div className={styles.specItem}>
+                    <Ruler className={styles.icon} />
+                    <span className={styles.label}>Width</span>
+                    <span className={styles.value}>{product.frameWidth}mm</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <Package className={styles.icon} />
+                    <span className={styles.label}>Material</span>
+                    <span className={styles.value}>
+                      {product.material.split('-').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                      ).join(' ')}
+                    </span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <Palette className={styles.icon} />
+                    <span className={styles.label}>Color</span>
+                    <span className={styles.value}>{product.color}</span>
+                  </div>
+                  <div className={styles.specItem}>
+                    <Scale className={styles.icon} />
+                    <span className={styles.label}>Weight</span>
+                    <span className={styles.value}>{product.weight}g</span>
+                  </div>
+                </div>
+
+                <div className={styles.footer}>
+                  <span className={styles.price}>
+                    {new Intl.NumberFormat('vi-VN', {
+                      style: 'currency',
+                      currency: 'VND'
+                    }).format(product.price)}
+                  </span>
+                  <button 
+                    className={styles.selectButton}
+                    onClick={() => onProductSelect(product)}
+                  >
+                    Select Frame
+                  </button>
+                </div>
               </div>
             </div>
-          )}
-        </div>
-      )}
-    </div>
+          );
+        })}
+      </div>
+    )}
+  </div>
   );
 };
 

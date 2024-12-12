@@ -89,7 +89,7 @@ interface ValidationErrors {
     lensName: string;
     lensDescription: string;
     lensPrice: string;
-    quantity: string;
+    // quantity: string;
     lensTypeID: string;
     eyeReflactiveID: string;
     images?: string;
@@ -129,7 +129,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
         lensName: '',
         lensDescription: '',
         lensPrice: '',
-        quantity: '',
+        // quantity: '',
         lensTypeID: '',
         eyeReflactiveID: '',
     });
@@ -164,7 +164,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                             lensName: lensData.lensName,
                             lensDescription: lensData.lensDescription,
                             lensPrice: lensData.lensPrice.toString(),
-                            quantity: lensData.quantity.toString(),
+                            quantity: "1000",
                             status: lensData.status,
                             rate: lensData.rate,
                             rateCount: lensData.rateCount,
@@ -218,12 +218,12 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                 if (Number(value) > 1000000000) return 'Price is too high';
                 return '';
 
-            case 'quantity':
-                if (!value) return 'Quantity is required';
-                if (!Number.isInteger(Number(value))) return 'Quantity must be a whole number';
-                if (Number(value) < 0) return 'Quantity cannot be negative';
-                if (Number(value) > 1000000) return 'Quantity is too high';
-                return '';
+            // case 'quantity':
+            //     if (!value) return 'Quantity is required';
+            //     if (!Number.isInteger(Number(value))) return 'Quantity must be a whole number';
+            //     if (Number(value) < 0) return 'Quantity cannot be negative';
+            //     if (Number(value) > 1000000) return 'Quantity is too high';
+            //     return '';
 
             case 'lensTypeID':
                 if (!value) return 'Lens type is required';
@@ -279,7 +279,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
             lensName: validateField('lensName', formData.lensName),
             lensDescription: validateField('lensDescription', formData.lensDescription),
             lensPrice: validateField('lensPrice', formData.lensPrice),
-            quantity: validateField('quantity', formData.quantity),
+            // quantity: validateField('quantity', formData.quantity),
             lensTypeID: validateField('lensTypeID', formData.lensTypeID),
             eyeReflactiveID: validateField('eyeReflactiveID', formData.eyeReflactiveID),
         };
@@ -334,7 +334,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                 lensDescription: formData.lensDescription,
                 lensPrice: parseFloat(formData.lensPrice),
                 quantity: parseInt(formData.quantity),
-                status: formData.status,
+                status: true,
                 lensTypeID: parseInt(formData.lensTypeID),
                 eyeReflactiveID: parseInt(formData.eyeReflactiveID)
             };
@@ -520,7 +520,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
 
                                                 <Row className="g-4">
                                                     <Col md={6}>
-                                                        <div className={styles.modernFormGroup}>
+                                                        {/* <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
                                                                 <Package className={styles.fieldIcon} size={18} />
                                                                 <Input
@@ -534,9 +534,9 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                                 />
                                                                 {errors.quantity && <div className={styles.errorMessage}>{errors.quantity}</div>}
                                                             </div>
-                                                        </div>
+                                                        </div> */}
                                                     </Col>
-                                                    <Col md={6}>
+                                                    {/* <Col md={6}>
                                                         <div className={styles.modernFormGroup}>
                                                             <div className={styles.inputIcon}>
                                                                 <Star className={styles.fieldIcon} size={18} />
@@ -551,7 +551,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                                 <span className={styles.rateCount}>({formData.rateCount} ratings)</span>
                                                             </div>
                                                         </div>
-                                                    </Col>
+                                                    </Col> */}
                                                 </Row>
 
                                                 <Row className="g-4">
@@ -603,7 +603,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                     </Col>
                                                 </Row>
 
-                                                <div className={styles.modernSwitch}>
+                                                {/* <div className={styles.modernSwitch}>
                                                     <Input
                                                         id="status"
                                                         name="status"
@@ -615,7 +615,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                         <Activity size={16} />
                                                         <span>Active Status</span>
                                                     </Label>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </TabPane>
 

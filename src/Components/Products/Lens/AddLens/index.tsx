@@ -55,7 +55,7 @@ interface FormData {
     lensName: string;
     lensDescription: string;
     lensPrice: string;
-    quantity: string;
+    // quantity: string;
     status: boolean;
     lensTypeID: string;
     eyeReflactiveID: string;
@@ -66,7 +66,7 @@ interface ValidationErrors {
     lensName?: string;
     lensDescription?: string;
     lensPrice?: string;
-    quantity?: string;
+    // quantity?: string;
     lensTypeID?: string;
     eyeReflactiveID?: string;
     images?: string;
@@ -90,7 +90,7 @@ const AddLens: React.FC = () => {
         lensName: '',
         lensDescription: '',
         lensPrice: '',
-        quantity: '',
+        // quantity: '',
         status: true,
         lensTypeID: '',
         eyeReflactiveID: '',
@@ -155,12 +155,12 @@ const AddLens: React.FC = () => {
                 if (Number(value) > 1000000000) return 'Price is too high';
                 return '';
 
-            case 'quantity':
-                if (!value) return 'Quantity is required';
-                if (!Number.isInteger(Number(value))) return 'Quantity must be a whole number';
-                if (Number(value) < 0) return 'Quantity cannot be negative';
-                if (Number(value) > 1000000) return 'Quantity is too high';
-                return '';
+            // case 'quantity':
+            //     if (!value) return 'Quantity is required';
+            //     if (!Number.isInteger(Number(value))) return 'Quantity must be a whole number';
+            //     if (Number(value) < 0) return 'Quantity cannot be negative';
+            //     if (Number(value) > 1000000) return 'Quantity is too high';
+            //     return '';
 
             case 'lensTypeID':
                 if (!value) return 'Lens type is required';
@@ -279,7 +279,7 @@ const AddLens: React.FC = () => {
                 lensName: formData.lensName,
                 lensDescription: formData.lensDescription,
                 lensPrice: parseFloat(formData.lensPrice),
-                quantity: parseInt(formData.quantity),
+                quantity: 1000,
                 status: formData.status,
                 lensTypeID: parseInt(formData.lensTypeID),
                 eyeReflactiveID: parseInt(formData.eyeReflactiveID)
@@ -480,7 +480,7 @@ const AddLens: React.FC = () => {
                                             </Row>
 
                                             <Row className="g-4">
-                                                <Col md={6}>
+                                                {/* <Col md={6}>
                                                     <div className={styles.modernFormGroup}>
                                                         <div className={styles.inputIcon}>
                                                             <Package className={styles.fieldIcon} size={18} />
@@ -498,7 +498,7 @@ const AddLens: React.FC = () => {
                                                             )}
                                                         </div>
                                                     </div>
-                                                </Col>
+                                                </Col> */}
                                                 <Col md={6}>
                                                     <div className={styles.modernFormGroup}>
                                                         <div className={styles.inputIcon}>
@@ -524,10 +524,7 @@ const AddLens: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 </Col>
-                                            </Row>
-
-                                            <Row className="g-4">
-                                                <Col md={12}>  {/* Thay đổi từ md={6} thành md={12} */}
+                                                <Col md={6}>  {/* Thay đổi từ md={6} thành md={12} */}
                                                     <div className={styles.modernFormGroup}>
                                                         <div className={styles.inputIcon}>
                                                             <Grid className={styles.fieldIcon} size={18} />
@@ -558,7 +555,7 @@ const AddLens: React.FC = () => {
 
                                             {/* Tách status thành một Row riêng */}
                                             <Row>
-                                                <Col>
+                                                {/* <Col>
                                                     <div className={`${styles.modernSwitch} mt-4`}>
                                                         <Input
                                                             id="status"
@@ -572,7 +569,7 @@ const AddLens: React.FC = () => {
                                                             <span>Active Status</span>
                                                         </label>
                                                     </div>
-                                                </Col>
+                                                </Col> */}
                                             </Row>
 
                                             <div className={styles.formSection}>
