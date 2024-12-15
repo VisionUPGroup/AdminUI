@@ -53,8 +53,8 @@
       rightLens: null
     });
 
-    const shouldSkipPrescription = selectionState.leftLens?.lensTypeID === 4 && 
-                                selectionState.rightLens?.lensTypeID === 4;
+    const shouldSkipPrescription = selectionState.leftLens?.lensType.isNoPrescription && 
+                                selectionState.rightLens?.lensType.isNoPrescription;
 
     const steps = shouldSkipPrescription ? [
       {
