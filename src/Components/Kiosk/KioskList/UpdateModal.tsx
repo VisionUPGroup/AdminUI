@@ -3,6 +3,17 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { FaStore, FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock, FaTimes, FaSave } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import './UpdateModalStyle.scss';
+import axios from 'axios';
+
+interface District {
+  code: string;
+  name: string;
+}
+
+interface Ward {
+  code: string;
+  name: string;
+}
 
 interface KioskUpdateModalProps {
   isOpen: boolean;
@@ -27,24 +38,27 @@ interface KioskUpdateModalProps {
   } | null;
 }
 
-interface ApiError {
-  message: string;
-  errors?: { [key: string]: string[] };
-}
-
 interface FormError {
   name?: string;
-  address?: string;
+  district?: string;
+  ward?: string;
+  streetAddress?: string;
   phoneNumber?: string;
   email?: string;
   openingHours?: string;
 }
 
 const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onSave, kioskData }) => {
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
+  const HCMC_CODE = "79"; // Mã TP.HCM
+
   const [formData, setFormData] = useState({
     id: 0,
     name: '',
-    address: '',
+    district: '',
+    ward: '',
+    streetAddress: '',
     phoneNumber: '',
     email: '',
     openingHours: '',
@@ -55,11 +69,81 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // Fetch districts when component mounts
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      try {
+        const response = await axios.get(`https://provinces.open-api.vn/api/p/${HCMC_CODE}?depth=2`);
+        if (response.data && response.data.districts) {
+          setDistricts(response.data.districts);
+        }
+      } catch (error) {
+        console.error("Failed to fetch districts:", error);
+        toast.error("Failed to load districts");
+      }
+    };
+    fetchDistricts();
+  }, []);
+
+  // Fetch wards when district changes
+  useEffect(() => {
+    const fetchWards = async () => {
+      if (formData.district) {
+        try {
+          const response = await axios.get(`https://provinces.open-api.vn/api/d/${formData.district}?depth=2`);
+          if (response.data && response.data.wards) {
+            setWards(response.data.wards);
+          }
+        } catch (error) {
+          console.error("Failed to fetch wards:", error);
+          toast.error("Failed to load wards");
+        }
+      } else {
+        setWards([]);
+      }
+    };
+    fetchWards();
+  }, [formData.district]);
+
+  // Parse address and set initial form data when kioskData changes
   useEffect(() => {
     if (kioskData) {
-      setFormData(kioskData);
+      const parseAddress = (fullAddress: string) => {
+        // Expected format: "street address, ward, district, TP. Hồ Chí Minh"
+        const parts = fullAddress.split(',').map(part => part.trim());
+        const districtPart = parts[parts.length - 2] || '';
+        const wardPart = parts[parts.length - 3] || '';
+        const streetPart = parts.slice(0, parts.length - 3).join(',').trim();
+
+        return {
+          streetAddress: streetPart,
+          district: districts.find(d => d.name === districtPart)?.code || '',
+          ward: '' // Will be set after wards are loaded
+        };
+      };
+
+      const addressParts = parseAddress(kioskData.address);
+
+      setFormData({
+        ...kioskData,
+        ...addressParts
+      });
     }
-  }, [kioskData]);
+  }, [kioskData, districts]);
+
+  // Set ward after wards are loaded
+  useEffect(() => {
+    if (kioskData && wards.length > 0) {
+      const addressParts = kioskData.address.split(',').map(part => part.trim());
+      const wardPart = addressParts[addressParts.length - 3] || '';
+      const wardCode = wards.find(w => w.name === wardPart)?.code || '';
+      
+      setFormData(prev => ({
+        ...prev,
+        ward: wardCode
+      }));
+    }
+  }, [wards, kioskData]);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -74,10 +158,20 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
   ) => {
     const { name, value } = e.target;
     const newValue = name === 'status' ? value === 'true' : value;
+    
     setFormData(prev => ({
       ...prev,
       [name]: newValue
     }));
+
+    // Reset ward when district changes
+    if (name === 'district') {
+      setFormData(prev => ({
+        ...prev,
+        ward: ''
+      }));
+    }
+
     setHasChanges(true);
     setErrors(prev => ({
       ...prev,
@@ -94,8 +188,18 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
       isValid = false;
     }
 
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
+    if (!formData.district) {
+      newErrors.district = 'District is required';
+      isValid = false;
+    }
+
+    if (!formData.ward) {
+      newErrors.ward = 'Ward is required';
+      isValid = false;
+    }
+
+    if (!formData.streetAddress.trim()) {
+      newErrors.streetAddress = 'Street address is required';
       isValid = false;
     }
 
@@ -125,30 +229,37 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
   };
 
   const handleSubmit = async () => {
-    // Validate form trước khi submit
     if (!validateForm()) {
       toast.error('Please check all required fields');
       return;
     }
-  
+
     try {
       setIsSubmitting(true);
-      const response = await onSave(formData);
+      
+      // Construct full address
+      const districtName = districts.find(d => d.code === formData.district)?.name || '';
+      const wardName = wards.find(w => w.code === formData.ward)?.name || '';
+      const fullAddress = `${formData.streetAddress}, ${wardName}, ${districtName}, TP. Hồ Chí Minh`;
+
+      const submitData = {
+        ...formData,
+        address: fullAddress,
+      };
+
+      const response = await onSave(submitData);
       if (!response) {
-        throw new Error("Failed to create kiosk");
+        throw new Error("Failed to update kiosk");
       }
-      // Success case
-      toast.success('Updated successfully!'); 
+
+      toast.success('Updated successfully!');
       setHasChanges(false);
       toggle();
-  
+
     } catch (error: any) {
-      console.log('Error response:', error.response); // Debug log
-  
       if (error.response?.data) {
         const apiErrors = error.response.data;
         
-        // Xử lý validation errors từ API
         if (apiErrors.errors) {
           const newErrors: FormError = {};
           Object.entries(apiErrors.errors).forEach(([key, messages]: [string, any]) => {
@@ -158,12 +269,9 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
           });
           setErrors(newErrors);
         }
-  
-        // Show error message từ API
-        toast.error(error.response.data[0] || 'Failed to update');
         
+        toast.error(error.response.data[0] || 'Failed to update');
       } else {
-        // General error message
         toast.error('Failed to update. Please try again.');
       }
     } finally {
@@ -198,20 +306,62 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
             {errors.name && <div className="invalid-feedback">{errors.name}</div>}
           </div>
 
+          {/* Address Fields */}
           <div className="form-group">
             <label>
               <FaMapMarkerAlt className="field-icon" />
               Address <span className="required">*</span>
             </label>
-            <textarea
-              name="address"
-              className={`form-control ${errors.address ? 'is-invalid' : ''}`}
-              placeholder="Enter kiosk address"
-              value={formData.address}
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <select
+                  name="district"
+                  className={`form-control ${errors.district ? 'is-invalid' : ''}`}
+                  value={formData.district}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select District</option>
+                  {districts.map((district) => (
+                    <option key={district.code} value={district.code}>
+                      {district.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.district && (
+                  <div className="invalid-feedback">{errors.district}</div>
+                )}
+              </div>
+              <div className="col-md-6 mb-3">
+                <select
+                  name="ward"
+                  className={`form-control ${errors.ward ? 'is-invalid' : ''}`}
+                  value={formData.ward}
+                  onChange={handleInputChange}
+                  disabled={!formData.district}
+                >
+                  <option value="">Select Ward</option>
+                  {wards.map((ward) => (
+                    <option key={ward.code} value={ward.code}>
+                      {ward.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.ward && (
+                  <div className="invalid-feedback">{errors.ward}</div>
+                )}
+              </div>
+            </div>
+            <input
+              type="text"
+              name="streetAddress"
+              className={`form-control ${errors.streetAddress ? 'is-invalid' : ''}`}
+              placeholder="Enter street address"
+              value={formData.streetAddress}
               onChange={handleInputChange}
-              rows={3}
             />
-            {errors.address && <div className="invalid-feedback">{errors.address}</div>}
+            {errors.streetAddress && (
+              <div className="invalid-feedback">{errors.streetAddress}</div>
+            )}
           </div>
 
           <div className="form-row">
@@ -296,7 +446,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
             </div>
           </div>
         </div>
-      </ModalBody>
+        </ModalBody>
 
       <ModalFooter className="border-top-0">
         <div className="modal-actions">

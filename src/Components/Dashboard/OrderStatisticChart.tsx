@@ -27,6 +27,7 @@ import {
   ResponsiveContainer,
   TooltipProps,
   Label,
+  
 } from "recharts";
 import { useOrderService } from "../../../Api/orderService";
 import {
@@ -37,6 +38,7 @@ import {
   TrendingUp,
   DollarSign,
   ChevronDown,
+  FileBarChart 
 } from "lucide-react";
 import "./OrderStatisticStyle.scss";
 
@@ -657,6 +659,35 @@ const OrderStatisticsChart: React.FC = () => {
     }
     return value.toString();
   };
+  const NoDataDisplay = () => (
+    <div className="no-data-container" style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '400px',
+      backgroundColor: '#f8f9fa',
+      borderRadius: '8px',
+      color: '#6c757d'
+    }}>
+      <FileBarChart size={64} strokeWidth={1} />
+      <h3 style={{ 
+        marginTop: '16px',
+        marginBottom: '8px',
+        fontWeight: '500'
+      }}>No Data Available</h3>
+      <p style={{
+        fontSize: '14px',
+        color: '#6c757d'
+      }}>There is no data available for the selected time period</p>
+    </div>
+  );
+  const hasValidData = chartData && chartData.length > 0 && chartData.some(data => 
+    data.process4Count > 0 || 
+    data.process5Count > 0 || 
+    data.totalAmount > 0 || 
+    data.cancelledAmount > 0
+  );
 
   return (
     <div className="dashboard-panel">
@@ -756,141 +787,193 @@ const OrderStatisticsChart: React.FC = () => {
       </div>
 
       <div className="chart-section">
-        <ResponsiveContainer width="100%" height={900}>
-          <ComposedChart
-            data={chartData}
-            margin={{
-              top: 20,
-              right: 60,
-              left: 30,
-              bottom: 20,
-            }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke="var(--color-border)"
-            />
-            <XAxis
-              dataKey="date"
-              scale="point"
-              padding={{ left: 30, right: 30 }}
-              tick={{
-                fill: "var(--text-secondary)",
-                fontSize: 12,
+        {loading ? (
+          <div className="loading-overlay">
+            <div className="loader"></div>
+            <span>Loading statistics...</span>
+          </div>
+        ) : error ? (
+          <div className="error-state">
+            <div className="error-icon">!</div>
+            <h3>Data Loading Error</h3>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()} className="retry-button">
+              Try Again
+            </button>
+          </div>
+        ) : hasValidData ? (
+          <ResponsiveContainer width="100%" height={900}>
+            <ComposedChart
+              data={chartData}
+              margin={{
+                top: 20,
+                right: 60,
+                left: 30,
+                bottom: 20,
               }}
-            />
-
-            <YAxis
-              yAxisId="left"
-              orientation="left"
-              domain={orderDomain}
-              tickCount={6}
-              allowDecimals={false}
-              tickFormatter={(value) => Math.round(value).toString()}
             >
-              <Label
-                value="Number of Orders"
-                angle={-90}
-                position="insideLeft"
-                offset={-5}
-                style={{ textAnchor: "middle", fill: "var(--text-secondary)" }}
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="var(--color-border)"
               />
-            </YAxis>
-
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              domain={revenueDomain}
-              tickCount={5}
-              tickFormatter={formatYAxisRevenue}
-              interval="preserveStartEnd" // Thêm property này để tránh lặp
-              allowDuplicatedCategory={false} // Và property này nữa
-            >
-              <Label
-                value="Revenue (VND)"
-                angle={90}
-                position="insideRight"
-                offset={5}
-                style={{ textAnchor: "middle", fill: "var(--text-secondary)" }}
+              <XAxis
+                dataKey="date"
+                scale="point"
+                padding={{ left: 30, right: 30 }}
+                tick={{
+                  fill: "var(--text-secondary)",
+                  fontSize: 12,
+                }}
               />
-            </YAxis>
+              <YAxis
+                yAxisId="left"
+                orientation="left"
+                domain={[0, 'auto']}  // Changed to auto for dynamic scaling
+                tickCount={6}
+                allowDecimals={false}
+                tickFormatter={(value) => Math.round(value).toString()}
+              >
+                <Label
+                  value="Number of Orders"
+                  angle={-90}
+                  position="insideLeft"
+                  offset={-5}
+                  style={{ textAnchor: "middle", fill: "var(--text-secondary)" }}
+                />
+              </YAxis>
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                domain={[0, 'auto']}  // Changed to auto for dynamic scaling
+                tickCount={5}
+                tickFormatter={formatYAxisRevenue}
+                interval="preserveStartEnd"
+                allowDuplicatedCategory={false}
+              >
+                <Label
+                  value="Revenue (VND)"
+                  angle={90}
+                  position="insideRight"
+                  offset={5}
+                  style={{ textAnchor: "middle", fill: "var(--text-secondary)" }}
+                />
+              </YAxis>
 
-            <Bar
-              yAxisId="left"
-              dataKey="process4Count"
-              name="Completed Orders"
-              fill="#c79816"
-              radius={[4, 4, 0, 0]}
-              barSize={20}
-            />
-            <Bar
-              yAxisId="left"
-              dataKey="process5Count"
-              name="Cancelled Orders"
-              fill="#000"
-              radius={[4, 4, 0, 0]}
-              barSize={20}
-            />
+              <Bar
+                yAxisId="left"
+                dataKey="process4Count"
+                name="Completed Orders"
+                fill="#c79816"
+                radius={[4, 4, 0, 0]}
+                barSize={20}
+                fillOpacity={0.7}
+              />
+              <Bar
+                yAxisId="left"
+                dataKey="process5Count"
+                name="Cancelled Orders"
+                fill="#2d2d2d"
+                radius={[4, 4, 0, 0]}
+                barSize={20}
+                fillOpacity={0.7}
+              />
 
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="totalAmount"
-              name="Completed Revenue"
-              stroke="#c79816"
-              strokeWidth={2}
-              dot={{
-                fill: "#c79816",
-                r: 4,
-                strokeWidth: 2,
-                stroke: "#fff",
-              }}
-              activeDot={{
-                r: 6,
-                strokeWidth: 2,
-                stroke: "#fff",
-              }}
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="cancelledAmount"
-              name="Cancelled Revenue"
-              stroke="#000"
-              strokeWidth={2}
-              strokeDasharray="5 5"
-              dot={{
-                fill: "#000",
-                r: 4,
-                strokeWidth: 2,
-                stroke: "#fff",
-                className: "cancelled-dot",
-              }}
-              activeDot={{
-                r: 6,
-                strokeWidth: 2,
-                stroke: "#fff",
-                className: "cancelled-dot",
-              }}
-            />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="totalAmount"
+                name="Completed Revenue"
+                stroke="#c79816"
+                strokeWidth={4}
+                dot={{
+                  fill: "#c79816",
+                  r: 6,
+                  strokeWidth: 3,
+                  stroke: "#fff",
+                  filter: "drop-shadow(0px 0px 4px rgba(199, 152, 22, 0.5))"
+                }}
+                activeDot={{
+                  r: 8,
+                  strokeWidth: 3,
+                  stroke: "#fff",
+                  filter: "drop-shadow(0px 0px 6px rgba(199, 152, 22, 0.7))"
+                }}
+                filter="drop-shadow(0px 0px 4px rgba(199, 152, 22, 0.3))"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="cancelledAmount"
+                name="Cancelled Revenue"
+                stroke="#2d2d2d"
+                strokeWidth={4}
+                strokeDasharray="8 8"
+                dot={{
+                  fill: "#2d2d2d",
+                  r: 6,
+                  strokeWidth: 3,
+                  stroke: "#fff",
+                  filter: "drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.5))"
+                }}
+                activeDot={{
+                  r: 8,
+                  strokeWidth: 3,
+                  stroke: "#fff",
+                  filter: "drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.7))"
+                }}
+                filter="drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.3))"
+              />
 
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "rgba(0, 0, 0, 0.05)" }}
+              />
+              <Legend
+                verticalAlign="top"
+                align="right"
+                iconType="circle"
+                wrapperStyle={{
+                  paddingBottom: "20px",
+                }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="no-data-container" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '400px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            padding: '40px',
+            margin: '20px 0',
+            border: '1px dashed #dee2e6'
+          }}>
+            <FileBarChart 
+              size={64} 
+              style={{ 
+                color: '#adb5bd',
+                marginBottom: '16px'
+              }} 
             />
-            <Legend
-              verticalAlign="top"
-              align="right"
-              iconType="circle"
-              wrapperStyle={{
-                paddingBottom: "20px",
-              }}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+            <h3 style={{
+              margin: '0 0 8px 0',
+              color: '#495057',
+              fontWeight: '500'
+            }}>No Data Available</h3>
+            <p style={{
+              margin: 0,
+              color: '#6c757d',
+              fontSize: '14px'
+            }}>There is no data available for the selected time period</p>
+          </div>
+        )}
       </div>
     </div>
+    
   );
 };
 
