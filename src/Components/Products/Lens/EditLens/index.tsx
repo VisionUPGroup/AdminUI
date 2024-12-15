@@ -53,6 +53,7 @@ interface LensImage {
 
 interface LensType {
     id: number;
+    name: string;
     description: string;
     status: boolean;
 }
@@ -570,7 +571,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                                     <option value="">Select Lens Type</option>
                                                                     {lensTypes.map(type => (
                                                                         <option key={type.id} value={type.id}>
-                                                                            {type.description}
+                                                                            {type.name}
                                                                         </option>
                                                                     ))}
                                                                 </Input>

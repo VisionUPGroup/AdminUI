@@ -327,6 +327,7 @@
         border-radius: 12px;
         transition: all 0.3s ease;
 
+
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -349,9 +350,19 @@
             font-weight: 500;
             color: #1e293b;
           }
+          .secondaryText {
+            font-size: 0.875rem;
+            color: #6b7280;  // lighter gray color
+            line-height: 1.4;
+            margin: 0;
+        }
         }
       }
     }
+
+    .sectionTitle {
+      font-weight: 600;
+  }
 
     // Details Content
     .detailsContent {
