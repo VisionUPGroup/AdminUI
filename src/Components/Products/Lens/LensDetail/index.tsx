@@ -19,6 +19,7 @@ import { Edit2, ArrowLeft, Shield, Droplet, Award, Eye } from 'react-feather';
 import CommonBreadcrumb from '@/CommonComponents/CommonBreadcrumb';
 import { useLensService } from '../../../../../Api/lensService';
 import styles from './LensDetail.module.scss';
+import { bold } from '@uiw/react-md-editor';
 
 interface LensDetailProps {
     id: string;
@@ -49,6 +50,7 @@ interface LensDetail {
     };
     lensType: {
         id: number;
+        name: string;
         description: string;
         status: boolean;
     };
@@ -268,7 +270,7 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
 
                                     <div className={styles.type}>
                                         <span className={styles.typeTag}>
-                                            {lens.lensType?.description?.split('.')[0] || 'N/A'}
+                                            {lens.lensType?.name?.split('.')[0] || 'N/A'}
                                         </span>
                                     </div>
 
@@ -289,12 +291,14 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
 
                                     <TabContent activeTab={activeTab}>
                                         <TabPane tabId="overview">
+                                        <h4 className={`mt-4 ${styles.sectionTitle}`}>Technical Details</h4>
                                             <div className={styles.overviewGrid}>
                                                 <div className={styles.overviewItem}>
                                                     <Shield size={20} />
                                                     <div>
                                                         <h6>Type</h6>
-                                                        <p>{lens.lensType?.description?.split('.')[0] || 'N/A'}</p>
+                                                        <p>{lens.lensType?.name || 'N/A'}</p>
+                                                        <p className={styles.secondaryText}>{lens.lensType?.description || 'N/A'}</p>
                                                     </div>
                                                 </div>
                                                 <div className={styles.overviewItem}>
@@ -310,7 +314,7 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                                 <h5>Description</h5>
                                                 <p>{lens.lensDescription || 'N/A'}</p>
 
-                                                <h5 className="mt-4">Technical Details</h5>
+                                                {/* <h5 className="mt-4">Technical Details</h5>
                                                 <div className={styles.specificationsGrid}>
                                                     <div className={styles.specItem}>
                                                         <span className={styles.label}>Lens Type</span>
@@ -324,7 +328,7 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                                                             {lens.eyeReflactive?.reflactiveName || 'N/A'}
                                                         </span>
                                                     </div>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </TabPane>
                                     </TabContent>

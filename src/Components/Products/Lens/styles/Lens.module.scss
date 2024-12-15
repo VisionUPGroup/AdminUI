@@ -1175,6 +1175,36 @@ $dark-gradient: linear-gradient(135deg, $dark-gray 0%, $medium-gray 100%);
       z-index: 10;
     }
   }
+
+  .reflactiveTag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: #e0f2fe;
+    color: #0284c7;
+    margin-left: 0.5rem;
+  }
+  
+  .reflactiveOptions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  
+    .reflactiveButton {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      border-radius: 0.5rem;
+      transition: all 0.2s;
+  
+      &:hover {
+        transform: translateY(-1px);
+      }
+    }
+  }
 }
 
 .resultSummary {

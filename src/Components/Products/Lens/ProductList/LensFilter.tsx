@@ -9,6 +9,7 @@ import RangeSlider from 'react-range-slider-input';
 export interface FilterParams {
   Name?: string;
   LensTypeID?: number;
+  EyeReflactiveID?: number;
   Rate?: number;
   MinPrice?: number;
   MaxPrice?: number;
@@ -19,15 +20,16 @@ export interface FilterParams {
 }
 
 export const isDefaultParams = (params: FilterParams): boolean => {
-  const defaultKeys = ['PageIndex', 'PageSize'];
+  const defaultKeys = ['PageIndex', 'PageSize','Descending'];
   const paramKeys = Object.keys(params);
-  return paramKeys.length === defaultKeys.length && 
-         defaultKeys.every(key => key in params);
+  return paramKeys.length === defaultKeys.length &&
+    defaultKeys.every(key => key in params);
 };
 
 interface LensFilterProps {
   onFilterChange: (params: FilterParams) => void;
-  lensTypes: Array<{ id: number; description: string; status: boolean }>;
+  lensTypes: Array<{ id: number; name: string; description: string; status: boolean }>;
+  eyeReflactives: Array<{ id: number; reflactiveName: string; status: boolean }>;
   initialParams: FilterParams;
 }
 
@@ -41,6 +43,7 @@ const PAGE_SIZE_OPTIONS = [
 const LensFilter: React.FC<LensFilterProps> = ({
   onFilterChange,
   lensTypes,
+  eyeReflactives,
   initialParams
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -112,13 +115,14 @@ const LensFilter: React.FC<LensFilterProps> = ({
   const clearAllFilters = () => {
     const defaultParams: FilterParams = {
       PageIndex: 1,
-      PageSize: filterParams.PageSize
+      PageSize: filterParams.PageSize,
+      Descending: true
     };
-    
+
     setFilterParams(defaultParams);
     setPriceRange([0, 10000000]);
     setActiveFilters([]);
-    
+
     onFilterChange(defaultParams);
   };
 
@@ -205,24 +209,23 @@ const LensFilter: React.FC<LensFilterProps> = ({
                   onClick={() => handleFilterChange({ LensTypeID: type.id })}
                   className={styles.typeButton}
                 >
-                  {type.description}
+                  {type.name}
                 </Button>
               ))}
             </div>
           </div>
 
           <div className={styles.filterSection}>
-            <h6>Rating</h6>
-            <div className={styles.ratingOptions}>
-              {ratingOptions.map(option => (
+            <h6>Reflactive Type</h6>
+            <div className={styles.reflactiveOptions}>
+              {eyeReflactives.filter(r => r.status).map(reflactive => (
                 <Button
-                  key={option.value}
-                  color={filterParams.Rate === option.value ? 'primary' : 'light'}
-                  onClick={() => handleFilterChange({ Rate: option.value })}
-                  className={styles.ratingButton}
+                  key={reflactive.id}
+                  color={filterParams.EyeReflactiveID === reflactive.id ? 'primary' : 'light'}
+                  onClick={() => handleFilterChange({ EyeReflactiveID: reflactive.id })}
+                  className={styles.reflactiveButton}
                 >
-                  <span className={styles.stars}>{option.label}</span>
-                  & Up
+                  {reflactive.reflactiveName}
                 </Button>
               ))}
             </div>

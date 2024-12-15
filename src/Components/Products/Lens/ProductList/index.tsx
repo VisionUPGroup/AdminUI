@@ -21,6 +21,7 @@ interface EyeReflactive {
 
 interface LensType {
   id: number;
+  name: string;
   description: string;
   status: boolean;
 }
@@ -50,16 +51,18 @@ interface Lens {
 
 const LensList: React.FC = () => {
   const router = useRouter();
-  const { 
-    fetchLenses, 
-    fetchLensTypes, 
+  const {
+    fetchLenses,
+    fetchLensTypes,
     deleteLens,
+    fetchEyeReflactives
   } = useLensService();
 
   // States
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [lenses, setLenses] = useState<Lens[]>([]);
   const [lensTypes, setLensTypes] = useState<LensType[]>([]);
+  const [eyeReflactives, setEyeReflactives] = useState<EyeReflactive[]>([]);
   const [filterParams, setFilterParams] = useState({
     PageIndex: 1,
     PageSize: 10,
@@ -92,9 +95,10 @@ const LensList: React.FC = () => {
     };
 
     try {
-      const [lensData, typesData] = await Promise.all([
+      const [lensData, typesData, reflactivesData] = await Promise.all([
         fetchLenses(params),
-        fetchLensTypes()
+        fetchLensTypes(),
+        fetchEyeReflactives() // Thêm fetch eyeReflactives
       ]);
 
       if (Array.isArray(lensData.data)) {
@@ -104,6 +108,10 @@ const LensList: React.FC = () => {
 
       if (Array.isArray(typesData)) {
         setLensTypes(typesData);
+      }
+
+      if (Array.isArray(reflactivesData)) {
+        setEyeReflactives(reflactivesData);
       }
     } catch (error) {
       console.error('Error loading initial data:', error);
@@ -126,13 +134,13 @@ const LensList: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
 
   const handleFilterChange = (newParams: FilterParams) => {
-    const isClearAll = Object.keys(newParams).length === 2 && 
-                      'PageIndex' in newParams && 
-                      'PageSize' in newParams;
-  
+    const isClearAll = Object.keys(newParams).length === 2 &&
+      'PageIndex' in newParams &&
+      'PageSize' in newParams;
+
     let updatedParams;
     if (isClearAll) {
       updatedParams = { ...newParams };
@@ -143,11 +151,11 @@ const LensList: React.FC = () => {
         PageIndex: newParams.PageIndex || 1
       };
     }
-  
+
     setFilterParams(updatedParams);
     fetchData(updatedParams);
   };
-  
+
 
   const handlePageChange = (pageIndex: number) => {
     const updatedParams = {
@@ -206,7 +214,7 @@ const LensList: React.FC = () => {
       });
 
       if (result.isConfirmed) {
-        setLenses(prevLenses => 
+        setLenses(prevLenses =>
           prevLenses.filter(l => l.id !== lens.id)
         );
         setTotalItems(prev => prev - 1);
@@ -294,11 +302,21 @@ const LensList: React.FC = () => {
     },
     {
       name: 'Type',
-      selector: (row: Lens) => row.lensType?.description,
+      selector: (row: Lens) => row.lensType?.name,
       sortable: true,
       cell: (row: Lens) => (
         <span className={`${styles.typeTag}`}>
-          {row.lensType?.description}
+          {row.lensType?.name}
+        </span>
+      )
+    },
+    {
+      name: 'Reflactive',
+      selector: (row: Lens) => row.eyeReflactive?.reflactiveName,
+      sortable: true,
+      cell: (row: Lens) => (
+        <span className={styles.reflactiveTag}>
+          {row.eyeReflactive?.reflactiveName}
         </span>
       )
     },
@@ -380,9 +398,9 @@ const LensList: React.FC = () => {
         },
         body: JSON.stringify(lensType),
       });
-  
+
       if (!response.ok) throw new Error('Failed to save lens type');
-      
+
       // Hiển thị thông báo thành công
       toast.success(`Lens type ${lensType.id ? 'updated' : 'created'} successfully`);
     } catch (error) {
@@ -393,14 +411,14 @@ const LensList: React.FC = () => {
 
   const handleLensTypeDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this lens type?')) return;
-    
+
     try {
       const response = await fetch(`/api/lens-types/${id}`, {
         method: 'DELETE',
       });
-  
+
       if (!response.ok) throw new Error('Failed to delete lens type');
-      
+
       toast.success('Lens type deleted successfully');
     } catch (error) {
       console.error('Error deleting lens type:', error);
@@ -414,9 +432,9 @@ const LensList: React.FC = () => {
     if (isLoading) {
       return <div className={styles.loadingWrapper}><div className={styles.spinner} /></div>;
     }
-  
+
     const sortedLenses = sortLenses(lenses);
-  
+
     return (
       <Row className={styles.productsGrid}>
         {sortedLenses.map((lens) => (
@@ -442,21 +460,20 @@ const LensList: React.FC = () => {
                     {lens.status ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
-  
+
                 <div className={styles.productSpecs}>
                   <span className={styles.specItem}>{lens.lensDescription}</span>
                 </div>
-  
+
                 <div className={styles.typeAndRating}>
-                  <span className={`${styles.typeTag} ${styles[lens.lensType?.description?.toLowerCase()]}`}>
-                    {lens.lensType?.description}
+                  <span className={`${styles.typeTag} ${styles[lens.lensType?.name?.toLowerCase()]}`}>
+                    {lens.lensType?.name}
                   </span>
-                  {/* <div className={styles.rating}>
-                    {renderStars(lens.rate)}
-                    <span className={styles.rateCount}>({lens.rateCount})</span>
-                  </div> */}
+                  <span className={styles.reflactiveTag}>
+                    {lens.eyeReflactive?.reflactiveName}
+                  </span>
                 </div>
-  
+
                 <div className={styles.priceAndActions}>
                   <h4 className={styles.price}>{formatCurrency(lens.lensPrice)}</h4>
                   <div className={styles.actionButtons}>
@@ -508,15 +525,15 @@ const LensList: React.FC = () => {
         </div>
       );
     }
-  
+
     const sortedLenses = sortLenses(lenses);
-  
+
     return (
       <>
         <div className={styles.resultSummary}>
           <span>{totalItems} lenses found</span>
         </div>
-  
+
         {viewMode === 'table' ? (
           <div className={`${styles.tableWrapper} ${isLoading ? styles.loadingOverlay : ''}`}>
             <CustomTable
@@ -550,8 +567,8 @@ const LensList: React.FC = () => {
           <h1>Lens Management</h1>
           <p>Manage your lens products and configurations</p>
           <div className={styles.headerActions}>
-            <Button 
-              color="primary" 
+            <Button
+              color="primary"
               className={styles.addButton}
               onClick={() => router.push('/en/products/lens/create')}
             >
@@ -617,6 +634,7 @@ const LensList: React.FC = () => {
               <LensFilter
                 onFilterChange={handleFilterChange}
                 lensTypes={lensTypes}
+                eyeReflactives={eyeReflactives}
                 initialParams={filterParams}
               />
             </div>

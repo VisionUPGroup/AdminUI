@@ -41,7 +41,7 @@ const LensTypeManagement: React.FC<LensTypeManagementProps> = ({
     const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
 
     const [formData, setFormData] = useState({
-        name: 'Name',
+        name: '',
         description: '',
         isNoPrescription: false,
         status: true
@@ -142,7 +142,7 @@ const LensTypeManagement: React.FC<LensTypeManagementProps> = ({
     const handleEdit = (lensType: LensType) => {
         setSelectedType(lensType);
         setFormData({
-            name:"",
+            name:lensType.name,
             description: lensType.description,
             isNoPrescription: lensType.isNoPrescription,
             status: lensType.status
