@@ -172,6 +172,72 @@ export const useLensService = () => {
         }
     };
 
+    // Create new lens type
+const createLensType = async (lensTypeData) => {
+    try {
+        const response = await axios.post(`${baseUrl}/api/lens-types`, lensTypeData, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'accept': '*/*',
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error creating lens type:", error);
+        throw error;
+    }
+};
+
+// Update lens type
+const updateLensType = async (lensTypeData) => {
+    try {
+        const response = await axios.put(`${baseUrl}/api/lens-types`, lensTypeData, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'accept': '*/*',
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating lens type:", error);
+        throw error;
+    }
+};
+
+// Get lens type by ID
+const fetchLensTypeById = async (id) => {
+    try {
+        const response = await axios.get(`${baseUrl}/api/lens-types/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'accept': '*/*'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching lens type with ID ${id}:`, error);
+        throw error;
+    }
+};
+
+// Delete lens type
+const deleteLensType = async (id) => {
+    try {
+        const response = await axios.delete(`${baseUrl}/api/lens-types/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`,
+                'accept': '*/*'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting lens type:", error);
+        throw error;
+    }
+};
+
     return {
         fetchLenses,
         createLens,
@@ -182,6 +248,10 @@ export const useLensService = () => {
         updateLensImage,
         uploadLensImage,
         fetchLensTypes,
-        fetchEyeReflactives
+        fetchEyeReflactives,
+        createLensType,
+        updateLensType, 
+        fetchLensTypeById,
+        deleteLensType
     };
 };

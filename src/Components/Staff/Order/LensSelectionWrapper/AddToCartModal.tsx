@@ -35,13 +35,13 @@ const AddToCartModal: React.FC<AddToCartModalProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div 
+        <motion.div
           className={styles.modalOverlay}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <motion.div 
+          <motion.div
             className={styles.modalContent}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -117,33 +117,37 @@ const AddToCartModal: React.FC<AddToCartModalProps> = ({
             </div>
 
             <footer className={styles.modalFooter}>
-  <button 
-    className={styles.cancelButton} 
-    onClick={onClose}
-  >
-    Cancel
-  </button>
-  <button 
-    className={styles.confirmButton} 
-    onClick={() => {
-      // Tạo prescription data mặc định cho lens type 4
-      const defaultPrescription = {
-        sphereOD: 0, cylinderOD: 0, axisOD: 0,
-        sphereOS: 0, cylinderOS: 0, axisOS: 0,
-        addOD: 0, addOS: 0, pd: 0
-      };
+              <button
+                className={styles.cancelButton}
+                onClick={onClose}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmButton}
+                onClick={() => {
+                  // Tạo prescription data mặc định cho lens không cần toa
+                  const defaultPrescription = {
+                    sphereOD: 0, cylinderOD: 0, axisOD: 0,
+                    sphereOS: 0, cylinderOS: 0, axisOS: 0,
+                    addOD: 0, addOS: 0, pd: 0
+                  };
 
-      onConfirm({
-        leftLens: selectedLenses.left,
-        rightLens: selectedLenses.right,
-        prescriptionData: defaultPrescription // Thêm prescription data mặc định
-      });
-    }}
-  >
-    <ShoppingCart size={20} />
-    <span>Add to Cart</span>
-  </button>
-</footer>
+                  onConfirm({
+                    leftLens: selectedLenses.left,
+                    rightLens: selectedLenses.right,
+                    prescriptionData:
+                      (selectedLenses.left?.lensType.isNoPrescription &&
+                        selectedLenses.right?.lensType.isNoPrescription)
+                        ? defaultPrescription
+                        : null
+                  });
+                }}
+              >
+                <ShoppingCart size={20} />
+                <span>Add to Cart</span>
+              </button>
+            </footer>
           </motion.div>
         </motion.div>
       )}

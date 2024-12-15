@@ -79,6 +79,7 @@ export interface LensSelectionState {
     status: boolean;
     features?: string[];
     lensTypeID: number;
+    lensType: LensType;
   }
   
   export interface LensImage {
@@ -90,4 +91,5 @@ export interface LensSelectionState {
     id: number;
     description: string;
     status: boolean;
+    isNoPrescription: boolean;
   }

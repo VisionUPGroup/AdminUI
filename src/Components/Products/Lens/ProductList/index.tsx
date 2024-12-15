@@ -1,20 +1,17 @@
-// LensList.tsx
 "use client";
-import React, { useState, useEffect } from 'react';
-import { Eye, Edit2, Trash2, Plus } from 'react-feather';
-import { Card, CardBody, Container, Row, Col, Button, Badge } from 'reactstrap';
-import CommonBreadcrumb from '@/CommonComponents/CommonBreadcrumb';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Eye, Edit2, Trash2, Plus, Settings, Search, Grid } from 'react-feather';
+import { Container, Row, Col, Button, Badge, Card, CardBody } from 'reactstrap';
 import { useRouter } from 'next/navigation';
-import CustomTable from '../../Digital/ProductListDigital/CustomTable';
-// import styles from '../../Digital/ProductListDigital/ProductListDigital.module.scss';
-import styles from '../styles/Lens.module.scss';
-import LensFilter from './LensFilter';
-import { FilterParams } from './LensFilter';
-import { useMemo } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+import CommonBreadcrumb from '@/CommonComponents/CommonBreadcrumb';
+import CustomTable from '../../Digital/ProductListDigital/CustomTable';
+import LensFilter from './LensFilter';
 import { useLensService } from '../../../../../Api/lensService';
+import LensTypeManagement from '../../LensType';
+import styles from '../styles/Lens.module.scss';
+import { FilterParams } from './LensFilter';
 
 interface EyeReflactive {
   id: number;
@@ -53,16 +50,24 @@ interface Lens {
 
 const LensList: React.FC = () => {
   const router = useRouter();
+  const { 
+    fetchLenses, 
+    fetchLensTypes, 
+    deleteLens,
+  } = useLensService();
+
+  // States
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [lenses, setLenses] = useState<Lens[]>([]);
   const [lensTypes, setLensTypes] = useState<LensType[]>([]);
-  const { fetchLenses, fetchLensTypes, deleteLens } = useLensService();
   const [filterParams, setFilterParams] = useState({
     PageIndex: 1,
     PageSize: 10,
   });
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLensTypeModalOpen, setIsLensTypeModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const sortLenses = (lenses: Lens[]) => {
     return [...lenses].sort((a, b) => {
@@ -76,25 +81,35 @@ const LensList: React.FC = () => {
   };
 
   useEffect(() => {
+    loadInitialData();
+  }, []);
+
+  const loadInitialData = async () => {
     const params = {
       PageIndex: 1,
       PageSize: 10,
       Descending: true,
     };
 
-    fetchLenses(params).then(data => {
-      if (Array.isArray(data.data)) {
-        setLenses(data.data);
-        setTotalItems(data.totalCount || 0);
-      }
-    });
+    try {
+      const [lensData, typesData] = await Promise.all([
+        fetchLenses(params),
+        fetchLensTypes()
+      ]);
 
-    fetchLensTypes().then(data => {
-      if (Array.isArray(data)) {
-        setLensTypes(data);
+      if (Array.isArray(lensData.data)) {
+        setLenses(lensData.data);
+        setTotalItems(lensData.totalCount || 0);
       }
-    });
-  }, []);
+
+      if (Array.isArray(typesData)) {
+        setLensTypes(typesData);
+      }
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+      toast.error('Failed to load data');
+    }
+  };
 
   const fetchData = async (params: FilterParams) => {
     setIsLoading(true);
@@ -106,10 +121,12 @@ const LensList: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      toast.error('Failed to fetch data');
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   const handleFilterChange = (newParams: FilterParams) => {
     const isClearAll = Object.keys(newParams).length === 2 && 
@@ -130,6 +147,7 @@ const LensList: React.FC = () => {
     setFilterParams(updatedParams);
     fetchData(updatedParams);
   };
+  
 
   const handlePageChange = (pageIndex: number) => {
     const updatedParams = {
@@ -138,6 +156,26 @@ const LensList: React.FC = () => {
     };
     setFilterParams(updatedParams);
     fetchData(updatedParams);
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        const newParams = {
+          ...filterParams,
+          SearchTerm: searchTerm,
+          PageIndex: 1
+        };
+        setFilterParams(newParams);
+        fetchData(newParams);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
   };
 
   const handleDelete = async (lens: Lens) => {
@@ -332,6 +370,44 @@ const LensList: React.FC = () => {
     }
   ];
 
+  const handleLensTypeSave = async (lensType: LensType) => {
+    try {
+      const method = lensType.id ? 'PUT' : 'POST';
+      const response = await fetch('/api/lens-types', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(lensType),
+      });
+  
+      if (!response.ok) throw new Error('Failed to save lens type');
+      
+      // Hiển thị thông báo thành công
+      toast.success(`Lens type ${lensType.id ? 'updated' : 'created'} successfully`);
+    } catch (error) {
+      console.error('Error saving lens type:', error);
+      toast.error('Failed to save lens type');
+    }
+  };
+
+  const handleLensTypeDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this lens type?')) return;
+    
+    try {
+      const response = await fetch(`/api/lens-types/${id}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) throw new Error('Failed to delete lens type');
+      
+      toast.success('Lens type deleted successfully');
+    } catch (error) {
+      console.error('Error deleting lens type:', error);
+      toast.error('Failed to delete lens type');
+    }
+  };
+
   const memoizedTableColumns = useMemo(() => tableColumns, []);
 
   const renderGridView = () => {
@@ -467,10 +543,60 @@ const LensList: React.FC = () => {
     router.push('/en/products/lens/new');
   };
 
-  // Tiếp tục phần return của LensList component
+  const renderHeader = () => {
+    return (
+      <div className={styles.pageHeader}>
+        <div className={styles.headerLeft}>
+          <h1>Lens Management</h1>
+          <p>Manage your lens products and configurations</p>
+          <div className={styles.headerActions}>
+            <Button 
+              color="primary" 
+              className={styles.addButton}
+              onClick={() => router.push('/en/products/lens/create')}
+            >
+              <Plus size={16} />
+              Add New Lens
+            </Button>
+            <Button
+              color="secondary"
+              className={styles.configButton}
+              onClick={() => setIsLensTypeModalOpen(true)}
+            >
+              <Settings size={16} />
+              Manage Lens Types
+            </Button>
+          </div>
+        </div>
+
+        <div className={styles.headerRight}>
+          <div className={styles.searchBox}>
+            <input
+              type="text"
+              placeholder="Search lenses..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search size={18} />
+          </div>
+
+          <div className={styles.viewToggle}>
+            <Button
+              color="light"
+              className={`${viewMode === 'grid' ? styles.active : ''}`}
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid size={16} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.productListPage}>
+      {renderHeader()}
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -487,30 +613,6 @@ const LensList: React.FC = () => {
       <Container fluid>
         <Row>
           <Col lg={12}>
-            <div className={styles.pageHeader}>
-              <div className={styles.headerLeft}>
-                <Button color="primary" className={styles.addButton} onClick={handleAddNewProduct}>
-                  <Plus size={14} className="me-1" /> Add New Lens
-                </Button>
-              </div>
-              <div className={styles.headerRight}>
-                <div className={styles.viewToggle}>
-                  <Button
-                    color={viewMode === 'grid' ? 'primary' : 'light'}
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <i className="fa fa-th-large" />
-                  </Button>
-                  <Button
-                    color={viewMode === 'table' ? 'primary' : 'light'}
-                    onClick={() => setViewMode('table')}
-                  >
-                    <i className="fa fa-list" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
             <div className={styles.filterWrapper}>
               <LensFilter
                 onFilterChange={handleFilterChange}
@@ -518,11 +620,15 @@ const LensList: React.FC = () => {
                 initialParams={filterParams}
               />
             </div>
-
             {renderContent()}
           </Col>
         </Row>
       </Container>
+
+      <LensTypeManagement
+        isOpen={isLensTypeModalOpen}
+        onClose={() => setIsLensTypeModalOpen(false)}
+      />
     </div>
   );
 };

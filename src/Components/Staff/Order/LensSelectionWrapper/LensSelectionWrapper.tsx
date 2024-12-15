@@ -98,9 +98,9 @@
           leftLens: lens,
           rightLens: lens
         }));
-  
-        // Skip to completion if lens type is 4
-        if (lens.lensTypeID === 4) {
+    
+        // Sử dụng isNoPrescription
+        if (lens.lensType.isNoPrescription) {
           handleDirectComplete(lens, lens);
         } else {
           setCurrentStep(2);
@@ -111,21 +111,20 @@
           ...selectionState,
           [eye === 'left' ? 'leftLens' : 'rightLens']: lens
         };
-  
+    
         setSelectionState(updatedSelectionState);
-  
+    
         // Check if both lenses are selected
         if ((eye === 'left' && selectionState.rightLens) ||
             (eye === 'right' && selectionState.leftLens)) {
           
           const leftLens = eye === 'left' ? lens : selectionState.leftLens;
           const rightLens = eye === 'right' ? lens : selectionState.rightLens;
-  
-          // If both lenses are type 4, skip to completion
-          if (leftLens?.lensTypeID === 4 && rightLens?.lensTypeID === 4) {
+    
+          // Kiểm tra cả hai lens có isNoPrescription
+          if (leftLens?.lensType.isNoPrescription && rightLens?.lensType.isNoPrescription) {
             handleDirectComplete(leftLens, rightLens);
           } else {
-            // Continue with normal flow if at least one lens is not type 4
             setCurrentStep(2);
           }
         }
