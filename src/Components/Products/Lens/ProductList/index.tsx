@@ -12,6 +12,7 @@ import { useLensService } from '../../../../../Api/lensService';
 import LensTypeManagement from '../../LensType';
 import styles from '../styles/Lens.module.scss';
 import { FilterParams } from './LensFilter';
+import EyeReflactiveManagement from '../../EyeReflactiveType';
 
 interface EyeReflactive {
   id: number;
@@ -68,7 +69,7 @@ const LensList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLensTypeModalOpen, setIsLensTypeModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const sortLenses = (lenses: Lens[]) => {
     return [...lenses].sort((a, b) => {
       // Sort by status first (active first, then inactive)
@@ -566,6 +567,14 @@ const LensList: React.FC = () => {
               <Settings size={16} />
               Manage Lens Types
             </Button>
+            <Button
+              color="secondary"
+              className={styles.configButton}
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Settings size={16} />
+              Manage Eye Reflactive
+            </Button>
           </div>
         </div>
 
@@ -629,6 +638,10 @@ const LensList: React.FC = () => {
         isOpen={isLensTypeModalOpen}
         onClose={() => setIsLensTypeModalOpen(false)}
       />
+      <EyeReflactiveManagement 
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+/>
     </div>
   );
 };
