@@ -231,6 +231,7 @@ const deleteLensType = async (id) => {
                 'accept': '*/*'
             }
         });
+        
         return response.data;
     } catch (error) {
         console.error("Error deleting lens type:", error);
