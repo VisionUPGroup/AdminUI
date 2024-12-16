@@ -571,7 +571,7 @@ const LensList: React.FC = () => {
             <Button
               color="primary"
               className={styles.addButton}
-              onClick={() => router.push('/en/products/lens/create')}
+              onClick={() => router.push('/en/products/lens/new')}
             >
               <Plus size={16} />
               Add New Lens

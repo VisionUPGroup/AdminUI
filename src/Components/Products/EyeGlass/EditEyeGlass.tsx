@@ -65,6 +65,28 @@ enum ColorType {
     White = 6
 }
 
+// Tạo mapper để chuyển đổi giữa string và enum number
+const colorStringToEnum: { [key: string]: ColorType } = {
+    'Red': ColorType.Red,
+    'Green': ColorType.Green,
+    'Blue': ColorType.Blue,
+    'Yellow': ColorType.Yellow,
+    'Gray': ColorType.Gray,
+    'Black': ColorType.Black,
+    'White': ColorType.White
+};
+
+const colorEnumToString: { [key: number]: string } = {
+    [ColorType.Red]: 'Red',
+    [ColorType.Green]: 'Green',
+    [ColorType.Blue]: 'Blue',
+    [ColorType.Yellow]: 'Yellow',
+    [ColorType.Gray]: 'Gray',
+    [ColorType.Black]: 'Black',
+    [ColorType.White]: 'White'
+};
+
+
 interface ColorOption {
     value: ColorType;
     label: string;
@@ -166,6 +188,15 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
         weight: ''
     });
 
+    // const colorOptions: ColorOption[] = [
+    //     { value: ColorType.Red, label: 'Red' },
+    //     { value: ColorType.Green, label: 'Green' },
+    //     { value: ColorType.Blue, label: 'Blue' },
+    //     { value: ColorType.Yellow, label: 'Yellow' },
+    //     { value: ColorType.Gray, label: 'Gray' },
+    //     { value: ColorType.Black, label: 'Black' },
+    //     { value: ColorType.White, label: 'White' }
+    // ];
     const colorOptions: ColorOption[] = [
         { value: ColorType.Red, label: 'Red' },
         { value: ColorType.Green, label: 'Green' },
@@ -207,7 +238,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                 ...img,
                                 url: img.url && img.url.trim() !== '' ? img.url : ''
                             }));
-                            
+
                             // Nếu số lượng ảnh < 5, thêm các ô trống
                             if (processedImages.length < 5) {
                                 const emptySlots = 5 - processedImages.length;
@@ -238,7 +269,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                             price: eyeGlassData.price.toString(),
                             quantity: eyeGlassData.quantity.toString(),
                             material: eyeGlassData.material,
-                            color: eyeGlassData.color.toString(),
+                            color: colorStringToEnum[eyeGlassData.color]?.toString() || '',
                             style: eyeGlassData.style,
                             design: eyeGlassData.design,
                             eyeGlassTypeID: eyeGlassData.eyeGlassTypeID.toString(),
@@ -655,7 +686,10 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                                 >
                                                                     <option value="">Select Color</option>
                                                                     {colorOptions.map(color => (
-                                                                        <option key={color.value} value={color.value}>
+                                                                        <option
+                                                                            key={color.value}
+                                                                            value={color.value}
+                                                                        >
                                                                             {color.label}
                                                                         </option>
                                                                     ))}
