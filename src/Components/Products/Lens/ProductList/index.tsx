@@ -50,6 +50,12 @@ interface Lens {
   lensImages: LensImage[];
 }
 
+const defaultParams = {
+  PageIndex: 1,
+  PageSize: 10,
+  Descending: true,
+};
+
 const LensList: React.FC = () => {
   const router = useRouter();
   const {
@@ -64,10 +70,7 @@ const LensList: React.FC = () => {
   const [lenses, setLenses] = useState<Lens[]>([]);
   const [lensTypes, setLensTypes] = useState<LensType[]>([]);
   const [eyeReflactives, setEyeReflactives] = useState<EyeReflactive[]>([]);
-  const [filterParams, setFilterParams] = useState({
-    PageIndex: 1,
-    PageSize: 10,
-  });
+  const [filterParams, setFilterParams] = useState(defaultParams);
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isLensTypeModalOpen, setIsLensTypeModalOpen] = useState(false);
@@ -89,17 +92,11 @@ const LensList: React.FC = () => {
   }, []);
 
   const loadInitialData = async () => {
-    const params = {
-      PageIndex: 1,
-      PageSize: 10,
-      Descending: true,
-    };
-
     try {
       const [lensData, typesData, reflactivesData] = await Promise.all([
-        fetchLenses(params),
+        fetchLenses(defaultParams), // Use defaultParams here
         fetchLensTypes(),
-        fetchEyeReflactives() // Thêm fetch eyeReflactives
+        fetchEyeReflactives()
       ]);
 
       if (Array.isArray(lensData.data)) {
@@ -144,11 +141,13 @@ const LensList: React.FC = () => {
 
     let updatedParams;
     if (isClearAll) {
-      updatedParams = { ...newParams };
+      // When clearing all filters, maintain default params including Descending: true
+      updatedParams = { ...defaultParams };
     } else {
       updatedParams = {
         ...filterParams,
         ...newParams,
+        Descending: true, // Always ensure Descending is true
         PageIndex: newParams.PageIndex || 1
       };
     }
@@ -161,7 +160,8 @@ const LensList: React.FC = () => {
   const handlePageChange = (pageIndex: number) => {
     const updatedParams = {
       ...filterParams,
-      PageIndex: pageIndex
+      PageIndex: pageIndex,
+      Descending: true, // Ensure Descending remains true on page change
     };
     setFilterParams(updatedParams);
     fetchData(updatedParams);
@@ -173,7 +173,8 @@ const LensList: React.FC = () => {
         const newParams = {
           ...filterParams,
           SearchTerm: searchTerm,
-          PageIndex: 1
+          PageIndex: 1,
+          Descending: true, // Ensure Descending remains true on search
         };
         setFilterParams(newParams);
         fetchData(newParams);

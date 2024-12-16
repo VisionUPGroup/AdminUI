@@ -41,6 +41,7 @@ interface LensImage {
 
 interface LensType {
     id: number;
+    name: string;
     description: string;
     status: boolean;
 }
@@ -285,6 +286,7 @@ const AddLens: React.FC = () => {
                 eyeReflactiveID: parseInt(formData.eyeReflactiveID)
             };
 
+            console.log("lensData",lensData);
             const newLens = await createLens(lensData);
 
             if (!newLens || !newLens.id) {
@@ -514,7 +516,7 @@ const AddLens: React.FC = () => {
                                                                 <option value="">Select Lens Type</option>
                                                                 {lensTypes.map(type => (
                                                                     <option key={type.id} value={type.id}>
-                                                                        {type.description}
+                                                                        {type.name}
                                                                     </option>
                                                                 ))}
                                                             </Input>

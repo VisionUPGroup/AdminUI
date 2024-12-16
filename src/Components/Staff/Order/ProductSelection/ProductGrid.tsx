@@ -55,7 +55,10 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductSelect }) => {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const queryParams: Record<string, string> = {};
+      const queryParams: Record<string, string> = {
+        Status: 'true', // Chỉ lấy active products
+        Descending: 'true' // Sắp xếp theo thứ tự giảm dần
+      };
       
       if (filters.name) queryParams.Name = filters.name;
       if (filters.eyeGlassTypeID) queryParams.EyeGlassTypeID = filters.eyeGlassTypeID;
@@ -64,14 +67,16 @@ const ProductGrid: React.FC<ProductGridProps> = ({ onProductSelect }) => {
 
       const response = await fetchEyeGlasses(queryParams);
       if (response?.data) {
-        setProducts(response.data);
+        // Filter chỉ lấy sản phẩm có status = true
+        const activeProducts = response.data.filter((product: EyeGlass) => product.status === true);
+        setProducts(activeProducts);
       }
     } catch (error) {
       console.error('Error loading products:', error);
     } finally {
       setLoading(false);
     }
-  };
+};
 
   const resetFilters = () => {
     setFilters({
