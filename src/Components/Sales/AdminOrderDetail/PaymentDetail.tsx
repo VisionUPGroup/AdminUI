@@ -193,28 +193,18 @@ const PaymentDetails: React.FC<{ paymentInfo: PaymentInfo }> = ({ paymentInfo })
     return (
       <div className="voucher-details">
         <div className="voucher-header">
-          <span className="tag">
-            <FaTag className="tag-icon" />
-            {voucherDetails?.code || paymentInfo.voucher.code}
-          </span>
-          <span className="discount">
-            <FaPercent className="percent-icon" />
-            {voucherDetails?.sale || 0}% OFF
-          </span>
+        
+        
         </div>
         
         {voucherDetails && (
           <div className="voucher-info">
-            <span className="voucher-name">
-              {voucherDetails.name}
-            </span>
-            {voucherDetails.quantity > 0 && (
-              <span className="voucher-quantity">
-                ({voucherDetails.quantity} vouchers remaining)
-              </span>
-            )}
+             <span className="tag">
+            <FaTag className="tag-icon" />
+            {voucherDetails?.code || paymentInfo.voucher.code}
+          </span>
             <div className="discount-amount">
-              Discount Amount: {formatCurrency(calculateDiscountAmount())}
+              Discount: {formatCurrency(calculateDiscountAmount())}
             </div>
           </div>
         )}
@@ -299,6 +289,7 @@ const PaymentDetails: React.FC<{ paymentInfo: PaymentInfo }> = ({ paymentInfo })
                 />
               </div>
               <div className="product-info">
+              <h3 className="product-name">Product glass ID: {item.productGlassID}</h3>
                 <h3 className="product-name">{item.eyeGlass.name}</h3>
                 
                 <div className="eyeglass-price">
