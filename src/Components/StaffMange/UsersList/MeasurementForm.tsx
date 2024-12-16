@@ -86,7 +86,7 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     
-    // Validate pupil distance - Không cho số âm
+    // Validate pupil distance
     if (commonPupilDistance === null || commonPupilDistance === undefined || isNaN(commonPupilDistance)) {
       newErrors.pupilDistance = 'Pupil distance is required';
     } else if (commonPupilDistance < 50 || commonPupilDistance > 80) {
@@ -96,45 +96,36 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
     // Validate left eye
     if (leftEyeData.spherical === null || leftEyeData.spherical === undefined || isNaN(leftEyeData.spherical)) {
       newErrors.leftSpherical = 'Spherical value is required';
-    } else if (leftEyeData.spherical < -20 || leftEyeData.spherical > 20) {
-      newErrors.leftSpherical = 'Spherical must be between -20 and +20';
     }
 
     if (leftEyeData.cylindrical === null || leftEyeData.cylindrical === undefined || isNaN(leftEyeData.cylindrical)) {
       newErrors.leftCylindrical = 'Cylindrical value is required';
-    } else if (leftEyeData.cylindrical < -20 || leftEyeData.cylindrical > 20) {
-      newErrors.leftCylindrical = 'Cylindrical must be between -20 and +20';
     }
 
     if (leftEyeData.axis === null || leftEyeData.axis === undefined || isNaN(leftEyeData.axis)) {
       newErrors.leftAxis = 'Axis value is required';
-    } else if (leftEyeData.axis < 0 || leftEyeData.axis > 180) { // Không cho số âm cho Axis
+    } else if (leftEyeData.axis < 0 || leftEyeData.axis > 180) { // Giữ lại validation không cho số âm cho Axis
       newErrors.leftAxis = 'Axis must be between 0 and 180 degrees';
     }
 
     // Validate right eye
     if (rightEyeData.spherical === null || rightEyeData.spherical === undefined || isNaN(rightEyeData.spherical)) {
       newErrors.rightSpherical = 'Spherical value is required';
-    } else if (rightEyeData.spherical < -20 || rightEyeData.spherical > 20) {
-      newErrors.rightSpherical = 'Spherical must be between -20 and +20';
     }
 
     if (rightEyeData.cylindrical === null || rightEyeData.cylindrical === undefined || isNaN(rightEyeData.cylindrical)) {
       newErrors.rightCylindrical = 'Cylindrical value is required';
-    } else if (rightEyeData.cylindrical < -20 || rightEyeData.cylindrical > 20) {
-      newErrors.rightCylindrical = 'Cylindrical must be between -20 and +20';
     }
 
     if (rightEyeData.axis === null || rightEyeData.axis === undefined || isNaN(rightEyeData.axis)) {
       newErrors.rightAxis = 'Axis value is required';
-    } else if (rightEyeData.axis < 0 || rightEyeData.axis > 180) { // Không cho số âm cho Axis
+    } else if (rightEyeData.axis < 0 || rightEyeData.axis > 180) { // Giữ lại validation không cho số âm cho Axis
       newErrors.rightAxis = 'Axis must be between 0 and 180 degrees';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
 };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {

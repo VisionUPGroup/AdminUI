@@ -72,7 +72,7 @@ export const useOrderService = () => {
     orderId = "",) => {
     try {
       const token = getToken();
-      const response = await axios.get(`${baseUrl}/api/orders/my-kiosk`, {
+      const response = await axios.get(`${baseUrl}/api/accounts/orders`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
