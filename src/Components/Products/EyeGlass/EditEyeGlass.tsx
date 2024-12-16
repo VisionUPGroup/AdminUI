@@ -88,7 +88,7 @@ enum StyleType {
 interface FormData {
     name: string;
     price: string;
-    quantity: string;
+    // quantity: string;
     material: string;
     color: string;
     style: StyleType | string;
@@ -107,7 +107,7 @@ interface FormData {
 interface ValidationErrors {
     name: string;
     price: string;
-    quantity: string;
+    // quantity: string;
     eyeGlassTypeID: string;
     material: string;
     color: string;
@@ -134,7 +134,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
     const [formData, setFormData] = useState({
         name: '',
         price: '',
-        quantity: '',
+        // quantity: '',
         material: '',
         color: '',
         style: '',
@@ -152,7 +152,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
     const [errors, setErrors] = useState<ValidationErrors>({
         name: '',
         price: '',
-        quantity: '',
+        // quantity: '',
         eyeGlassTypeID: '',
         material: '',
         color: '',

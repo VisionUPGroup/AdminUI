@@ -248,12 +248,18 @@ const AddEyeGlass: React.FC = () => {
         }
     };
 
+        const validationForm = (): boolean => {
+            const validationErrors = validateForm(formData, true); // false for Edit mode
+            setErrors(validationErrors);
+            return isFormValid(validationErrors);
+        };
+
 
     const handleSave = async () => {
-        // if (!validationForm()) {
-        //     toast.error("Please check all required fields");
-        //     return;
-        // }
+        if (!validationForm()) {
+            toast.error("Please check all required fields");
+            return;
+        }
 
         setLoading(true);
         try {

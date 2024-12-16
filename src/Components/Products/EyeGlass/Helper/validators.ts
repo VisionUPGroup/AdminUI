@@ -10,7 +10,7 @@ export interface EyeGlassImage {
 export interface EyeGlassFormData {
     name: string;
     price: string;
-    quantity: string;
+    // quantity: string;
     material: string;
     color: string;
     style: string;
@@ -48,12 +48,12 @@ export const validateField = (name: string, value: any, isAdd: boolean = false):
             if (Number(value) > 1000000000) return 'Price is too high';
             return '';
 
-        case 'quantity':
-            if (!value) return 'Quantity is required';
-            if (!Number.isInteger(Number(value))) return 'Quantity must be a whole number';
-            if (Number(value) < 0) return 'Quantity cannot be negative';
-            if (Number(value) > 1000000) return 'Quantity is too high';
-            return '';
+        // case 'quantity':
+        //     if (!value) return 'Quantity is required';
+        //     if (!Number.isInteger(Number(value))) return 'Quantity must be a whole number';
+        //     if (Number(value) < 0) return 'Quantity cannot be negative';
+        //     if (Number(value) > 1000000) return 'Quantity is too high';
+        //     return '';
 
         case 'material':
             if (!value?.toString().trim()) return 'Material is required';
@@ -116,7 +116,7 @@ export const validateForm = (formData: EyeGlassFormData, isAdd: boolean = false)
     return {
         name: validateField('name', formData.name, isAdd),
         price: validateField('price', formData.price, isAdd),
-        quantity: validateField('quantity', formData.quantity, isAdd),
+        // quantity: validateField('quantity', formData.quantity, isAdd),
         material: validateField('material', formData.material, isAdd),
         color: validateField('color', formData.color, isAdd),
         design: validateField('design', formData.design, isAdd),
