@@ -71,7 +71,9 @@ const Kiosk: React.FC = () => {
       setIsLoading(true);
       const data = await fetchAllKiosk();
       // Sort data by ID in descending order
-      const sortedData = data.sort((a: { id: number; }, b: { id: number; }) => b.id - a.id);
+      const sortedData = data.sort(
+        (a: { id: number }, b: { id: number }) => b.id - a.id
+      );
       setKioskData(sortedData);
       setFilteredData(sortedData);
     } catch (error) {
@@ -232,10 +234,7 @@ const Kiosk: React.FC = () => {
             <div className="stat-content">
               <div className="stat-value">{totalKiosks}</div>
               <div className="stat-label">Total Kiosks</div>
-              <div className="stat-change">
-                <FaArrowUp />
-                12% from last month
-              </div>
+              <div className="stat-change"></div>
             </div>
             <FaStore className="stat-icon" />
           </div>
@@ -244,10 +243,7 @@ const Kiosk: React.FC = () => {
             <div className="stat-content">
               <div className="stat-value">{activeKiosks}</div>
               <div className="stat-label">Active Kiosks</div>
-              <div className="stat-change">
-                <FaArrowUp />
-                8% from last month
-              </div>
+              <div className="stat-change"></div>
             </div>
             <FaUsers className="stat-icon" />
           </div>
@@ -256,10 +252,7 @@ const Kiosk: React.FC = () => {
             <div className="stat-content">
               <div className="stat-value">{uniqueLocations}</div>
               <div className="stat-label">Unique Locations</div>
-              <div className="stat-change">
-                <FaArrowUp />
-                5% from last month
-              </div>
+              <div className="stat-change"></div>
             </div>
             <FaChartLine className="stat-icon" />
           </div>
@@ -381,16 +374,22 @@ const Kiosk: React.FC = () => {
                               <FaList />
                             </button>
                             <button
-  className={`move-btn ${!kiosk.status ? 'disabled' : ''}`}
-  onClick={() => {
-    setSelectedMoveKiosk(kiosk);
-    setMoveModalOpen(true);
-  }}
-  disabled={!kiosk.status}
-  title={!kiosk.status ? "Cannot move orders from inactive kiosk" : "Move Orders"}
->
-  <FaExchangeAlt />
-</button>
+                              className={`move-btn ${
+                                !kiosk.status ? "disabled" : ""
+                              }`}
+                              onClick={() => {
+                                setSelectedMoveKiosk(kiosk);
+                                setMoveModalOpen(true);
+                              }}
+                              disabled={!kiosk.status}
+                              title={
+                                !kiosk.status
+                                  ? "Cannot move orders from inactive kiosk"
+                                  : "Move Orders"
+                              }
+                            >
+                              <FaExchangeAlt />
+                            </button>
                             <button
                               className="edit-btn"
                               onClick={() => {
@@ -456,7 +455,6 @@ const Kiosk: React.FC = () => {
         isOpen={createModalOpen}
         toggle={() => setCreateModalOpen(false)}
         onSave={async () => {
-          toast.success("Kiosk created successfully");
           await fetchKioskData();
           setCurrentPage(1); // Reset page khi thêm mới
           setCreateModalOpen(false);
