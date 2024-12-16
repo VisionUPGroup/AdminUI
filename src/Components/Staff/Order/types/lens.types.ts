@@ -89,6 +89,7 @@ export interface LensSelectionState {
   
   export interface LensType {
     id: number;
+    name: string;
     description: string;
     status: boolean;
     isNoPrescription: boolean;

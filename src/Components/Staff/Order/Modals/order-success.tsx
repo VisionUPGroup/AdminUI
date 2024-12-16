@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePaymentService } from '../../../../../Api/paymentService';
+import { useOrderService } from '../../../../../Api/orderService';
 import OrderSuccessModal from './OrderSuccessModal';
 import PrintReceipt from './PrintReceipt';
 import { toast } from 'react-hot-toast';
@@ -61,17 +62,17 @@ const COMPANY_INFO = {
   email: "contact@visionstore.com",
   logo: "/images/logo.png",
   taxId: "0123456789",
-  website: "https://visionup.id.vn/" // Thêm website
+  website: "https://visionup.id.vn/" 
 };
 
-// Add staff name from localStorage or context
-const STAFF_NAME = "Staff Member"; // You should replace this with actual staff name from your auth system
+const STAFF_NAME = "Staff Member"; 
 
 const OrderSuccessPage = () => {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showPrintHandler, setShowPrintHandler] = useState(false);
   const { fetchPaymentByOrderId } = usePaymentService();
+  const { fetchOrderById } = useOrderService();
   const [hasMounted, setHasMounted] = useState(false);
   const [hasFetchedPayment, setHasFetchedPayment] = useState(false);
   
@@ -97,7 +98,10 @@ const OrderSuccessPage = () => {
           const orderId = vnp_OrderInfo?.replace('VSU', '');
           
           if (orderId) {
-            const paymentDetails = await fetchPaymentByOrderId(orderId);
+            const [paymentDetails, orderDetails] = await Promise.all([
+              fetchPaymentByOrderId(orderId),
+              fetchOrderById(orderId)
+            ]);
             
             if (paymentDetails) {
               // Map API response to OrderSuccessData format

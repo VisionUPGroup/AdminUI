@@ -1,74 +1,111 @@
-// components/PrintReceipt/PrintReceipt.module.scss
-
+// PrintReceipt.module.scss
 @import './variables';
 
 .printReceiptWrapper {
   background: white;
-  padding: 2rem;
-  max-width: 800px;
+  padding: 2.5rem;
+  max-width: 210mm; // A4 width
   margin: 0 auto;
   font-size: 14px;
   color: $text-primary;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   @media print {
     padding: 0;
     max-width: none;
+    box-shadow: none;
   }
 }
 
+// Enhanced Header Styles
 .header {
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  gap: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 2px solid rgba($black, 0.1);
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid rgba($black, 0.08);
+  padding-bottom: 2rem;
 
-  .logoSection {
+  .brandSection {
     display: flex;
-    gap: 1rem;
-    
-    img {
-      width: 100px;
-      height: 100px;
-      object-fit: contain;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    justify-content: space-between;
+
+    .logoWrapper {
+      flex-shrink: 0;
+      
+      
+      .logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: 8px;
+      }
     }
 
-    .companyDetails {
+    .companyInfo {
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        color: $primary;
+        margin-bottom: 1rem;
       }
 
-      p {
-        color: $text-secondary;
-        font-size: 0.9rem;
-        line-height: 1.4;
+      .companyDetails {
+        display: grid;
+        gap: 0.5rem;
+
+        .detailItem {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          color: $text-secondary;
+
+          i {
+            color: $primary;
+            width: 16px;
+          }
+        }
       }
     }
   }
 
-  .receiptInfo {
-    text-align: right;
+  .receiptDetails {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-top: 1rem;
 
-    h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: $primary;
+    .receiptHeader {
+      text-align: right;
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $primary;
+        margin-bottom: 0.5rem;
+      }
+
+      .receiptNumber {
+        font-size: 1.1rem;
+        color: $text-secondary;
+        font-weight: 500;
+      }
     }
 
-    table {
-      td {
-        padding: 0.25rem 0;
-        
-        &:first-child {
-          padding-right: 1rem;
+    .receiptInfo {
+      display: grid;
+      gap: 0.5rem;
+      text-align: right;
+
+      .infoItem {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+
+        span {
           color: $text-secondary;
         }
 
-        &:last-child {
+        strong {
           font-weight: 500;
         }
       }
@@ -76,157 +113,237 @@
   }
 }
 
+// Enhanced Products Section
 .productsSection {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 
   .productsTable {
     width: 100%;
-    border-collapse: collapse;
-
-    th, td {
-      padding: 0.75rem;
-      border-bottom: 1px solid rgba($black, 0.1);
-    }
-
+    border-collapse: separate;
+    border-spacing: 0;
+    
     th {
-      background: $background;
+      background: rgba($primary, 0.05);
+      padding: 1rem;
       font-weight: 600;
       text-align: left;
+      color: $primary;
+      border-bottom: 2px solid rgba($primary, 0.1);
+
+      &.amountCol {
+        text-align: right;
+        width: 120px;
+      }
+
+      &.specCol {
+        width: 40%;
+      }
     }
 
-    .itemType {
-      font-size: 0.85rem;
-      color: $text-secondary;
+    .frameRow, .lensRow {
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba($black, 0.08);
+      }
+    }
+
+    .frameRow {
+      background: white;
+    }
+
+    .lensRow {
+      background: rgba($background, 0.3);
+    }
+
+    .productInfo {
+      .productLabel {
+        display: block;
+        color: $text-secondary;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .productName {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .productId {
+        color: $text-secondary;
+        font-size: 0.85rem;
+      }
+    }
+
+    .specifications {
+      .lensSpecs {
+        display: grid;
+        gap: 1rem;
+
+        .lensDetail {
+          strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            color: $primary;
+          }
+
+          p {
+            margin: 0;
+            font-weight: 500;
+          }
+
+          small {
+            display: block;
+            color: $text-secondary;
+            margin-top: 0.25rem;
+          }
+        }
+      }
     }
 
     .amount {
       text-align: right;
       font-weight: 500;
     }
+  }
+}
 
-    .lensRow {
+// Enhanced Payment Section
+.paymentSection {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 3rem;
+
+  .paymentSummary {
+    width: 350px;
+
+    .summaryTable {
+      margin-bottom: 2rem;
+
+      .summaryRow {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba($black, 0.08);
+
+        &.discount {
+          color: $success;
+        }
+
+        &.total {
+          font-size: 1.2rem;
+          font-weight: 600;
+          border-top: 2px solid rgba($black, 0.1);
+          border-bottom: none;
+          margin-top: 1rem;
+          padding-top: 1rem;
+        }
+
+        &.paid span:last-child {
+          color: $success;
+        }
+
+        &.remaining span:last-child {
+          color: #EF4444;
+        }
+      }
+    }
+
+    .paymentMethods {
       background: rgba($background, 0.3);
+      padding: 1.5rem;
+      border-radius: 8px;
 
-      .lensSpecs {
-        p {
-          margin: 0.25rem 0;
+      h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $primary;
+        margin-bottom: 1rem;
+      }
+
+      .paymentMethod {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba($black, 0.08);
+
+        &:last-child {
+          border-bottom: none;
         }
 
-        small {
-          display: block;
-          color: $text-secondary;
-          font-size: 0.85rem;
-          margin-bottom: 0.5rem;
+        .methodInfo {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .methodType {
+            font-weight: 500;
+          }
+
+          .methodDate {
+            font-size: 0.85rem;
+            color: $text-secondary;
+          }
+        }
+
+        .methodAmount {
+          font-weight: 500;
         }
       }
     }
   }
 }
 
-.paymentSummary {
-  margin-left: auto;
-  width: 300px;
-  margin-bottom: 2rem;
-
-  table {
-    width: 100%;
-    margin-bottom: 1rem;
-
-    td {
-      padding: 0.5rem 0;
-
-      &:last-child {
-        text-align: right;
-        font-weight: 500;
-      }
-    }
-
-    .discount td {
-      color: $success;
-    }
-
-    .total {
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-top: 2px solid rgba($black, 0.1);
-      padding-top: 1rem;
-    }
-
-    .paid td:last-child {
-      color: $success;
-    }
-
-    .remaining td:last-child {
-      color: #EF4444;
-    }
-  }
-
-  .paymentMethod {
-    padding-top: 1rem;
-    border-top: 1px solid rgba($black, 0.1);
-
-    p {
-      margin-bottom: 0.5rem;
-      color: $text-secondary;
-    }
-
-    .paymentDetail {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0;
-
-      span:last-child {
-        font-weight: 500;
-      }
-
-      small {
-        display: block;
-        font-size: 0.8rem;
-        color: $text-secondary;
-      }
-    }
-  }
-}
-
+// Enhanced Footer
 .footer {
   text-align: center;
-  padding-top: 2rem;
-  border-top: 2px solid rgba($black, 0.1);
+  padding-top: 2.5rem;
+  border-top: 2px solid rgba($black, 0.08);
 
-  .qrCodeSection {
-    margin-bottom: 1rem;
+  .qrSection {
+    margin-bottom: 2rem;
 
     canvas {
-      margin-bottom: 0.5rem;
+      padding: 8px;
+      background: white;
+      border: 1px solid rgba($black, 0.08);
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
     }
 
-    small {
+    span {
       display: block;
       color: $text-secondary;
-      font-size: 0.8rem;
+      font-size: 0.9rem;
     }
   }
 
-  .terms {
-    margin-bottom: 1rem;
+  .thankYouSection {
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $primary;
+      margin-bottom: 1rem;
+    }
 
     p {
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-    }
-
-    small {
-      display: block;
       color: $text-secondary;
-      font-size: 0.8rem;
-      line-height: 1.4;
+      line-height: 1.6;
+      
+      strong {
+        color: $text-primary;
+      }
     }
   }
 
-  .copySection {
+  .copyright {
     color: $text-secondary;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba($black, 0.08);
   }
 }
 
@@ -238,21 +355,30 @@
   }
 
   .printReceiptWrapper {
-    font-size: 12pt;
+    font-size: 11pt;
   }
 
-  .header, .footer {
+  .header {
     border-color: #000;
   }
 
   .productsTable {
     th {
-      background-color: #fff !important;
-      border-bottom: 2px solid #000;
+      background-color: #f8f9fa !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     .lensRow {
-      background-color: #fff !important;
+      background-color: #f8f9fa !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
+  }
+
+  .paymentMethods {
+    background-color: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }

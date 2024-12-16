@@ -187,8 +187,8 @@ const LensSelector: React.FC<LensSelectorProps> = ({
                 whileTap={{ scale: 0.98 }}
               >
                 <div className={styles.typeContent}>
-                  <h4>{type.description.split('.')[0]}</h4>
-                  <p>{type.description.split('.')[1]}</p>
+                  <h4>{type.name}</h4>
+                  <p>{type.description}</p>
                 </div>
                 {selectedType === type.id && (
                   <motion.div
