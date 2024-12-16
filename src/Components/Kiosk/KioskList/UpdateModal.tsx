@@ -237,23 +237,82 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
   
     try {
       setIsSubmitting(true);
-      
-      const districtName = districts.find(d => d.code === formData.district)?.name || '';
-      const wardName = wards.find(w => w.code === formData.ward)?.name || '';
-      const fullAddress = `${formData.streetAddress}, ${wardName}, ${districtName}, TP. Hồ Chí Minh`;
+  
+      // Debug logs
+      console.log("Current FormData:", {
+        district: formData.district,
+        ward: formData.ward
+      });
+  
+      // API trả về code dưới dạng số, nên cần chuyển đổi để so sánh
+      const selectedDistrict = districts.find(d => String(d.code) === String(formData.district));
+      const selectedWard = wards.find(w => String(w.code) === String(formData.ward));
+  
+      console.log("Districts data:", districts);
+      console.log("Wards data:", wards);
+      console.log("Selected District:", selectedDistrict);
+      console.log("Selected Ward:", selectedWard);
+  
+      if (!selectedDistrict || !selectedWard) {
+        console.error("District or Ward not found", {
+          formDistrictCode: formData.district,
+          formWardCode: formData.ward,
+          availableDistrictCodes: districts.map(d => d.code),
+          availableWardCodes: wards.map(w => w.code)
+        });
+        toast.error("Please ensure district and ward are selected correctly");
+        return;
+      }
+  
+      // Xây dựng địa chỉ đầy đủ với kiểm tra null/undefined
+      const addressComponents = [
+        formData.streetAddress.trim(),
+        selectedWard.name,
+        selectedDistrict.name,
+        "TP. Hồ Chí Minh"
+      ].filter(Boolean);
+  
+      const fullAddress = addressComponents.join(", ");
+  
+      console.log("Final Address:", fullAddress);
   
       const submitData = {
-        ...formData,
+        id: formData.id, // Thêm id vào để update đúng kiosk
+        name: formData.name.trim(),
         address: fullAddress,
+        phoneNumber: formData.phoneNumber.trim(),
+        email: formData.email.trim(),
+        openingHours: formData.openingHours.trim(),
+        status: formData.status
       };
   
-      await onSave(submitData); // Chỉ cần await, không cần check response
+      console.log("Final Submit Data:", submitData);
+  
+      // Gọi API update
+      await onSave(submitData);
       toast.success('Updated successfully!');
       setHasChanges(false);
       toggle();
   
     } catch (error: any) {
-      // Xử lý error như cũ
+      console.error("Error updating kiosk:", error);
+      if (error.response?.data) {
+        const apiErrors = error.response.data;
+        if (apiErrors.errors) {
+          const newErrors: FormError = {};
+          Object.entries(apiErrors.errors).forEach(
+            ([key, messages]: [string, any]) => {
+              newErrors[key.toLowerCase() as keyof FormError] = Array.isArray(messages)
+                ? messages[0]
+                : messages;
+            }
+          );
+          setErrors(newErrors);
+        }
+        toast.error(apiErrors.message || error.response.data[0] || 'Failed to update kiosk');
+      } else {
+        toast.error(error.message || 'Failed to update kiosk. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
