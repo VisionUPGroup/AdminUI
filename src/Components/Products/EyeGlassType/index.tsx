@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Modal, Button, ButtonGroup } from "reactstrap";
 import { Plus, Edit2, Trash2, X, Power, Search } from "react-feather";
 import Swal from "sweetalert2";
-import styles from "./EyeGlassTypeManagement.module.scss";
+import styles from "./EyeglassTypeManagement.module.scss";
 import { useEyeGlassService } from "../../../../Api/eyeGlassService";
 import { toast } from "react-toastify";
 
