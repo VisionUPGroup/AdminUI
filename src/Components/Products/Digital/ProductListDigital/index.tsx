@@ -1,19 +1,38 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import { Eye, Edit2, Trash2, Plus, Search, Filter } from 'react-feather';
-import { Card, CardBody, Container, Row, Col, Button, Input, Badge, Progress } from 'reactstrap';
-import CommonBreadcrumb from '@/CommonComponents/CommonBreadcrumb';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import {
+  Eye,
+  Edit2,
+  Trash2,
+  Plus,
+  Search,
+  Filter,
+  Settings,
+} from "react-feather";
+import {
+  Card,
+  CardBody,
+  Container,
+  Row,
+  Col,
+  Button,
+  Input,
+  Badge,
+  Progress,
+} from "reactstrap";
+import CommonBreadcrumb from "@/CommonComponents/CommonBreadcrumb";
+import { useRouter } from "next/navigation";
 import DataTable from "@/CommonComponents/DataTable";
-import CustomTable from './CustomTable';
-import styles from './ProductListDigital.module.scss';
-import ProductFilter from './ProductFilter';
-import { FilterParams } from './ProductFilter';
-import { useMemo } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Swal from 'sweetalert2';
-import { useEyeGlassService } from '../../../../../Api/eyeGlassService'; // Import useEyeGlassService
+import CustomTable from "./CustomTable";
+import styles from "./ProductListDigital.module.scss";
+import ProductFilter from "./ProductFilter";
+import { FilterParams } from "./ProductFilter";
+import { useMemo } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import { useEyeGlassService } from "../../../../../Api/eyeGlassService"; // Import useEyeGlassService
+import EyeGlassTypeManagement from "../../EyeGlassType";
 
 interface EyeGlassType {
   id: number;
@@ -55,16 +74,17 @@ const EyeGlassList: React.FC = () => {
   // const [searchTerm, setSearchTerm] = useState<string>('');
   // const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [eyeGlasses, setEyeGlasses] = useState<EyeGlass[]>([]); // State to hold eye glasses data
-
-  const { fetchEyeGlasses, fetchEyeGlassTypes, deleteEyeGlass } = useEyeGlassService(); // Destructure fetchEyeGlasses from useEyeGlassService
+  const [isEyeGlassTypeModalOpen, setIsEyeGlassTypeModalOpen] = useState(false);
+  const { fetchEyeGlasses, fetchEyeGlassTypes, deleteEyeGlass } =
+    useEyeGlassService(); // Destructure fetchEyeGlasses from useEyeGlassService
   const [eyeGlassTypes, setEyeGlassTypes] = useState<EyeGlassType[]>([]);
   const [filterParams, setFilterParams] = useState<FilterParams>({
     PageIndex: 1,
     PageSize: 10,
-    SortBy: 'ID',
-    Descending: true
+    SortBy: "ID",
+    Descending: true,
   });
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -78,31 +98,30 @@ const EyeGlassList: React.FC = () => {
       // MaxPrice: 10000000,
       PageIndex: 1,
       PageSize: 10,
-      SortBy: 'ID',
+      SortBy: "ID",
       // SortBy: 'Price',
-      Descending: true
+      Descending: true,
     };
 
-    fetchEyeGlasses(params).then(data => {
-      console.log('Eye Glasses:', data);
+    fetchEyeGlasses(params).then((data) => {
+      console.log("Eye Glasses:", data);
       if (Array.isArray(data.data)) {
         setEyeGlasses(data.data);
         setTotalItems(data.totalCount || 0);
       } else {
-        console.error('Expected data to be an array, but got:', data);
+        console.error("Expected data to be an array, but got:", data);
       }
     });
 
-    fetchEyeGlassTypes().then(data => {
-      console.log('Eye Glass Types:', data);
+    fetchEyeGlassTypes().then((data) => {
+      console.log("Eye Glass Types:", data);
       if (Array.isArray(data)) {
         setEyeGlassTypes(data);
       } else {
-        console.error('Expected data to be an array, but got:', data);
+        console.error("Expected data to be an array, but got:", data);
       }
     });
   }, []);
-
 
   const fetchData = async (params: FilterParams) => {
     setIsLoading(true);
@@ -113,8 +132,8 @@ const EyeGlassList: React.FC = () => {
         setTotalItems(response.totalCount || 0);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to fetch data. Please try again.');
+      console.error("Error fetching data:", error);
+      toast.error("Failed to fetch data. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -138,17 +157,20 @@ const EyeGlassList: React.FC = () => {
   const handlePageChange = (page: number) => {
     const updatedParams = {
       ...filterParams,
-      PageIndex: page
+      PageIndex: page,
     };
     setFilterParams(updatedParams);
     fetchData(updatedParams);
   };
 
-  const handleChangeRowsPerPage = (currentRowsPerPage: number, currentPage: number) => {
+  const handleChangeRowsPerPage = (
+    currentRowsPerPage: number,
+    currentPage: number
+  ) => {
     const updatedParams = {
       ...filterParams,
       PageSize: currentRowsPerPage,
-      PageIndex: currentPage
+      PageIndex: currentPage,
     };
     setFilterParams(updatedParams);
     fetchData(updatedParams);
@@ -158,8 +180,8 @@ const EyeGlassList: React.FC = () => {
     const updatedParams = {
       ...filterParams,
       SortBy: column.sortField || column.name,
-      Descending: sortDirection === 'desc',
-      PageIndex: 1 // Reset về trang đầu khi sắp xếp
+      Descending: sortDirection === "desc",
+      PageIndex: 1, // Reset về trang đầu khi sắp xếp
     };
     setFilterParams(updatedParams);
     fetchData(updatedParams);
@@ -168,10 +190,11 @@ const EyeGlassList: React.FC = () => {
   // Handler cho filter change
   const handleFilterChange = (newParams: FilterParams) => {
     // Kiểm tra nếu là clear all (chỉ có PageIndex và PageSize)
-    const isClearAll = Object.keys(newParams).length === 2 && 
-                      'PageIndex' in newParams && 
-                      'PageSize' in newParams;
-  
+    const isClearAll =
+      Object.keys(newParams).length === 2 &&
+      "PageIndex" in newParams &&
+      "PageSize" in newParams;
+
     let updatedParams;
     if (isClearAll) {
       // Nếu là clear all, sử dụng params mới hoàn toàn
@@ -181,10 +204,10 @@ const EyeGlassList: React.FC = () => {
       updatedParams = {
         ...filterParams,
         ...newParams,
-        PageIndex: newParams.PageIndex || 1
+        PageIndex: newParams.PageIndex || 1,
       };
     }
-  
+
     setFilterParams(updatedParams);
     fetchData(updatedParams);
   };
@@ -192,14 +215,14 @@ const EyeGlassList: React.FC = () => {
   const handleDelete = async (product: EyeGlass) => {
     try {
       const result = await Swal.fire({
-        title: 'Confirm Delete?',
+        title: "Confirm Delete?",
         text: `Are you sure you want to delete "${product.name}"?`,
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Delete',
-        cancelButtonText: 'Cancel',
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Delete",
+        cancelButtonText: "Cancel",
         showLoaderOnConfirm: true,
         preConfirm: async () => {
           try {
@@ -207,58 +230,59 @@ const EyeGlassList: React.FC = () => {
             if (response === true) {
               return response;
             }
-            throw new Error('Failed to delete product');
+            throw new Error("Failed to delete product");
           } catch (error) {
             Swal.showValidationMessage(`Error: ${error.message}`);
             throw error;
           }
         },
-        allowOutsideClick: () => !Swal.isLoading()
+        allowOutsideClick: () => !Swal.isLoading(),
       });
-  
+
       if (result.isConfirmed) {
         // Update local state first
-        setEyeGlasses(prevGlasses => 
-          prevGlasses.filter(glass => glass.id !== product.id)
+        setEyeGlasses((prevGlasses) =>
+          prevGlasses.filter((glass) => glass.id !== product.id)
         );
-        setTotalItems(prev => prev - 1);
-  
+        setTotalItems((prev) => prev - 1);
+
         // Show success message
         await Swal.fire({
-          title: 'Deleted!',
-          text: 'Product has been deleted successfully.',
-          icon: 'success',
+          title: "Deleted!",
+          text: "Product has been deleted successfully.",
+          icon: "success",
           timer: 1500,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
-  
+
         // Fetch updated data from server
         try {
           await fetchData(filterParams);
         } catch (error) {
-          console.error('Error refreshing data:', error);
+          console.error("Error refreshing data:", error);
           // Use Swal instead of toast
           Swal.fire({
-            title: 'Note',
-            text: 'Successfully deleted but unable to fetch latest list',
-            icon: 'warning',
-            confirmButtonText: 'Close'
+            title: "Note",
+            text: "Successfully deleted but unable to fetch latest list",
+            icon: "warning",
+            confirmButtonText: "Close",
           });
         }
       }
     } catch (error) {
-      console.error('Error in delete process:', error);
+      console.error("Error in delete process:", error);
       Swal.fire({
-        title: 'Error!',
-        text: error.message || 'Unable to delete product. Please try again later.',
-        icon: 'error',
-        confirmButtonColor: '#dc3545'
+        title: "Error!",
+        text:
+          error.message || "Unable to delete product. Please try again later.",
+        icon: "error",
+        confirmButtonColor: "#dc3545",
       });
     }
   };
 
   const handleEdit = (id: number) => {
-    console.log('Edit item:', id);
+    console.log("Edit item:", id);
     // Implement edit logic here
   };
 
@@ -270,15 +294,19 @@ const EyeGlassList: React.FC = () => {
     return [...Array(5)].map((_, index) => (
       <i
         key={index}
-        className={`fa fa-star ${index < rate ? styles.starFilled : styles.starEmpty}`}
+        className={`fa fa-star ${
+          index < rate ? styles.starFilled : styles.starEmpty
+        }`}
       />
     ));
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
   };
-
 
   // const renderContent = () => {
   //   if (isLoading) {
@@ -310,8 +338,12 @@ const EyeGlassList: React.FC = () => {
           <span>{totalItems} products found</span>
         </div>
 
-        {viewMode === 'table' ? (
-          <div className={`${styles.tableWrapper} ${isLoading ? styles.loadingOverlay : ''}`}>
+        {viewMode === "table" ? (
+          <div
+            className={`${styles.tableWrapper} ${
+              isLoading ? styles.loadingOverlay : ""
+            }`}
+          >
             <CustomTable
               columns={memoizedTableColumns}
               data={eyeGlasses}
@@ -328,7 +360,7 @@ const EyeGlassList: React.FC = () => {
             />
           </div>
         ) : (
-          <div className={isLoading ? styles.loadingOverlay : ''}>
+          <div className={isLoading ? styles.loadingOverlay : ""}>
             {renderGridView()}
           </div>
         )}
@@ -337,16 +369,24 @@ const EyeGlassList: React.FC = () => {
   };
   const renderGridView = () => {
     if (isLoading) {
-      return <div className={styles.loadingWrapper}><div className={styles.spinner} /></div>;
+      return (
+        <div className={styles.loadingWrapper}>
+          <div className={styles.spinner} />
+        </div>
+      );
     }
-  
+
     const sortedGlasses = sortEyeGlasses(eyeGlasses);
-  
+
     return (
       <Row className={styles.productsGrid}>
         {sortedGlasses.map((product) => (
           <Col key={product.id} lg={3} md={4} sm={6} xs={12}>
-            <Card className={`${styles.productCard} ${!product.status ? styles.inactive : ''}`}>
+            <Card
+              className={`${styles.productCard} ${
+                !product.status ? styles.inactive : ""
+              }`}
+            >
               <div className={styles.imageWrapper}>
                 <div className={styles.productId}>#{product.id}</div>
                 <img
@@ -363,57 +403,74 @@ const EyeGlassList: React.FC = () => {
               <CardBody className={styles.productDetails}>
                 <div className={styles.productHeader}>
                   <h5 className={styles.productName}>{product.name}</h5>
-                  <Badge color={product.status ? 'success' : 'danger'} className={styles.statusBadge}>
-                    {product.status ? 'Active' : 'Inactive'}
+                  <Badge
+                    color={product.status ? "success" : "danger"}
+                    className={styles.statusBadge}
+                  >
+                    {product.status ? "Active" : "Inactive"}
                   </Badge>
                 </div>
-  
+
                 <div className={styles.productSpecs}>
                   <span className={styles.specItem}>{product.style}</span>
                   <span className={styles.specDivider}>•</span>
                   <span className={styles.specItem}>{product.design}</span>
                 </div>
-  
+
                 <div className={styles.typeAndRating}>
-                  <span className={`${styles.typeTag} ${styles[product.eyeGlassTypes.glassType.toLowerCase()]}`}>
+                  <span
+                    className={`${styles.typeTag} ${
+                      styles[product.eyeGlassTypes.glassType.toLowerCase()]
+                    }`}
+                  >
                     {product.eyeGlassTypes.glassType}
                   </span>
                   <div className={styles.rating}>
                     {renderStars(product.rate)}
-                    <span className={styles.rateCount}>({product.rateCount})</span>
+                    <span className={styles.rateCount}>
+                      ({product.rateCount})
+                    </span>
                   </div>
                 </div>
-  
+
                 <div className={styles.priceAndActions}>
-                  <h4 className={styles.price}>{formatCurrency(product.price)}</h4>
+                  <h4 className={styles.price}>
+                    {formatCurrency(product.price)}
+                  </h4>
                   <div className={styles.actionButtons}>
                     <Button
                       color="info"
                       size="sm"
-                      title={product.status ? "View Details" : "Product Inactive"}
+                      title={
+                        product.status ? "View Details" : "Product Inactive"
+                      }
                       onClick={() => product.status && handleView(product.id)}
                       disabled={!product.status}
-                      className={!product.status ? styles.disabledButton : ''}
+                      className={!product.status ? styles.disabledButton : ""}
                     >
                       <Eye size={14} />
                     </Button>
                     <Button
                       color="primary"
                       size="sm"
-                      title={product.status ? "Edit Product" : "Product Inactive"}
+                      title={
+                        product.status ? "Edit Product" : "Product Inactive"
+                      }
                       onClick={() => product.status && handleEdit(product.id)}
                       disabled={!product.status}
-                      className={!product.status ? styles.disabledButton : ''}
+                      className={!product.status ? styles.disabledButton : ""}
                     >
                       <Edit2 size={14} />
                     </Button>
                     <Button
                       color="danger"
                       size="sm"
-                      title={product.status ? "Delete Product" : "Product Inactive"}
+                      title={
+                        product.status ? "Delete Product" : "Product Inactive"
+                      }
                       onClick={() => product.status && handleDelete(product)}
                       disabled={!product.status}
-                      className={!product.status ? styles.disabledButton : ''}
+                      className={!product.status ? styles.disabledButton : ""}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -427,67 +484,72 @@ const EyeGlassList: React.FC = () => {
     );
   };
 
-
   const tableColumns = [
     {
-      name: 'ID',
+      name: "ID",
       selector: (row: EyeGlass) => row.id,
       sortable: true,
-      sortField: 'ID',
-      width: '80px',
+      sortField: "ID",
+      width: "80px",
     },
     {
-      name: 'Image',
+      name: "Image",
       cell: (row: EyeGlass) => (
         <img
-          src={row.eyeGlassImages?.[0]?.url || '/placeholder-image.jpg'}
+          src={row.eyeGlassImages?.[0]?.url || "/placeholder-image.jpg"}
           alt={row.name}
           className={styles.tableImage}
         />
       ),
-      width: '100px',
+      width: "100px",
     },
     {
-      name: 'Name',
+      name: "Name",
       selector: (row: EyeGlass) => row.name,
       sortable: true,
-      sortField: 'Name',
+      sortField: "Name",
       cell: (row: EyeGlass) => (
         <div className={styles.productNameCell}>
           <p className={styles.name}>{row.name}</p>
-          <small className={styles.specs}>{row.style} - {row.design}</small>
+          <small className={styles.specs}>
+            {row.style} - {row.design}
+          </small>
         </div>
-      )
+      ),
     },
     {
-      name: 'Type',
+      name: "Type",
       selector: (row: EyeGlass) => row.eyeGlassTypes?.glassType,
       sortable: true,
       cell: (row: EyeGlass) => (
-        <span className={`${styles.typeTag} ${styles[row.eyeGlassTypes?.glassType?.toLowerCase()]}`}>
+        <span
+          className={`${styles.typeTag} ${
+            styles[row.eyeGlassTypes?.glassType?.toLowerCase()]
+          }`}
+        >
           {row.eyeGlassTypes?.glassType}
         </span>
-      )
+      ),
     },
     {
-      name: 'Price',
+      name: "Price",
       selector: (row: EyeGlass) => row.price,
       sortable: true,
       cell: (row: EyeGlass) => (
         <div className={styles.priceCell}>
           <span className={styles.amount}>{formatCurrency(row.price)}</span>
         </div>
-      )
+      ),
     },
     {
-      name: 'Status',
+      name: "Status",
       cell: (row: EyeGlass) => (
         <div className={styles.statusCell}>
           <Badge
-            color={row.status ? 'success' : 'danger'}
+            color={row.status ? "success" : "danger"}
             className={styles.statusBadge}
           >
-            {row.status ? 'Active' : 'Inactive'}
+            {row.status ? "Active" : "Inactive"}
           </Badge>
           <div className={styles.ratingInfo}>
             {renderStars(row.rate)}
@@ -497,7 +559,7 @@ const EyeGlassList: React.FC = () => {
       ),
     },
     {
-      name: 'Actions',
+      name: "Actions",
       cell: (row: EyeGlass) => (
         <div className={styles.actionCell}>
           <Button
@@ -529,7 +591,7 @@ const EyeGlassList: React.FC = () => {
           </Button>
         </div>
       ),
-      width: '150px',
+      width: "150px",
       right: true,
     },
   ];
@@ -537,12 +599,12 @@ const EyeGlassList: React.FC = () => {
   const memoizedTableColumns = useMemo(() => tableColumns, []);
 
   const handleAddNewProduct = () => {
-    router.push('/en/products/eyeglass/new');
+    router.push("/en/products/eyeglass/new");
   };
 
   return (
     <div className={styles.productListPage}>
-       <ToastContainer
+      <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
@@ -560,21 +622,36 @@ const EyeGlassList: React.FC = () => {
           <Col lg={12}>
             <div className={styles.pageHeader}>
               <div className={styles.headerLeft}>
-                <Button color="primary" className={styles.addButton} onClick={handleAddNewProduct}>
-                  <Plus size={14} className="me-1" /> Add New Product
-                </Button>
+                <div className={styles.headerActions}>
+                  <Button
+                    color="primary"
+                    className={styles.addButton}
+                    onClick={handleAddNewProduct}
+                  >
+                    <Plus size={16} />
+                    Add New Product
+                  </Button>
+                  <Button
+                    color="secondary"
+                    className={styles.configButton}
+                    onClick={() => setIsEyeGlassTypeModalOpen(true)}
+                  >
+                    <Settings size={16} />
+                    Manage Eyeglass Types
+                  </Button>
+                </div>
               </div>
               <div className={styles.headerRight}>
                 <div className={styles.viewToggle}>
                   <Button
-                    color={viewMode === 'grid' ? 'primary' : 'light'}
-                    onClick={() => setViewMode('grid')}
+                    color={viewMode === "grid" ? "primary" : "light"}
+                    onClick={() => setViewMode("grid")}
                   >
                     <i className="fa fa-th-large" />
                   </Button>
                   <Button
-                    color={viewMode === 'table' ? 'primary' : 'light'}
-                    onClick={() => setViewMode('table')}
+                    color={viewMode === "table" ? "primary" : "light"}
+                    onClick={() => setViewMode("table")}
                   >
                     <i className="fa fa-list" />
                   </Button>
@@ -589,6 +666,10 @@ const EyeGlassList: React.FC = () => {
                 initialParams={filterParams}
               />
             </div>
+            <EyeGlassTypeManagement
+  isOpen={isEyeGlassTypeModalOpen}
+  onClose={() => setIsEyeGlassTypeModalOpen(false)}
+/>
 
             {renderContent()}
           </Col>

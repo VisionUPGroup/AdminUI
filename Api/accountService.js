@@ -158,6 +158,6 @@ export const useAccountService = () => {
     updateAccount,
     deleteAccount,
     createAccount,
-    createShipper // Add the new function to the returned object
+    createShipper 
   };
 };

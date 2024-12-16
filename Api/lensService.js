@@ -231,9 +231,63 @@ const deleteLensType = async (id) => {
                 'accept': '*/*'
             }
         });
+        
         return response.data;
     } catch (error) {
         console.error("Error deleting lens type:", error);
+        throw error;
+    }
+};
+const createEyeRefractive = async (eyeRefractiveData) => {
+    try {
+        const response = await axios.post(
+            `${baseUrl}/api/eye-reflactives`,
+            eyeRefractiveData,
+            {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error creating eye refractive:", error);
+        throw error;
+    }
+};
+
+// Update eye refractive
+const updateEyeRefractive = async (eyeRefractiveData) => {
+    try {
+        const response = await axios.put(
+            `${baseUrl}/api/eye-reflactives`,
+            eyeRefractiveData,
+            {
+                headers: {
+                    Authorization: `Bearer ${getToken()}`,
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error updating eye refractive:", error);
+        throw error;
+    }
+};
+
+// Delete eye refractive
+const deleteEyeRefractive = async (id) => {
+    try {
+        await axios.delete(`${baseUrl}/api/eye-reflactives/${id}`, {
+            headers: {
+                Authorization: `Bearer ${getToken()}`,
+            },
+        });
+        return true;
+    } catch (error) {
+        console.error("Error deleting eye refractive:", error);
         throw error;
     }
 };
@@ -252,6 +306,9 @@ const deleteLensType = async (id) => {
         createLensType,
         updateLensType, 
         fetchLensTypeById,
-        deleteLensType
+        deleteLensType,
+        createEyeRefractive, 
+        updateEyeRefractive, 
+        deleteEyeRefractive, 
     };
 };

@@ -241,13 +241,27 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
       try {
         let receiverAddress = "";
         if (deliveryType === "address") {
-          const districtName =
-            districts.find((d) => d.code === formData.district)?.name || "";
-          const wardName =
-            wards.find((w) => w.code === formData.ward)?.name || "";
-          receiverAddress = `${formData.streetAddress}, ${wardName}, ${districtName}, TP. Hồ Chí Minh`;
+          // Chuyển đổi code sang string để so sánh
+          const selectedDistrict = districts.find(
+            d => d.code.toString() === formData.district.toString()
+          );
+          const selectedWard = wards.find(
+            w => w.code.toString() === formData.ward.toString()
+          );
+  
+          const districtName = selectedDistrict?.name || "";
+          const wardName = selectedWard?.name || "";
+          
+          const addressParts = [
+            formData.streetAddress,
+            wardName,
+            districtName,
+            "TP. Hồ Chí Minh"
+          ].filter(part => part && part.trim() !== "");
+          
+          receiverAddress = addressParts.join(", ");
         }
-
+  
         const submitData = {
           productGlassID: formData.productGlassID,
           receiverAddress,
@@ -255,7 +269,7 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
           reason: formData.reason,
           quantity: formData.quantity,
         };
-
+  
         await onSubmit(submitData);
         toggle();
         resetForm();

@@ -187,7 +187,7 @@ const LensFilter: React.FC<LensFilterProps> = ({
               ))}
             </div>
           )}
-
+{/* 
           <div className={styles.filterSection}>
             <h6>Search</h6>
             <Input
@@ -197,7 +197,7 @@ const LensFilter: React.FC<LensFilterProps> = ({
               onChange={(e) => handleFilterChange({ Name: e.target.value })}
               className={styles.searchInput}
             />
-          </div>
+          </div> */}
 
           <div className={styles.filterSection}>
             <h6>Lens Type</h6>
