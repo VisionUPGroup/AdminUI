@@ -18,6 +18,7 @@ import { useOrderService } from "../../../../Api/orderService";
 import { useVoucherService } from "../../../../Api/voucherService";
 import { useLensService } from "../../../../Api/lensService";
 import { usePaymentService } from "../../../../Api/paymentService";
+import { useAccountService } from "../../../../Api/accountService";
 import { useProductGlassService } from "../../../../Api/productGlassService";
 import OrderStatusTracker from "./OderTracker";
 import { toast } from "react-toastify";
@@ -31,6 +32,22 @@ interface DetailLensInfo {
   leftLens: Lens | null;
   rightLens: Lens | null;
 }
+
+interface Account {
+  id: number;
+  username: string;
+  email: string;
+  status: boolean;
+  roleID: number;
+  phoneNumber: string;
+  role: any[];
+  profiles: Profile[];
+  orders: any[]; // Có thể thay bằng interface Order cụ thể nếu cần
+  payments: any[]; // Có thể thay bằng interface Payment cụ thể nếu cần
+  ratingEyeGlasses: any[]; // Có thể thay bằng interface Rating cụ thể nếu cần
+  ratingLens: any[]; // Có thể thay bằng interface Rating cụ thể nếu cần
+} 
+
 interface Profile {
   id: number;
   accountID: number;
@@ -157,11 +174,13 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
   const [productGlassDetails, setProductGlassDetails] = useState<{
     [key: number]: ProductGlass;
   }>({});
+  const { fetchAccountById } = useAccountService();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [voucherName, setVoucherName] = useState<string | null>(null);
   const [lensInfo, setLensInfo] = useState<LensInfo>({});
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [accountInfo, setAccountInfo] = useState<Account | null>(null);
 
   useEffect(() => {
     const loadOrderData = async () => {
@@ -171,6 +190,12 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         const orderData = await fetchOrderById(Number(id));
 
         // Fetch payment information
+        if (orderData.accountID) {
+          const accountData = await fetchAccountById(orderData.accountID);
+          setAccountInfo(accountData);
+        }
+
+        // Fetch payment information 
         const paymentData = await fetchPaymentByOrderId(Number(id));
         setPaymentInfo(paymentData);
 
@@ -333,6 +358,36 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
 
       <div className="order-content">
         <div className="main-info">
+          {/* Customer Information Section */}
+          {accountInfo && (
+            <div className="customer-info-section">
+              <div className="section-header">
+                <h3>
+                  <FaUser /> Customer Information
+                </h3>
+              </div>
+              <div className="customer-details">
+                <div className="info-item">
+                  <span className="label">Username:</span>
+                  <span className="value">{accountInfo.username}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Email:</span>
+                  <span className="value">{accountInfo.email}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Phone:</span>
+                  <span className="value">{accountInfo.phoneNumber}</span>
+                </div>
+                {/* <div className="info-item">
+                  <span className="label">Account Status:</span>
+                  <span className={`value status ${accountInfo.status ? 'active' : 'inactive'}`}>
+                    {accountInfo.status ? 'Active' : 'Inactive'}
+                  </span>
+                </div> */}
+              </div>
+            </div>
+          )}
           <div className="order-header">
             <div className="order-id">
               <span className="label">Order ID:</span>

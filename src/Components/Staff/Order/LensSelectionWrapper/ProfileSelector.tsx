@@ -174,14 +174,14 @@ const ProfileSelector: React.FC<ProfileSelectorProps> = ({
           />
         </div>
         
-        <motion.button 
+        {/* <motion.button 
           className={styles.createProfileButton}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
           <Plus size={20} />
           <span>Create New Profile</span>
-        </motion.button>
+        </motion.button> */}
       </div>
 
       <AnimatePresence mode="wait">
