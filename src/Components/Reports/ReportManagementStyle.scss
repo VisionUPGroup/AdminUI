@@ -1,4 +1,3 @@
-
 .report-management {
   $primary-color: #c79816;
   $system-color: #ef4444;
@@ -60,7 +59,6 @@
         }
       }
     }
-    
 
     .create-report-btn {
       display: flex;
@@ -115,21 +113,21 @@
             display: flex;
             gap: 1.5rem;
             align-items: center;
-            
-            .report-id, .order-id {
+
+            .report-id,
+            .order-id {
               display: flex;
               align-items: center;
               gap: 0.5rem;
               font-size: 0.95rem;
               color: #475569;
-      
+
               strong {
                 color: $primary-color;
                 font-weight: 600;
               }
             }
           }
-          
 
           .report-type {
             display: flex;
@@ -195,7 +193,7 @@
             background: #f8fafc;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
-        
+
             .description-title {
               display: flex;
               align-items: center;
@@ -203,12 +201,12 @@
               margin-bottom: 0.75rem;
               padding-bottom: 0.5rem;
               border-bottom: 1px solid #e2e8f0;
-        
+
               svg {
                 color: $primary-color;
                 font-size: 1.25rem;
               }
-        
+
               h4 {
                 color: #475569;
                 font-size: 1rem;
@@ -216,7 +214,7 @@
                 margin: 0;
               }
             }
-        
+
             .description {
               color: #64748b;
               line-height: 1.6;
@@ -258,29 +256,40 @@
             color: #64748b;
           }
 
-          .update-btn {
+          button {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba($primary-color, 0.1);
-            color: $primary-color;
+            gap: 5px;
+            padding: 8px 16px;
+            border-radius: 4px;
             border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
             cursor: pointer;
+            font-weight: 500;
             transition: all 0.2s ease;
-
-            &:hover {
-              background: $primary-color;
+      
+            &.update-btn {
+              background-color: #c79816;
               color: white;
+      
+              &:hover {
+                background-color: darken(#c79816, 10%);
+              }
             }
-
+      
+            &.exchange-btn {
+              background-color: #2196F3;
+              color: white;
+      
+              &:hover {
+                background-color: darken(#2196F3, 10%);
+              }
+            }
+      
             svg {
-              font-size: 0.875rem;
+              font-size: 16px;
             }
           }
+          
         }
         .handler-info {
           display: flex;
@@ -298,12 +307,12 @@
             margin-bottom: 0.75rem;
             padding-bottom: 0.5rem;
             border-bottom: 1px solid #e2e8f0;
-      
+
             svg {
               color: $primary-color;
               font-size: 1.25rem;
             }
-      
+
             h4 {
               color: #475569;
               font-size: 1rem;
@@ -311,7 +320,7 @@
               margin: 0;
             }
           }
-    
+
           .handler-name {
             display: flex;
             align-items: center;
@@ -319,29 +328,57 @@
             color: $primary-color;
             font-weight: 500;
             font-size: 0.95rem;
-    
+
             svg {
               font-size: 1.1rem;
             }
           }
-    
+
           .handler-contact {
             display: flex;
             gap: 1.5rem;
             font-size: 0.9rem;
             color: #64748b;
-    
+
             .handler-email,
             .handler-phone {
               display: flex;
               align-items: center;
               gap: 0.5rem;
-    
+
               svg {
                 color: $primary-color;
                 font-size: 1rem;
               }
             }
+          }
+        }
+      }
+    }
+    .evidence-image-section {
+      margin-top: 1rem;
+      
+      h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+    
+      .image-container {
+        max-width: 300px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        
+        .evidence-image {
+          width: 100%;
+          height: auto;
+          object-fit: cover;
+          cursor: pointer;
+          transition: transform 0.2s;
+          
+          &:hover {
+            transform: scale(1.05);
           }
         }
       }
@@ -412,7 +449,7 @@
       animation: slideUp 0.3s ease;
       .order-input-group {
         margin-bottom: 1.5rem;
-        
+
         label {
           display: block;
           font-size: 0.9rem;
@@ -420,7 +457,7 @@
           margin-bottom: 0.5rem;
           font-weight: 500;
         }
-  
+
         .order-input {
           width: 100%;
           padding: 0.75rem 1rem;
@@ -430,38 +467,38 @@
           color: #1e293b;
           background: #f8fafc;
           transition: all 0.2s ease;
-          
+
           &:focus {
             outline: none;
             border-color: $primary-color;
             box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
           }
-  
+
           &:hover {
             border-color: #cbd5e1;
           }
-  
+
           &::placeholder {
             color: #94a3b8;
           }
-  
+
           // Loại bỏ mũi tên tăng giảm của input number
           &::-webkit-outer-spin-button,
           &::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
           }
-          &[type=number] {
+          &[type="number"] {
             -moz-appearance: textfield;
           }
         }
-  
+
         .input-error {
           color: #ef4444;
           font-size: 0.85rem;
           margin-top: 0.5rem;
           display: none;
-          
+
           &.show {
             display: block;
           }
@@ -543,7 +580,6 @@
             }
           }
         }
-        
       }
     }
   }
@@ -662,7 +698,7 @@
             -webkit-appearance: none;
             margin: 0;
           }
-          &[type=number] {
+          &[type="number"] {
             -moz-appearance: textfield;
           }
         }
@@ -767,10 +803,10 @@
     .report-header {
       .filters-section {
         flex-direction: column;
-        
+
         .filter-group {
           width: 100%;
-          
+
           .filter-select {
             flex: 1;
           }
@@ -788,6 +824,91 @@
         font-size: 0.875rem;
       }
     }
+  }
+  .image-upload-group {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: #475569;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .image-upload-container {
+      .image-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1.5px dashed #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: $primary-color;
+          background: rgba($primary-color, 0.05);
+        }
+      }
+
+      .image-preview-container {
+        position: relative;
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+  
+        .image-preview {
+          max-width: 100%;
+          height: auto;
+          max-height: 200px;
+          object-fit: contain;
+          border-radius: 6px;
+          display: block;
+          margin: 0 auto;
+        }
+  
+        .clear-image-btn {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.5rem;
+          background: rgba(white, 0.9);
+          color: $processing-color;
+          border: 1px solid $processing-color;
+          border-radius: 6px;
+          padding: 0.5rem 0.75rem;
+          height: auto;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          transition: all 0.2s ease;
+          backdrop-filter: blur(4px);
+          
+          svg {
+            font-size: 1rem;
+          }
+          
+          &:hover {
+            background: $processing-color;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba($processing-color, 0.2);
+          }
+  
+          &:active {
+            transform: translateY(0);
+            box-shadow: none;
+          }
+        }
+      }
+    }
+    
+    
   }
 
   // Overlay styles for the drawer
@@ -816,5 +937,3 @@
     transform: translateX(0);
   }
 }
-
-

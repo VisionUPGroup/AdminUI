@@ -489,6 +489,19 @@
                   font-size: 0.75rem;
                 }
               }
+              .phone {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                color: #666;
+                font-size: 0.9rem;
+                margin-top: 2px;
+                
+                svg {
+                  color: #c79816;
+                  font-size: 0.9rem;
+                }
+              }
             
               .time {
                 font-size: 0.875rem;

@@ -1,0 +1,428 @@
+// Variables
+$gold: #c79816;
+$white: #ffffff;
+$black: #000000;
+$light-gold: rgba($gold, 0.1);
+$border: rgba($black, 0.08);
+$text-primary: rgba($black, 0.85);
+$text-secondary: rgba($black, 0.65);
+$error: #ef4444;
+
+// Mixins
+@mixin icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: $light-gold;
+  transition: all 0.25s ease;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: $gold;
+    stroke-width: 2px;
+    transition: all 0.25s ease;
+  }
+}
+
+@mixin hover-effect {
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($gold, 0.15), 0 2px 4px rgba($gold, 0.1);
+  }
+}
+
+.exchange-request-modal {
+  .modal-dialog {
+    max-width: 600px;
+  }
+
+  .modal-content {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba($black, 0.1), 0 4px 10px rgba($black, 0.05);
+    overflow: hidden;
+    background: $white;
+
+    .modal-header {
+      padding: 28px 32px;
+      border-bottom: 1px solid rgba($gold, 0.15);
+      background: linear-gradient(135deg, rgba($gold, 0.08), rgba($gold, 0.03));
+
+      .modal-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: $text-primary;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .modal-title-icon {
+          @include icon-container;
+          background: rgba($gold, 0.15);
+
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+
+      .close {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        padding: 0;
+        margin: -8px -8px -8px auto;
+        background: transparent;
+        border: 2px solid transparent;
+        transition: all 0.25s ease;
+
+        &:hover {
+          background: $light-gold;
+          border-color: rgba($gold, 0.2);
+          transform: rotate(90deg);
+        }
+      }
+    }
+
+    .modal-body {
+      padding: 32px;
+      background: $white;
+
+      .form-group {
+        margin-bottom: 28px;
+
+        &:last-child {
+          margin-bottom: 16px;
+        }
+
+        .form-label {
+          color: $text-primary;
+          font-weight: 500;
+          font-size: 1rem;
+          margin-bottom: 12px;
+        }
+
+        .input-wrapper {
+          position: relative;
+
+          .input-group {
+            position: relative;
+            display: flex;
+            align-items: stretch; // Thay đổi từ center sang stretch
+            gap: 0; // Loại bỏ khoảng cách
+
+            .input-icon-wrapper {
+              position: absolute; // Thay đổi position
+              left: 12px; // Thêm vào
+              top: 50%; // Thêm vào
+              transform: translateY(-50%); // Thêm vào
+              z-index: 2; // Thêm vào
+              @include icon-container;
+              width: 20px; // Giảm kích thước icon
+              height: 20px; // Giảm kích thước icon
+              background: transparent; // Loại bỏ background
+
+              svg {
+                width: 16px; // Giảm kích thước icon
+                height: 16px; // Giảm kích thước icon
+                color: $text-secondary; // Đổi màu icon
+              }
+            }
+
+            .form-control {
+              height: auto;
+              padding: 14px 16px 14px 40px; // Thêm padding-left
+              font-size: 1rem;
+              border: 2px solid rgba($gold, 0.2);
+              border-radius: 14px;
+              transition: all 0.25s ease;
+              color: $text-primary;
+              background: $white;
+              width: 100%;
+
+              &::placeholder {
+                color: $text-secondary;
+              }
+
+              &:hover:not(:disabled) {
+                border-color: rgba($gold, 0.3);
+              }
+
+              &:focus {
+                border-color: $gold;
+                box-shadow: 0 0 0 4px rgba($gold, 0.15);
+
+                & + .input-icon-wrapper svg {
+                  color: $gold; // Icon chuyển màu khi focus
+                }
+              }
+
+              &:disabled {
+                background: rgba($black, 0.03);
+                color: $text-secondary;
+                cursor: not-allowed;
+                border-color: $border;
+
+                & + .input-icon-wrapper svg {
+                  opacity: 0.5;
+                }
+              }
+
+              &.is-invalid {
+                border-color: $error;
+
+                & + .input-icon-wrapper svg {
+                  color: $error;
+                }
+              }
+            }
+          }
+
+          .custom-textarea {
+            min-height: 120px;
+            line-height: 1.6;
+            resize: vertical;
+            padding: 16px 16px 16px 40px;
+
+            & + .input-icon-wrapper {
+              top: 24px; // Điều chỉnh vị trí icon cho textarea
+              transform: none;
+            }
+          }
+
+          .error-feedback {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            color: $error;
+            font-size: 0.9rem;
+            padding: 10px 14px;
+            background: rgba($error, 0.05);
+            border-radius: 8px;
+
+            svg {
+              stroke-width: 2.5px;
+            }
+          }
+        }
+      }
+    }
+
+    .modal-footer {
+      padding: 24px 32px;
+      border-top: 1px solid rgba($gold, 0.15);
+      background: linear-gradient(135deg, rgba($gold, 0.03), rgba($gold, 0.08));
+      gap: 16px;
+
+      .btn {
+        min-width: 150px;
+        padding: 14px 28px;
+        border-radius: 14px;
+        font-weight: 500;
+        font-size: 1rem;
+        letter-spacing: 0.01em;
+        transition: all 0.25s ease;
+
+        &.submit-btn {
+          background: linear-gradient(135deg, $gold, darken($gold, 10%));
+          border: none;
+          color: $white;
+
+          @include hover-effect;
+
+          &:disabled {
+            background: desaturate($gold, 40%);
+            opacity: 0.7;
+          }
+        }
+
+        &.cancel-btn {
+          background: transparent;
+          border: 2px solid rgba($gold, 0.3);
+          color: white;
+
+       
+        }
+
+        &.loading {
+          position: relative;
+          color: transparent !important;
+          pointer-events: none;
+
+          &::after {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            top: 50%;
+            left: 50%;
+            margin: -12px 0 0 -12px;
+            border: 2px solid;
+            border-radius: 50%;
+            border-color: $white transparent transparent;
+            animation: buttonLoader 0.8s linear infinite;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes buttonLoader {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Modal animations
+.modal.fade {
+  .modal-dialog {
+    transform: translateY(-20px) scale(0.98);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &.show .modal-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+// Enhanced scrollbar styling
+.custom-textarea {
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba($gold, 0.05);
+    border-radius: 5px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gold, 0.2);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+
+    &:hover {
+      background: rgba($gold, 0.3);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+  }
+}
+
+// Input number arrows styling
+input[type="number"] {
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  -moz-appearance: textfield;
+}
+
+// Focus styles
+.form-control:focus {
+  &::placeholder {
+    opacity: 0.7;
+    transform: translateX(4px);
+    transition: all 0.25s ease;
+  }
+}
+
+// Disabled state enhancements
+.form-control:disabled {
+  & + .input-icon-wrapper {
+    opacity: 0.5;
+    svg {
+      color: $text-secondary;
+    }
+  }
+}
+
+// Invalid state animations
+.is-invalid {
+  animation: shakeError 0.4s ease-in-out;
+}
+
+@keyframes shakeError {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+// Hover state refinements
+.input-group {
+  .form-control:hover:not(:disabled) {
+    & + .input-icon-wrapper {
+      transform: scale(1.05);
+      background: rgba($gold, 0.15);
+    }
+  }
+}
+
+// Additional touch feedback
+.btn:active:not(:disabled) {
+  transform: scale(0.98) !important;
+  transition: transform 0.1s ease;
+}
+
+// Enhanced modal backdrop
+.modal-backdrop {
+  background: mix($black, $gold, 97%);
+
+  &.show {
+    opacity: 0.5;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 576px) {
+  .exchange-request-modal {
+    .modal-dialog {
+      margin: 1rem;
+    }
+
+    .modal-content {
+      border-radius: 16px;
+
+      .modal-header {
+        padding: 20px 24px;
+
+        .modal-title {
+          font-size: 1.4rem;
+        }
+      }
+
+      .modal-body {
+        padding: 24px;
+      }
+
+      .modal-footer {
+        padding: 20px 24px;
+        flex-direction: column;
+
+        .btn {
+          width: 100%;
+          margin: 0;
+        }
+      }
+    }
+  }
+}

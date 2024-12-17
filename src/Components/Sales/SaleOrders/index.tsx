@@ -23,6 +23,7 @@ import {
   FaUser,
   FaClipboardCheck,
   FaArrowLeft,
+  FaPhone,
 } from "react-icons/fa";
 import { useOrderService } from "../../../../Api/orderService";
 import { useVoucherService } from "../../../../Api/voucherService";
@@ -84,6 +85,20 @@ const SalesOrders: React.FC = () => {
     delivered: OrderStatusStats;
     completed: OrderStatusStats;
     cancelled: OrderStatusStats;
+  }
+  interface Account {
+    id: number;
+    username: string;
+    email: string;
+    status: boolean;
+    roleID: number;
+    phoneNumber: string;
+    role: {
+      id: number;
+      name: string;
+      description: string;
+      status: boolean;
+    };
   }
   interface Order {
     id: number;
@@ -177,7 +192,10 @@ const SalesOrders: React.FC = () => {
 
   const [totalItemsCanceled, setTotalItemsCanceled] = useState(0);
   const [orderUsernames, setOrderUsernames] = useState<{
-    [key: number]: string;
+    [key: number]: {
+      username: string;
+      phoneNumber: string;
+    };
   }>({});
 
   // Services
@@ -250,26 +268,36 @@ const SalesOrders: React.FC = () => {
       const usernamePromises = data.items.map(
         async (order: { accountID: any; id: any }) => {
           try {
-            const userData = await fetchAccountById(order.accountID);
-            return { orderId: order.id, username: userData.username };
+            const userData: Account = await fetchAccountById(order.accountID);
+            return {
+              orderId: order.id,
+              username: userData.username,
+              phoneNumber: userData.phoneNumber, // Lấy trực tiếp từ phoneNumber
+            };
           } catch (error) {
             console.error(
               `Error fetching username for order ${order.id}:`,
               error
             );
-            return { orderId: order.id, username: "Unknown User" };
+            return {
+              orderId: order.id,
+              username: "Unknown User",
+              phoneNumber: "No phone number",
+            };
           }
         }
       );
 
       const usernameResults = await Promise.all(usernamePromises);
       const usernameMap = usernameResults.reduce(
-        (acc, { orderId, username }) => {
-          acc[orderId] = username;
+        (acc, { orderId, username, phoneNumber }) => {
+          acc[orderId] = { username, phoneNumber };
           return acc;
         },
         {}
       );
+
+      setOrderUsernames(usernameMap);
 
       // Fetch completed orders stats
       const completedData = await fetchAllOrder(
@@ -775,17 +803,21 @@ const SalesOrders: React.FC = () => {
                         <tr key={order.id}>
                           <td>
                             <div className="order-id">
-                              {/* <span className="code">{order.code}</span> */}
                               <span className="order-number">
                                 Order ID: {order.id}
-                              </span>{" "}
-                              {/* Thêm dòng này */}
+                              </span>
                               <span className="username">
                                 Account ID: {order.accountID}
                               </span>
                               <span className="username">
                                 <FaUser />{" "}
-                                {orderUsernames[order.id] || "Loading..."}
+                                {orderUsernames[order.id]?.username ||
+                                  "Loading..."}
+                              </span>
+                              <span className="phone">
+                                <FaPhone />{" "}
+                                {orderUsernames[order.id]?.phoneNumber ||
+                                  "No phone number"}
                               </span>
                               <span className="time">
                                 {new Date(order.orderTime).toLocaleString()}
@@ -796,7 +828,7 @@ const SalesOrders: React.FC = () => {
                             <div className="customer-info">
                               <span className="address">
                                 <FaMapMarkerAlt />
-                                {order.receiverAddress||"Kiosk Address"}
+                                {order.receiverAddress || "Kiosk Address"}
                               </span>
                             </div>
                           </td>

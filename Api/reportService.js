@@ -39,7 +39,7 @@ export const useReportService = () => {
       const response = await axios.post(`${baseUrl}/api/reports`, reportData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+        'Content-Type': 'multipart/form-data',
         },
       });
 

@@ -154,7 +154,9 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
   const { fetchVoucherById } = useVoucherService();
   const { fetchLensById } = useLensService();
   const { fetchPaymentByOrderId } = usePaymentService();
-  const [productGlassDetails, setProductGlassDetails] = useState<{ [key: number]: ProductGlass }>({});
+  const [productGlassDetails, setProductGlassDetails] = useState<{
+    [key: number]: ProductGlass;
+  }>({});
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [voucherName, setVoucherName] = useState<string | null>(null);
   const [lensInfo, setLensInfo] = useState<LensInfo>({});
@@ -168,33 +170,40 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         // Fetch order data
         const orderData = await fetchOrderById(Number(id));
 
-        // Fetch payment information 
+        // Fetch payment information
         const paymentData = await fetchPaymentByOrderId(Number(id));
         setPaymentInfo(paymentData);
 
         // Fetch product glass details
         const { fetchProductGlassById } = useProductGlassService();
-        const productGlassPromises = orderData.orderDetails.map(async (detail: { productGlass: { id: any; }; id: any; }) => {
-          try {
-            const productGlassData = await fetchProductGlassById(detail.productGlass.id);
-            return {
-              orderDetailId: detail.id,
-              productGlass: productGlassData
-            };
-          } catch (error) {
-            console.error(`Error fetching product glass data:`, error);
-            return {
-              orderDetailId: detail.id,
-              productGlass: null
-            };
+        const productGlassPromises = orderData.orderDetails.map(
+          async (detail: { productGlass: { id: any }; id: any }) => {
+            try {
+              const productGlassData = await fetchProductGlassById(
+                detail.productGlass.id
+              );
+              return {
+                orderDetailId: detail.id,
+                productGlass: productGlassData,
+              };
+            } catch (error) {
+              console.error(`Error fetching product glass data:`, error);
+              return {
+                orderDetailId: detail.id,
+                productGlass: null,
+              };
+            }
           }
-        });
+        );
 
         const productGlassResults = await Promise.all(productGlassPromises);
-        const newProductGlassDetails = productGlassResults.reduce((acc, curr) => {
-          acc[curr.orderDetailId] = curr.productGlass;
-          return acc;
-        }, {} as { [key: number]: ProductGlass });
+        const newProductGlassDetails = productGlassResults.reduce(
+          (acc, curr) => {
+            acc[curr.orderDetailId] = curr.productGlass;
+            return acc;
+          },
+          {} as { [key: number]: ProductGlass }
+        );
 
         setProductGlassDetails(newProductGlassDetails);
 
@@ -296,10 +305,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         <FaTimesCircle className="error-icon" />
         <h3>Order not found</h3>
         <p>The requested order could not be found.</p>
-        <button
-          className="back-button"
-          onClick={() => router.back()}
-        >
+        <button className="back-button" onClick={() => router.back()}>
           Back to Orders
         </button>
       </div>
@@ -332,8 +338,9 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               <span className="label">Order ID:</span>
               <span className="value">#{order.id}</span>
               <span
-                className={`status-badge ${order.status ? "active" : "inactive"
-                  }`}
+                className={`status-badge ${
+                  order.status ? "active" : "inactive"
+                }`}
               >
                 {order.status ? "Active" : "Inactive"}
               </span>
@@ -347,23 +354,33 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               <div className="info-label">
                 <FaStore /> Destination Kiosk
               </div>
-
               <div className="info-value">
-                <div>{order?.kiosks?.name || "Unknown"}</div>
-                <div className="details">
-                  <div>
-                    <FaMapMarkerAlt /> {order?.kiosks?.address || "Unknown"}
+                {order?.kiosks ? (
+                  <>
+                    <div>{order.kiosks.name}</div>
+                    <div className="details">
+                      <div>
+                        <FaMapMarkerAlt /> {order.kiosks.address}
+                      </div>
+                      <div>
+                        <FaPhoneAlt /> {order.kiosks.phoneNumber}
+                      </div>
+                      <div>
+                        <FaEnvelope /> {order.kiosks.email}
+                      </div>
+                      <div>
+                        <FaClock /> {order.kiosks.openingHours}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-data-state">
+                    <div className="no-data-message">
+                      <FaTimesCircle className="no-data-icon" />
+                      <span>No destination kiosk assigned</span>
+                    </div>
                   </div>
-                  <div>
-                    <FaPhoneAlt /> {order?.kiosks?.phoneNumber || "Unknown"}
-                  </div>
-                  <div>
-                    <FaEnvelope /> {order?.kiosks?.email || "Unknown"}
-                  </div>
-                  <div>
-                    <FaClock /> {order?.kiosks?.openingHours || "Unknown"}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -373,100 +390,120 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 <FaStore /> Placed By Kiosk
               </div>
               <div className="info-value">
-                <div>{order?.placedByKiosk?.name || "Unknown"}</div>
-                <div className="details">
-                  <div>
-                    <FaMapMarkerAlt />{" "}
-                    {order?.placedByKiosk?.address || "Unknown"}
+                {order?.placedByKiosk ? (
+                  <>
+                    <div>{order.placedByKiosk.name}</div>
+                    <div className="details">
+                      <div>
+                        <FaMapMarkerAlt /> {order.placedByKiosk.address}
+                      </div>
+                      <div>
+                        <FaPhoneAlt /> {order.placedByKiosk.phoneNumber}
+                      </div>
+                      <div>
+                        <FaEnvelope /> {order.placedByKiosk.email}
+                      </div>
+                      <div>
+                        <FaClock /> {order.placedByKiosk.openingHours}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-data-state">
+                    <div className="no-data-message">
+                      <FaTimesCircle className="no-data-icon" />
+                      <span>No placing kiosk information</span>
+                    </div>
                   </div>
-                  <div>
-                    <FaPhoneAlt />{" "}
-                    {order?.placedByKiosk?.phoneNumber || "Unknown"}
-                  </div>
-                  <div>
-                    <FaEnvelope /> {order?.placedByKiosk?.email || "Unknown"}
-                  </div>
-                  <div>
-                    <FaClock />{" "}
-                    {order?.placedByKiosk?.openingHours || "Unknown"}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Shipping Information */}
-
             <div className="info-section">
               <div className="info-label">
                 <FaShippingFast /> Shipping Details
               </div>
               <div className="info-value">
-                {order.shippingStartTime && (
-                  <div>
-                    Shipping Start: {formatDateTime(order.shippingStartTime)}
-                  </div>
-                )}
-                {order.deliveriedStartTime && (
-                  <div>
-                    Delivery Start: {formatDateTime(order.deliveriedStartTime)}
-                  </div>
-                )}
-                {order.receiverAddress && (
-                  <div>Delivery Address: {order.receiverAddress}</div>
-                )}
-
-                {/* Thông tin Shipper */}
-                {order.shipper && (
-                  <div className="shipper-info">
-                    <h4 className="shipper-title">
-                      <FaUser /> Shipper Information
-                    </h4>
-                    <div className="shipper-details">
-                      {order.shipper.profiles?.[0]?.fullName && (
-                        <div>
-                          <strong>Name:</strong>{" "}
-                          {order.shipper.profiles[0].fullName}
-                        </div>
-                      )}
+                {order.shippingStartTime || order.deliveriedStartTime || order.receiverAddress || order.shipper || order.deliveryConfirmationImage ? (
+                  <>
+                    {order.shippingStartTime && (
                       <div>
-                        <strong>Phone:</strong> {order.shipper.phoneNumber}
+                        Shipping Start: {formatDateTime(order.shippingStartTime)}
                       </div>
-                      {order.shipper.profiles?.[0]?.address && (
-                        <div>
-                          <strong>Address:</strong>{" "}
-                          {order.shipper.profiles[0].address}
-                        </div>
-                      )}
+                    )}
+                    {order.deliveriedStartTime && (
                       <div>
-                        <strong>Email:</strong> {order.shipper.email}
+                        Delivery Start: {formatDateTime(order.deliveriedStartTime)}
                       </div>
-                    </div>
-                  </div>
-                )}
+                    )}
+                    {order.receiverAddress && (
+                      <div>Delivery Address: {order.receiverAddress}</div>
+                    )}
 
-                {/* Hình ảnh xác nhận giao hàng */}
-                {order.deliveryConfirmationImage && (
-                  <div className="delivery-confirmation">
-                    <div className="image-label">
-                      Delivery Confirmation Image:
+                    {/* Shipper Information */}
+                    {order.shipper && (
+                      <div className="shipper-info">
+                        <h4 className="shipper-title">
+                          <FaUser /> Shipper Information
+                        </h4>
+                        <div className="shipper-details">
+                          {order.shipper.profiles?.[0]?.fullName && (
+                            <div>
+                              <strong>Name:</strong>{" "}
+                              {order.shipper.profiles[0].fullName}
+                            </div>
+                          )}
+                          <div>
+                            <strong>Phone:</strong> {order.shipper.phoneNumber}
+                          </div>
+                          {order.shipper.profiles?.[0]?.address && (
+                            <div>
+                              <strong>Address:</strong>{" "}
+                              {order.shipper.profiles[0].address}
+                            </div>
+                          )}
+                          <div>
+                            <strong>Email:</strong> {order.shipper.email}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Delivery Confirmation Image */}
+                    {order.deliveryConfirmationImage && (
+                      <div className="delivery-confirmation">
+                        <div className="image-label">
+                          Delivery Confirmation Image:
+                        </div>
+                        <img
+                          src={order.deliveryConfirmationImage}
+                          alt="Delivery Confirmation"
+                          className="confirmation-image"
+                          onClick={() => {
+                            if (order.deliveryConfirmationImage) {
+                              window.open(
+                                order.deliveryConfirmationImage,
+                                "_blank"
+                              );
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="no-data-state">
+                    <div className="no-data-message">
+                      <FaTimesCircle className="no-data-icon" />
+                      <span>No shipping information available</span>
                     </div>
-                    <img
-                      src={order.deliveryConfirmationImage}
-                      alt="Delivery Confirmation"
-                      className="confirmation-image"
-                      onClick={() => {
-                        if (order.deliveryConfirmationImage) {
-                          window.open(
-                            order.deliveryConfirmationImage,
-                            "_blank"
-                          );
-                        }
-                      }}
-                    />
                   </div>
                 )}
               </div>
             </div>
+
+            {/* Products Section */}
             <div className="products-section">
               <div className="section-header">
                 <h3>Prescription Details</h3>
@@ -528,6 +565,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 })}
               </div>
             </div>
+
+            {/* Payment Information */}
             {paymentInfo && (
               <ProductAndPaymentInfo
                 paymentInfo={{
@@ -535,7 +574,6 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                   voucher: order.voucherID
                     ? {
                         id: order.voucherID,
-                        // Thêm các thông tin voucher khác nếu có
                       }
                     : null,
                 }}
@@ -548,7 +586,6 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               orderId={order.id}
               onStatusUpdate={async () => {
                 try {
-                  // Reload both order and payment data
                   const updatedOrder = await fetchOrderById(Number(id));
                   const updatedPayment = await fetchPaymentByOrderId(Number(id));
                   setOrder(updatedOrder);
@@ -567,10 +604,6 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               deliveryConfirmationImage={order.deliveryConfirmationImage}
               isPaid={paymentInfo?.totalPaid === paymentInfo?.totalAmount}
             />
-
-            {/* Payment Information */}
-
-            {/* Product Glass Details */}
           </div>
         </div>
       </div>

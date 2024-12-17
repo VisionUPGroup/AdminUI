@@ -25,6 +25,8 @@ import {
 } from "react-icons/fa";
 import { useReportService } from "../../../Api/reportService";
 import "./ReportManagementStyle.scss";
+import { useOrderService } from "../../../Api/orderService";
+import AddExchangeRequestModal from "./AddExchangeRequestModal";
 
 interface Role {
   id?: number;
@@ -46,6 +48,7 @@ interface Report {
   orderID: number;
   handler: Handler;
   description: string;
+  evidenceImage: string;
   feedback: string;
   status: number;
   type: number;
@@ -55,6 +58,13 @@ interface PaginationResponse {
   items: Report[];
   totalItems: number;
   currentPage: number;
+}
+interface NewReport {
+  orderID: string;
+  description: string;
+  type: number;
+  image?: File;
+  productGlassId?: number; // Thêm trường này
 }
 
 const ReportList: React.FC = () => {
@@ -74,18 +84,29 @@ const ReportList: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<number | undefined>(
     undefined
   );
-
-  // Form states
-  const [newReport, setNewReport] = useState({
-    orderID: 0,
+  const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [selectedProductGlass, setSelectedProductGlass] = useState<string>("");
+  const [showExchangeModal, setShowExchangeModal] = useState(false);
+  const [selectedProductForExchange, setSelectedProductForExchange] = useState<
+    number | null
+  >(null);
+  const [reportForExchange, setReportForExchange] = useState<Report | null>(
+    null
+  );
+  const [newReport, setNewReport] = useState<NewReport>({
+    orderID: "",
     description: "",
     type: 0,
+    productGlassId: undefined, // Thêm giá trị mặc định
   });
 
   const [updateReport, setUpdateReport] = useState({
     feedback: "",
     status: 0,
   });
+  // Thêm vào phần khai báo state
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Services
   const {
@@ -93,11 +114,35 @@ const ReportList: React.FC = () => {
     createRePort,
     updateReportStatus,
   } = useReportService();
-
+  const { fetchOrderById } = useOrderService();
   useEffect(() => {
     fetchReportsList();
   }, [currentPage, typeFilter, statusFilter, orderFilter]); // Thêm các dependencies
-
+  useEffect(() => {
+    if (showExchangeModal) {
+      console.log("Modal State:", {
+        isOpen: showExchangeModal,
+        reportId: selectedReport?.id,
+        productGlassId: selectedProductForExchange,
+      });
+    }
+  }, [showExchangeModal, selectedReport, selectedProductForExchange]);
+  const handleExchangeSubmit = async (data: {
+    productGlassID: number | null;
+    receiverAddress: string;
+    kioskID: number | null;
+    reason: string;
+    quantity: number;
+  }) => {
+    try {
+      // Xử lý logic exchange ở đây
+      // Có thể gọi API để tạo exchange request
+      toast.success("Exchange request created successfully");
+    } catch (error) {
+      console.error("Error creating exchange request:", error);
+      toast.error("Failed to create exchange request");
+    }
+  };
   const fetchReportsList = async () => {
     try {
       setIsLoading(true);
@@ -134,6 +179,39 @@ const ReportList: React.FC = () => {
     setStatusFilter(undefined);
     setOrderFilter(undefined);
     setCurrentPage(1); // Reset về trang 1
+  };
+  const clearForm = () => {
+    setNewReport({
+      orderID: "",
+      description: "",
+      type: 0,
+      productGlassId: undefined, // Reset productGlassId
+    });
+    setOrderDetails(null);
+    setSelectedProductGlass("");
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setSelectedImage(null);
+    setImagePreview(null);
+  };
+
+  const handleOrderIdChange = async (value: number) => {
+    try {
+      setNewReport((prev) => ({ ...prev, orderID: value })); // Cập nhật giá trị ngay lập tức
+
+      if (value > 0) {
+        const orderData = await fetchOrderById(value);
+        console.log("Order data:", orderData);
+        setOrderDetails(orderData);
+      } else {
+        setOrderDetails(null);
+      }
+    } catch (error) {
+      console.error("Error fetching order:", error);
+
+      setOrderDetails(null);
+    }
   };
 
   // Report Type and Status Label Functions
@@ -206,6 +284,41 @@ const ReportList: React.FC = () => {
         };
     }
   };
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Kiểm tra file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please upload an image file");
+        return;
+      }
+
+      // Kiểm tra file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size should be less than 5MB");
+        return;
+      }
+
+      // Set file trực tiếp, không cần tạo File mới
+      setSelectedImage(file);
+
+      // Tạo preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
+  const clearImage = () => {
+    setSelectedImage(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImagePreview(null);
+    // Xóa image khỏi state newReport
+    setNewReport((prev) => {
+      const { image, ...rest } = prev;
+      return rest;
+    });
+  };
 
   // CRUD Operations
   const handleCreateReport = async () => {
@@ -215,29 +328,47 @@ const ReportList: React.FC = () => {
         return;
       }
 
-      if (!newReport.orderID || newReport.orderID <= 0) {
+      const orderID = parseInt(newReport.orderID);
+      if (isNaN(orderID) || orderID <= 0) {
         toast.warning("Please enter a valid Order ID");
         return;
       }
 
-      // Format data theo đúng yêu cầu API
-      const reportData = {
-        orderID: parseInt(newReport.orderID.toString()), // Đảm bảo orderID là số
-        description: newReport.description.trim(),
-        type: parseInt(newReport.type.toString()), // Đảm bảo type là số
-      };
+      // Create FormData object
+      const formData = new FormData();
 
-      await createRePort(reportData);
+      // Append các field theo đúng API spec
+      formData.append("orderID", orderID.toString());
+      formData.append("description", newReport.description.trim());
+      formData.append("type", newReport.type.toString());
+
+      // Thêm productGlassId nếu có
+      if (newReport.type === 0) {
+        // Chỉ thêm khi type là Product Issue
+        if (!selectedProductGlass) {
+          toast.warning("Please select a product");
+          return;
+        }
+        formData.append("productGlassId", selectedProductGlass);
+      }
+
+      // Append image với key 'image'
+      if (selectedImage instanceof File) {
+        formData.append("image", selectedImage);
+      }
+
+      const response = await createRePort(formData);
+      console.log("Create report response:", response);
+
       toast.success("Report created successfully");
       setShowCreateModal(false);
-      setNewReport({ orderID: 0, description: "", type: 0 }); // Reset form
+      clearForm();
       fetchReportsList();
     } catch (error) {
       console.error("Create report error:", error);
-      toast.error(error.response.data[0]);
+      toast.error(error.response?.data?.[0] || "Failed to create report");
     }
   };
-
   const handleUpdateReport = async () => {
     try {
       if (!selectedReport) return;
@@ -267,6 +398,17 @@ const ReportList: React.FC = () => {
     if (newPage >= 1 && newPage <= totalPages) {
       setCurrentPage(newPage);
     }
+  };
+  const handleExchangeClick = (report: Report) => {
+    console.log("Report clicked for exchange:", report); // Debug log
+
+    if (!report || !report.description) {
+      toast.error("Invalid report data");
+      return;
+    }
+
+    setReportForExchange(report);
+    setShowExchangeModal(true);
   };
 
   return (
@@ -419,6 +561,21 @@ const ReportList: React.FC = () => {
                         </div>
                         <p className="description">{report.description}</p>
                       </div>
+                      {report.evidenceImage && (
+                        <div className="evidence-image-section">
+                          <h4>Evidence Image</h4>
+                          <div className="image-container">
+                            <img
+                              src={report.evidenceImage}
+                              alt="Report evidence"
+                              className="evidence-image"
+                              onClick={() =>
+                                window.open(report.evidenceImage, "_blank")
+                              }
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {report.feedback && (
                         <div className="feedback">
@@ -442,6 +599,14 @@ const ReportList: React.FC = () => {
                           }}
                         >
                           <FaEdit /> Update
+                        </button>
+                      )}
+                      {report.status === 2 && report.type === 0 && (
+                        <button
+                          className="exchange-btn"
+                          onClick={() => handleExchangeClick(report)}
+                        >
+                          <MdLocalShipping /> Exchange Eyeglass
                         </button>
                       )}
                     </div>
@@ -489,21 +654,28 @@ const ReportList: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Create New Report</h3>
-
             <div className="order-input-group">
               <label htmlFor="orderInput">Order ID</label>
               <input
                 id="orderInput"
                 type="number"
                 className="order-input"
-                value={newReport.orderID === 0 ? "" : newReport.orderID}
+                value={newReport.orderID}
                 onChange={(e) => {
-                  const value = e.target.value ? parseInt(e.target.value) : 0;
-                  setNewReport({ ...newReport, orderID: value });
+                  const value = e.target.value;
+                  // Cập nhật giá trị input trực tiếp
+                  setNewReport((prev) => ({ ...prev, orderID: value }));
+
+                  // Chỉ fetch order khi có giá trị hợp lệ
+                  const numericValue = parseInt(value);
+                  if (!isNaN(numericValue) && numericValue > 0) {
+                    handleOrderIdChange(numericValue);
+                  } else {
+                    setOrderDetails(null);
+                  }
                 }}
                 placeholder="Enter Order ID"
                 min="1"
-                required
               />
             </div>
 
@@ -525,6 +697,60 @@ const ReportList: React.FC = () => {
               </select>
             </div>
 
+            {/* New ProductGlass Dropdown */}
+            {newReport.type === 0 &&
+              orderDetails &&
+              orderDetails.orderDetails && (
+                <div className="product-select-group">
+                  <label htmlFor="productSelect">Select Product</label>
+                  <select
+                    id="productSelect"
+                    value={selectedProductGlass}
+                    onChange={(e) => setSelectedProductGlass(e.target.value)}
+                    required
+                  >
+                    <option value="">Select a product</option>
+                    {orderDetails.orderDetails.map((detail: any) => (
+                      <option
+                        key={detail.productGlass.id}
+                        value={detail.productGlass.id}
+                      >
+                        ID: {detail.productGlass.id} -{" "}
+                        {detail.productGlass.eyeGlass.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            <div className="image-upload-group">
+              <label htmlFor="imageInput">Upload Image (optional)</label>
+              <div className="image-upload-container">
+                <input
+                  id="imageInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="image-input"
+                />
+                {imagePreview && (
+                  <div className="image-preview-container">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="image-preview"
+                    />
+                    <button
+                      type="button"
+                      className="clear-image-btn"
+                      onClick={clearImage}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="description-input-group">
               <label htmlFor="descriptionInput">Description</label>
               <textarea
@@ -543,7 +769,7 @@ const ReportList: React.FC = () => {
                 className="cancel-btn"
                 onClick={() => {
                   setShowCreateModal(false);
-                  setNewReport({ orderID: 0, description: "", type: 0 }); // Reset form when canceling
+                  clearForm();
                 }}
               >
                 Cancel
@@ -595,6 +821,17 @@ const ReportList: React.FC = () => {
           </div>
         </div>
       )}
+      <AddExchangeRequestModal
+        isOpen={showExchangeModal}
+        toggle={() => {
+          setShowExchangeModal(false);
+          setReportForExchange(null);
+        }}
+        reportId={reportForExchange?.id || null}
+        productGlassId={
+          selectedProductGlass ? parseInt(selectedProductGlass) : null
+        }
+      />
     </div>
   );
 };

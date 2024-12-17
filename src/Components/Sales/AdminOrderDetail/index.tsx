@@ -354,23 +354,33 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               <div className="info-label">
                 <FaStore /> Destination Kiosk
               </div>
-
               <div className="info-value">
-                <div>{order?.kiosks?.name || "Unknown"}</div>
-                <div className="details">
-                  <div>
-                    <FaMapMarkerAlt /> {order?.kiosks?.address || "Unknown"}
+                {order?.kiosks ? (
+                  <>
+                    <div>{order.kiosks.name}</div>
+                    <div className="details">
+                      <div>
+                        <FaMapMarkerAlt /> {order.kiosks.address}
+                      </div>
+                      <div>
+                        <FaPhoneAlt /> {order.kiosks.phoneNumber}
+                      </div>
+                      <div>
+                        <FaEnvelope /> {order.kiosks.email}
+                      </div>
+                      <div>
+                        <FaClock /> {order.kiosks.openingHours}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-data-state">
+                    <div className="no-data-message">
+                      <FaTimesCircle className="no-data-icon" />
+                      <span>No destination kiosk assigned</span>
+                    </div>
                   </div>
-                  <div>
-                    <FaPhoneAlt /> {order?.kiosks?.phoneNumber || "Unknown"}
-                  </div>
-                  <div>
-                    <FaEnvelope /> {order?.kiosks?.email || "Unknown"}
-                  </div>
-                  <div>
-                    <FaClock /> {order?.kiosks?.openingHours || "Unknown"}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
@@ -380,29 +390,36 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 <FaStore /> Placed By Kiosk
               </div>
               <div className="info-value">
-                <div>{order?.placedByKiosk?.name || "Unknown"}</div>
-                <div className="details">
-                  <div>
-                    <FaMapMarkerAlt />{" "}
-                    {order?.placedByKiosk?.address || "Unknown"}
+                {order?.placedByKiosk ? (
+                  <>
+                    <div>{order.placedByKiosk.name}</div>
+                    <div className="details">
+                      <div>
+                        <FaMapMarkerAlt /> {order.placedByKiosk.address}
+                      </div>
+                      <div>
+                        <FaPhoneAlt /> {order.placedByKiosk.phoneNumber}
+                      </div>
+                      <div>
+                        <FaEnvelope /> {order.placedByKiosk.email}
+                      </div>
+                      <div>
+                        <FaClock /> {order.placedByKiosk.openingHours}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-data-state">
+                    <div className="no-data-message">
+                      <FaTimesCircle className="no-data-icon" />
+                      <span>No placing kiosk information</span>
+                    </div>
                   </div>
-                  <div>
-                    <FaPhoneAlt />{" "}
-                    {order?.placedByKiosk?.phoneNumber || "Unknown"}
-                  </div>
-                  <div>
-                    <FaEnvelope /> {order?.placedByKiosk?.email || "Unknown"}
-                  </div>
-                  <div>
-                    <FaClock />{" "}
-                    {order?.placedByKiosk?.openingHours || "Unknown"}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Shipping Information */}
-
             <div className="info-section">
               <div className="info-label">
                 <FaShippingFast /> Shipping Details
@@ -422,7 +439,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                   <div>Delivery Address: {order.receiverAddress}</div>
                 )}
 
-                {/* Thông tin Shipper */}
+                {/* Shipper Information */}
                 {order.shipper && (
                   <div className="shipper-info">
                     <h4 className="shipper-title">
@@ -451,7 +468,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                   </div>
                 )}
 
-                {/* Hình ảnh xác nhận giao hàng */}
+                {/* Delivery Confirmation Image */}
                 {order.deliveryConfirmationImage && (
                   <div className="delivery-confirmation">
                     <div className="image-label">
@@ -474,6 +491,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 )}
               </div>
             </div>
+
+            {/* Products Section */}
             <div className="products-section">
               <div className="section-header">
                 <h3>Prescription Details</h3>
@@ -554,6 +573,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 })}
               </div>
             </div>
+
+            {/* Payment Information */}
             {paymentInfo && (
               <ProductAndPaymentInfo
                 paymentInfo={{
@@ -561,7 +582,6 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                   voucher: order.voucherID
                     ? {
                         id: order.voucherID,
-                        // Thêm các thông tin voucher khác nếu có
                       }
                     : null,
                 }}
@@ -574,7 +594,6 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               orderId={order.id}
               onStatusUpdate={async () => {
                 try {
-                  // Reload both order and payment data
                   const updatedOrder = await fetchOrderById(Number(id));
                   const updatedPayment = await fetchPaymentByOrderId(
                     Number(id)
@@ -595,10 +614,6 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               deliveryConfirmationImage={order.deliveryConfirmationImage}
               isPaid={paymentInfo?.totalPaid === paymentInfo?.totalAmount}
             />
-
-            {/* Payment Information */}
-
-            {/* Product Glass Details */}
           </div>
         </div>
       </div>

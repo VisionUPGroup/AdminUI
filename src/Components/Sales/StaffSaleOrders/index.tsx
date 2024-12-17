@@ -23,6 +23,7 @@ import {
   FaUser,
   FaClipboardCheck,
   FaArrowLeft,
+  FaPhone,
 } from "react-icons/fa";
 import { useOrderService } from "../../../../Api/orderService";
 import { useVoucherService } from "../../../../Api/voucherService";
@@ -89,6 +90,7 @@ const SalesOrders: React.FC = () => {
     id: number;
     accountID: number;
     username?: string; // Thêm trường này
+    phoneNumber?: string; // Thêm trường này
     orderTime: string;
     status: boolean;
     receiverAddress: string;
@@ -177,7 +179,10 @@ const SalesOrders: React.FC = () => {
 
   const [totalItemsCanceled, setTotalItemsCanceled] = useState(0);
   const [orderUsernames, setOrderUsernames] = useState<{
-    [key: number]: string;
+    [key: number]: {
+      username: string;
+      phoneNumber: string;
+    };
   }>({});
 
   // Services
@@ -251,21 +256,29 @@ const SalesOrders: React.FC = () => {
         async (order: { accountID: any; id: any }) => {
           try {
             const userData = await fetchAccountById(order.accountID);
-            return { orderId: order.id, username: userData.username };
+            return {
+              orderId: order.id,
+              username: userData.username,
+              phoneNumber: userData.phoneNumber
+            };
           } catch (error) {
             console.error(
               `Error fetching username for order ${order.id}:`,
               error
             );
-            return { orderId: order.id, username: "Unknown User" };
+            return {
+              orderId: order.id,
+              username: "Unknown User",
+              phoneNumber: "N/A"
+            };
           }
         }
       );
-
+      
       const usernameResults = await Promise.all(usernamePromises);
       const usernameMap = usernameResults.reduce(
-        (acc, { orderId, username }) => {
-          acc[orderId] = username;
+        (acc, { orderId, username, phoneNumber }) => {
+          acc[orderId] = { username, phoneNumber };
           return acc;
         },
         {}
@@ -774,25 +787,25 @@ const SalesOrders: React.FC = () => {
                     <tbody>
                       {orderData.map((order) => (
                         <tr key={order.id}>
-                          <td>
-                            <div className="order-id">
-                              {/* <span className="code">{order.code}</span> */}
-                              <span className="order-number">
-                                Order ID: {order.id}
-                              </span>{" "}
-                              {/* Thêm dòng này */}
-                              <span className="username">
-                                Account ID: {order.accountID}
-                              </span>
-                              <span className="username">
-                                <FaUser />{" "}
-                                {orderUsernames[order.id] || "Loading..."}
-                              </span>
-                              <span className="time">
-                                {new Date(order.orderTime).toLocaleString()}
-                              </span>
-                            </div>
-                          </td>
+                       <td>
+  <div className="order-id">
+    <span className="order-number">
+      Order ID: {order.id}
+    </span>
+    <span className="username">
+      Account ID: {order.accountID}
+    </span>
+    <span className="username">
+      <FaUser /> {orderUsernames[order.id]?.username || "Loading..."}
+    </span>
+    <span className="phone">
+      <FaPhone /> {orderUsernames[order.id]?.phoneNumber || "N/A"}
+    </span>
+    <span className="time">
+      {new Date(order.orderTime).toLocaleString()}
+    </span>
+  </div>
+</td>
                           <td>
                             <div className="customer-info">
                               <span className="address">
