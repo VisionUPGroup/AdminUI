@@ -14,7 +14,7 @@
     accountId: number;
     lensMode: LensMode;
     onComplete: (data: {
-      prescriptionData: PrescriptionData;
+      prescriptionData?: PrescriptionData;
       leftLens: Lens;
       rightLens: Lens;
     }) => void;
@@ -150,17 +150,17 @@
   
       // Call the original onComplete
       onComplete({
-        prescriptionData: {
-          sphereOD: 0,
-          cylinderOD: 0,
-          axisOD: 0,
-          sphereOS: 0,
-          cylinderOS: 0,
-          axisOS: 0,
-          addOD: 0,
-          addOS: 0,
-          pd: 0
-        },
+        // prescriptionData: {
+        //   sphereOD: 0,
+        //   cylinderOD: 0,
+        //   axisOD: 0,
+        //   sphereOS: 0,
+        //   cylinderOS: 0,
+        //   axisOS: 0,
+        //   addOD: 0,
+        //   addOS: 0,
+        //   pd: 0
+        // },
         leftLens,
         rightLens
       });

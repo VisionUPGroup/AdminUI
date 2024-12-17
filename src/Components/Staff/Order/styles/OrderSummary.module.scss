@@ -212,6 +212,18 @@
                 color: $text-secondary;
                 font-size: 0.875rem;
               }
+              .noPrescription {
+                background-color: #f3f4f6;
+                padding: 0.375rem 0.75rem;
+                border-radius: 0.375rem;
+                margin-top: 0.25rem;
+          
+                span {
+                  color: #6b7280;
+                  font-size: 0.875rem;
+                  font-style: italic;
+                }
+              }
             }
           }
 
@@ -317,6 +329,7 @@
         .methodTitle {
           font-weight: 500;
           margin-bottom: 0.25rem;
+          margin-right: 0.25rem;
         }
 
         .methodDescription {
@@ -405,12 +418,13 @@
     }
 
     .totalNote {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px dashed $border-color;
+      // margin-top: 1rem;
+      // padding-top: 1rem;
+      // border-top: 1px dashed $border-color;
       font-size: 0.875rem;
       color: $text-secondary;
       text-align: right;
+      float: right;
     }
   }
 

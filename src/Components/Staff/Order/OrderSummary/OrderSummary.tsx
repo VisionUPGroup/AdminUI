@@ -94,6 +94,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
 
   const { fetchVoucherByCode } = useVoucherService();
 
+  console.log("cart item", cartItems)
   // Calculation Functions
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
@@ -312,15 +313,39 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                         <div className={styles.prescriptionRow}>
                           <div className={styles.prescriptionValue}>
                             <span>Right Eye (OD)</span>
-                            <small>SPH: {item.prescriptionData.sphereOD}, CYL: {item.prescriptionData.cylinderOD}, AXIS: {item.prescriptionData.axisOD}°</small>
+                            {item.rightLens.lensType.isNoPrescription ? (
+                              <div className={styles.noPrescription}>
+                                <span>No Prescription Lens</span>
+                              </div>
+                            ) : (
+                              <small>
+                                SPH: {item.prescriptionData.sphereOD},
+                                CYL: {item.prescriptionData.cylinderOD},
+                                AXIS: {item.prescriptionData.axisOD}°
+                              </small>
+                            )}
                           </div>
+
                           <div className={styles.prescriptionValue}>
                             <span>Left Eye (OS)</span>
-                            <small>SPH: {item.prescriptionData.sphereOS}, CYL: {item.prescriptionData.cylinderOS}, AXIS: {item.prescriptionData.axisOS}°</small>
+                            {item.leftLens.lensType.isNoPrescription ? (
+                              <div className={styles.noPrescription}>
+                                <span>No Prescription Lens</span>
+                              </div>
+                            ) : (
+                              <small>
+                                SPH: {item.prescriptionData.sphereOS},
+                                CYL: {item.prescriptionData.cylinderOS},
+                                AXIS: {item.prescriptionData.axisOS}°
+                              </small>
+                            )}
                           </div>
                         </div>
+
+                        
+
                         <div className={styles.prescriptionFooter}>
-                          <span>PD: {item.prescriptionData.pd}mm</span>
+                          <span>PD: {item.prescriptionData?.pd || "N/A"} mm</span>
                           <span>Quantity: {item.quantity}</span>
                         </div>
                       </div>
@@ -552,7 +577,10 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                   style: 'currency',
                   currency: 'VND'
                 }).format(calculateFinalAmount())}
-                {isDeposit && (
+                
+              </span>
+            </div>
+            {isDeposit && (
                   <span className={styles.totalNote}>
                     Remaining: {new Intl.NumberFormat('vi-VN', {
                       style: 'currency',
@@ -560,8 +588,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                     }).format(calculateRemainingPayment())}
                   </span>
                 )}
-              </span>
-            </div>
           </section>
 
           {/* Additional Information */}
