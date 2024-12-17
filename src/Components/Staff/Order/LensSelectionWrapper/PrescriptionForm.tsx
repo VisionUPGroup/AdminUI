@@ -19,6 +19,7 @@ import { MeasurementRecord, PrescriptionData } from '../types/lens.types';
 import styles from './PrescriptionForm.module.scss';
 import { LensMode } from '../types/lens.types';
 import { Tooltip } from './Tooltip';
+import Swal from 'sweetalert2';
 
 interface PrescriptionFormProps {
   initialData?: MeasurementRecord[];
@@ -155,6 +156,11 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
     }
 
     setShowSuccess(true);
+     Swal.fire({
+            title: "Added to Cart!",
+            text: "The selected lenses have been added to your cart successfully!",
+            icon: "success"
+          });
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Set default values for type 4 lenses

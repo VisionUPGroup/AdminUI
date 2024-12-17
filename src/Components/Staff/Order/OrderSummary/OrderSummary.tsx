@@ -79,7 +79,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
   onVoucherSelect
 }) => {
   // Payment & Voucher States
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'vnpay'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'vnpay'>('vnpay');
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherInfo, setVoucherInfo] = useState<VoucherInfo | null>(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
@@ -465,7 +465,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
               <h3>Payment Method</h3>
             </div>
             <div className={styles.paymentMethods}>
-              <button
+              {/* <button
                 className={`${styles.paymentMethod} ${paymentMethod === 'cash' ? styles.active : ''}`}
                 onClick={() => setPaymentMethod('cash')}
               >
@@ -475,7 +475,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                   <small>Pay at store</small>
                 </div>
                 {paymentMethod === 'cash' && <Check className={styles.checkIcon} />}
-              </button>
+              </button> */}
 
               <button
                 className={`${styles.paymentMethod} ${paymentMethod === 'vnpay' ? styles.active : ''}`}

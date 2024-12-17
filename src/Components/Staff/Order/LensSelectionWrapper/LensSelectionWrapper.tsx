@@ -1,5 +1,6 @@
   import React, { useState, useEffect } from 'react';
   import { motion, AnimatePresence } from 'framer-motion';
+  import Swal from 'sweetalert2';
   import ProfileSelector from './ProfileSelector';
   import MeasurementHistory from './MeasurementHistory';
   import PrescriptionForm from './PrescriptionForm';
@@ -7,6 +8,7 @@
   import { CheckCircle2, ArrowRight, Eye } from 'lucide-react';
   import { LensSelectionState, MeasurementRecord, PrescriptionData, LensMode, Lens } from '../types/lens.types';
   import styles from './LensSelectionWrapper.module.scss';
+  
 
   interface LensSelectionWrapperProps {
     accountId: number;
@@ -139,6 +141,14 @@
     };
 
     const handleDirectComplete = (leftLens: Lens, rightLens: Lens) => {
+      // Show success message
+      Swal.fire({
+        title: "Added to Cart!",
+        text: "The selected lenses have been added to your cart successfully!",
+        icon: "success"
+      });
+  
+      // Call the original onComplete
       onComplete({
         prescriptionData: {
           sphereOD: 0,
