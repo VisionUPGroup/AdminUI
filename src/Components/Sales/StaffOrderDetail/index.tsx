@@ -46,7 +46,7 @@ interface Account {
   payments: any[]; // Có thể thay bằng interface Payment cụ thể nếu cần
   ratingEyeGlasses: any[]; // Có thể thay bằng interface Rating cụ thể nếu cần
   ratingLens: any[]; // Có thể thay bằng interface Rating cụ thể nếu cần
-} 
+}
 
 interface Profile {
   id: number;
@@ -188,6 +188,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         setIsLoading(true);
         // Fetch order data
         const orderData = await fetchOrderById(Number(id));
+        console.log("tung", orderData)
 
         // Fetch payment information
         if (orderData.accountID) {
@@ -201,25 +202,25 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
 
         // Fetch product glass details
         const { fetchProductGlassById } = useProductGlassService();
-        const productGlassPromises = orderData.orderDetails.map(
-          async (detail: { productGlass: { id: any }; id: any }) => {
-            try {
-              const productGlassData = await fetchProductGlassById(
-                detail.productGlass.id
-              );
-              return {
-                orderDetailId: detail.id,
-                productGlass: productGlassData,
-              };
-            } catch (error) {
-              console.error(`Error fetching product glass data:`, error);
-              return {
-                orderDetailId: detail.id,
-                productGlass: null,
-              };
-            }
+        const productGlassPromises = orderData.orderDetails.map(async (detail: { productGlass: { id: any; }; id: any; }) => {
+          try {
+            const productGlassData = await fetchProductGlassById(detail.productGlass.id);
+            return {
+              orderDetailId: detail.id,
+              productGlass: productGlassData
+            };
+
+
+          } catch (error) {
+            console.error(`Error fetching product glass data:`, error);
+            return {
+              orderDetailId: detail.id,
+              productGlass: null
+            };
           }
+        }
         );
+
 
         const productGlassResults = await Promise.all(productGlassPromises);
         const newProductGlassDetails = productGlassResults.reduce(
@@ -393,9 +394,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               <span className="label">Order ID:</span>
               <span className="value">#{order.id}</span>
               <span
-                className={`status-badge ${
-                  order.status ? "active" : "inactive"
-                }`}
+                className={`status-badge ${order.status ? "active" : "inactive"
+                  }`}
               >
                 {order.status ? "Active" : "Inactive"}
               </span>
@@ -628,8 +628,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                   ...paymentInfo,
                   voucher: order.voucherID
                     ? {
-                        id: order.voucherID,
-                      }
+                      id: order.voucherID,
+                    }
                     : null,
                 }}
               />

@@ -15,6 +15,8 @@ export interface FilterParams {
   MaxPrice?: number;
   SortBy?: string;
   Descending?: boolean;
+  status?: boolean,
+  isDeleted?: boolean,
   PageIndex: number;
   PageSize: number;
 }
@@ -31,6 +33,8 @@ interface LensFilterProps {
   lensTypes: Array<{ id: number; name: string; description: string; status: boolean }>;
   eyeReflactives: Array<{ id: number; reflactiveName: string; status: boolean }>;
   initialParams: FilterParams;
+  activeTab: string;
+  totalItems:number
 }
 
 const PAGE_SIZE_OPTIONS = [
@@ -44,7 +48,9 @@ const LensFilter: React.FC<LensFilterProps> = ({
   onFilterChange,
   lensTypes,
   eyeReflactives,
-  initialParams
+  initialParams,
+  activeTab,
+  totalItems
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterParams, setFilterParams] = useState<FilterParams>(initialParams);
@@ -116,14 +122,19 @@ const LensFilter: React.FC<LensFilterProps> = ({
     const defaultParams: FilterParams = {
       PageIndex: 1,
       PageSize: filterParams.PageSize,
-      Descending: true
+      Descending: true,
+      status: filterParams.status, 
+      isDeleted: false
     };
-
+  
     setFilterParams(defaultParams);
     setPriceRange([0, 10000000]);
     setActiveFilters([]);
-
-    onFilterChange(defaultParams);
+  
+    onFilterChange({
+      PageIndex: 1,
+      PageSize: filterParams.PageSize
+    });
   };
 
   const formatPrice = (value: number) => {

@@ -1,0 +1,122 @@
+.paginationContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+    .paginationList {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+  
+    .paginationItem {
+      min-width: 40px;
+      height: 40px;
+      margin: 0;
+      position: relative;
+      
+      .paginationButton {
+        width: 100%;
+        height: 100%;
+        padding: 0 12px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        outline: none;
+  
+        &:hover:not(:disabled) {
+          background: #f8fafc;
+          color: #c79816;
+          border-color: #c79816;
+        }
+  
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          background: #f8fafc;
+        }
+  
+        &.active {
+          background: #c79816;
+          color: white;
+          border-color: #c79816;
+  
+          &:hover {
+            background: darken(#c79816, 5%);
+          }
+        }
+  
+        // Navigation buttons (prev/next)
+        &.navButton {
+          min-width: 80px;
+          font-weight: 600;
+  
+          svg {
+            width: 16px;
+            height: 16px;
+            margin: 0 4px;
+          }
+  
+          &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+          }
+        }
+      }
+    }
+  
+    .paginationDots {
+      padding: 0 4px;
+      color: #64748b;
+      user-select: none;
+    }
+  
+    // Responsive styles
+    @media (max-width: 576px) {
+      gap: 4px;
+      padding: 12px;
+  
+      .paginationList {
+        gap: 4px;
+      }
+  
+      .paginationItem {
+        min-width: 36px;
+        height: 36px;
+  
+        .paginationButton {
+          font-size: 13px;
+          padding: 0 8px;
+  
+          &.navButton {
+            min-width: 60px;
+            
+            span {
+              display: none;
+            }
+            
+            svg {
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }

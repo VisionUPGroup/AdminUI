@@ -49,6 +49,7 @@ interface EyeGlassDetail {
   style: string;
   weight: number;
   design: string;
+  isDeleted: boolean;
   status: boolean;
   eyeGlassTypes: {
     id: number;
@@ -173,7 +174,7 @@ const renderImage = (url: string) => {
               <Button color="light" onClick={handleBack}>
                 <ArrowLeft size={14} className="me-2" /> Back
               </Button>
-              <Button color="primary" onClick={handleEdit}>
+              <Button disabled={!eyeGlass.status} color="primary" onClick={handleEdit}>
                 <Edit2 size={14} className="me-2" /> Edit Product
               </Button>
             </div>

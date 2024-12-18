@@ -73,6 +73,30 @@ interface EyeGlassType {
     status: boolean;
 }
 
+enum MaterialType {
+    StainlessSteel = "Stainless Steel",
+    Titanium = "Titanium",
+    Aluminum = "Aluminum",
+    Monel = "Monel",
+    Nylon = "Nylon",
+    Wood = "Wood",
+    Bamboo = "Bamboo",
+    CarbonFiber = "Carbon Fiber",
+    Gold = "Gold",
+    Silver = "Silver"
+}
+
+enum DesignType {
+    Round = "Round",
+    Wayfarer = "Wayfarer",
+    Aviator = "Aviator",
+    CatEye = "Cat-Eye",
+    Oversized = "Oversized",
+    Slimline = "Slimline",
+    SemiRimless = "Semi-Rimless",
+    Rimless = "Rimless"
+}
+
 const AddEyeGlass: React.FC = () => {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('basic');
@@ -152,7 +176,7 @@ const AddEyeGlass: React.FC = () => {
                 setEyeGlassTypes(activeTypes);
             }
         };
-    
+
         loadEyeGlassTypes();
     }, []);
 
@@ -248,11 +272,11 @@ const AddEyeGlass: React.FC = () => {
         }
     };
 
-        const validationForm = (): boolean => {
-            const validationErrors = validateForm(formData, true); // false for Edit mode
-            setErrors(validationErrors);
-            return isFormValid(validationErrors);
-        };
+    const validationForm = (): boolean => {
+        const validationErrors = validateForm(formData, true); // false for Edit mode
+        setErrors(validationErrors);
+        return isFormValid(validationErrors);
+    };
 
 
     const handleSave = async () => {
@@ -423,7 +447,7 @@ const AddEyeGlass: React.FC = () => {
                                                                     name="price"
                                                                     value={formatCurrency(formData.price)}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Nhập giá sản phẩm"
+                                                                    placeholder="Enter price"
                                                                     className={`${styles.modernInput} ${styles.priceInput}`}
                                                                 />
                                                                 {errors.price && <div className={styles.errorMessage}>{errors.price}</div>}
@@ -488,11 +512,18 @@ const AddEyeGlass: React.FC = () => {
                                                                 <Input
                                                                     id="material"
                                                                     name="material"
+                                                                    type="select"
                                                                     value={formData.material}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Material"
-                                                                    className={`${styles.modernInput} ${errors.material ? styles.inputError : ''}`}
-                                                                />
+                                                                    className={styles.modernInput}
+                                                                >
+                                                                    <option value="">Select Material</option>
+                                                                    {Object.values(MaterialType).map(material => (
+                                                                        <option key={material} value={material}>
+                                                                            {material}
+                                                                        </option>
+                                                                    ))}
+                                                                </Input>
                                                                 {errors.material && <div className={styles.errorMessage}>{errors.material}</div>}
                                                             </div>
                                                         </div>
@@ -550,11 +581,18 @@ const AddEyeGlass: React.FC = () => {
                                                                 <Input
                                                                     id="design"
                                                                     name="design"
+                                                                    type="select"
                                                                     value={formData.design}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Design"
-                                                                    className={`${styles.modernInput} ${errors.design ? styles.inputError : ''}`}
-                                                                />
+                                                                    className={styles.modernInput}
+                                                                >
+                                                                    <option value="">Select Design</option>
+                                                                    {Object.values(DesignType).map(design => (
+                                                                        <option key={design} value={design}>
+                                                                            {design}
+                                                                        </option>
+                                                                    ))}
+                                                                </Input>
                                                                 {errors.design && <div className={styles.errorMessage}>{errors.design}</div>}
                                                             </div>
                                                         </div>
