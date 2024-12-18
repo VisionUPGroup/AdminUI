@@ -355,7 +355,7 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
           onClick={handleSubmit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Updating...' : 'Update Staff'}
+          {isSubmitting ? 'Updating...' : 'Update Shipper'}
         </button>
       </ModalFooter>
     </Modal>

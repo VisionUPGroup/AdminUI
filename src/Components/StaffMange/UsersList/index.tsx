@@ -428,7 +428,7 @@ const UsersList: React.FC = () => {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to delete user. Please try again.",
+        text: error.response.data[0],
         confirmButtonColor: "#c79816",
       });
     }

@@ -379,7 +379,7 @@ const ShipperList: React.FC = () => {
       console.error("Error creating shipper:", error);
       await Swal.fire({
         title: "Error!",
-        text: error.response?.data?.message || "Failed to create shipper. Please try again.",
+        text: error.response.data[0] || "Failed to create shipper. Please try again.",
         icon: "error",
         confirmButtonColor: "#c79816",
       });
