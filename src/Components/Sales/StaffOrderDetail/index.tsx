@@ -579,37 +579,37 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                             <div className="spec-group">
                               <h5>Right Eye (OD)</h5>
                               <div>
-                                Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD}
+                                Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD|| "N/A"}
                               </div>
                               <div>
-                                Cylinder: {productGlassDetail?.cylinderOD || orderDetail.productGlass.cylinderOD}
+                                Cylinder: {productGlassDetail?.cylinderOD || orderDetail.productGlass.cylinderOD|| "N/A"}
                               </div>
                               <div>
-                                Axis: {productGlassDetail?.axisOD || orderDetail.productGlass.axisOD}
+                                Axis: {productGlassDetail?.axisOD || orderDetail.productGlass.axisOD|| "N/A"}
                               </div>
                               <div>
-                                Add: {productGlassDetail?.addOD || orderDetail.productGlass.addOD}
+                                Add: {productGlassDetail?.addOD || orderDetail.productGlass.addOD|| "N/A"}
                               </div>
                             </div>
                             <div className="spec-group">
                               <h5>Left Eye (OS)</h5>
                               <div>
-                                Sphere: {productGlassDetail?.sphereOS || orderDetail.productGlass.sphereOS}
+                                Sphere: {productGlassDetail?.sphereOS || orderDetail.productGlass.sphereOS|| "N/A"}
                               </div>
                               <div>
-                                Cylinder: {productGlassDetail?.cylinderOS || orderDetail.productGlass.cylinderOS}
+                                Cylinder: {productGlassDetail?.cylinderOS || orderDetail.productGlass.cylinderOS|| "N/A"}
                               </div>
                               <div>
-                                Axis: {productGlassDetail?.axisOS || orderDetail.productGlass.axisOS}
+                                Axis: {productGlassDetail?.axisOS || orderDetail.productGlass.axisOS|| "N/A"}
                               </div>
                               <div>
-                                Add: {productGlassDetail?.addOS || orderDetail.productGlass.addOS}
+                                Add: {productGlassDetail?.addOS || orderDetail.productGlass.addOS|| "N/A"}
                               </div>
                             </div>
                             <div className="spec-group">
                               <h5>Additional Info</h5>
                               <div>
-                                PD: {productGlassDetail?.pd || orderDetail.productGlass.pd}
+                                PD: {productGlassDetail?.pd || orderDetail.productGlass.pd|| "N/A"}
                               </div>
                             </div>
                           </div>

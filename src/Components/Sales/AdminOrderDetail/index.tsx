@@ -516,22 +516,22 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                               <div>
                                 Sphere:{" "}
                                 {productGlassDetail?.sphereOD ||
-                                  orderDetail.productGlass.sphereOD}
+                                  orderDetail.productGlass.sphereOD|| "N/A"}
                               </div>
                               <div>
                                 Cylinder:{" "}
                                 {productGlassDetail?.cylinderOD ||
-                                  orderDetail.productGlass.cylinderOD}
+                                  orderDetail.productGlass.cylinderOD|| "N/A"}
                               </div>
                               <div>
                                 Axis:{" "}
                                 {productGlassDetail?.axisOD ||
-                                  orderDetail.productGlass.axisOD}
+                                  orderDetail.productGlass.axisOD|| "N/A"}
                               </div>
                               <div>
                                 Add:{" "}
                                 {productGlassDetail?.addOD ||
-                                  orderDetail.productGlass.addOD}
+                                  orderDetail.productGlass.addOD|| "N/A"}
                               </div>
                             </div>
                             <div className="spec-group">
@@ -539,22 +539,22 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                               <div>
                                 Sphere:{" "}
                                 {productGlassDetail?.sphereOS ||
-                                  orderDetail.productGlass.sphereOS}
+                                  orderDetail.productGlass.sphereOS|| "N/A"}
                               </div>
                               <div>
                                 Cylinder:{" "}
                                 {productGlassDetail?.cylinderOS ||
-                                  orderDetail.productGlass.cylinderOS}
+                                  orderDetail.productGlass.cylinderOS|| "N/A"}
                               </div>
                               <div>
                                 Axis:{" "}
                                 {productGlassDetail?.axisOS ||
-                                  orderDetail.productGlass.axisOS}
+                                  orderDetail.productGlass.axisOS|| "N/A"}
                               </div>
                               <div>
                                 Add:{" "}
                                 {productGlassDetail?.addOS ||
-                                  orderDetail.productGlass.addOS}
+                                  orderDetail.productGlass.addOS|| "N/A"}
                               </div>
                             </div>
                             <div className="spec-group">
@@ -562,7 +562,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                               <div>
                                 PD:{" "}
                                 {productGlassDetail?.pd ||
-                                  orderDetail.productGlass.pd}
+                                  orderDetail.productGlass.pd|| "N/A"}
                               </div>
                             </div>
                           </div>
