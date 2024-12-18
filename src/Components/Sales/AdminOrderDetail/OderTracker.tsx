@@ -58,7 +58,7 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
   deliveryConfirmationImage = null,
   isPaid = false
 }) => {
-  const { updateOrderProcess, confirmDelivery } = useOrderService();
+  const { updateOrderProcess,deleteOrder, confirmDelivery } = useOrderService();
   const { createPaymentUrl } = usePaymentService();
   const [isUpdating, setIsUpdating] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -176,17 +176,12 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
     try {
       setIsUpdating(true);
 
-      if (status !== 0) {
-        toast.error("No reason to cancel order");
-        return;
-      }
+      // Sử dụng API deleteOrder trực tiếp
+      await deleteOrder(orderId);
 
-      if (onDeleteOrder) {
-        await onDeleteOrder(orderId);
-      }
-
+      // Cập nhật UI thông qua callback
       if (onStatusUpdate) {
-        onStatusUpdate(5);
+        onStatusUpdate(5); // 5 là trạng thái đã hủy
       }
 
       setShowConfirmation(false);
@@ -208,7 +203,6 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
       await handleStatusUpdate(pendingStatus!);
     }
   };
-
   const handleStatusUpdate = async (newStatus: number) => {
     try {
       setIsUpdating(true);
@@ -397,81 +391,56 @@ const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
 
   // Render actions based on conditions
   const renderActions = () => {
-    if (isHomeDelivery) {
-      return null;
-    }
-    
-    if (hasKioskInfo) {
-      console.log('Current Status:', status);
-      console.log('Is Deposit:', isDeposit);
-      console.log('Is Paid:', isPaid);
-      console.log('Remaining Amount:', remainingAmount);
-      
-      return (
-        <div className="status-actions">
-          {/* Chỉ hiển thị nút Next Status khi đang ở trạng thái Processing (status = 1) */}
-          {status === 1 && (
-            <button
-              className="action-btn next"
-              onClick={() => initiateStatusUpdate(status + 1)}
-              disabled={isUpdating}
-            >
-              <FaArrowRight />
-              Next Status
-            </button>
-          )}
-  
-          {/* Hiển thị nút Payment cho trạng thái Pending hoặc Shipping */}
-          {(status === 0 || status === 2) && !isPaid && remainingAmount > 0 && (
-            <button
-              className="action-btn payment"
-              onClick={() => setShowPaymentDialog(true)}
-              disabled={isUpdating}
-            >
-              <FaCreditCard />
-              Pay Remaining: {formatCurrency(remainingAmount)}
-            </button>
-          )}
-  
-          {/* Hiển thị nút Upload khi ở trạng thái Shipping */}
-          {status === 2 && !deliveryConfirmationImage && 
-           ((isDeposit && isPaid) || !isDeposit || remainingAmount === 0) && (
-            <button
-              className="action-btn upload"
-              onClick={() => setShowImageUpload(true)}
-              disabled={isUpdating}
-            >
-              <FaUpload />
-              Upload Delivery Image
-            </button>
-          )}
-  
-          {/* Hiển thị nút Next Status sau khi upload ảnh ở trạng thái Shipping */}
-          {status === 2 && deliveryConfirmationImage && (
-            <button
-              className="action-btn next"
-              onClick={() => initiateStatusUpdate(status + 1)}
-              disabled={isUpdating}
-            >
-              <FaArrowRight />
-              Next Status
-            </button>
-          )}
-  
-          {/* Hiển thị nút Cancel cho tất cả trạng thái */}
+    return (
+      <div className="status-actions">
+        {/* Hiển thị nút Next Status cho tất cả trạng thái từ 0-2 */}
+        {status >= 0 && status < 3 && (
           <button
-            className="action-btn cancel"
-            onClick={() => initiateStatusUpdate(5)}
+            className="action-btn next"
+            onClick={() => initiateStatusUpdate(status + 1)}
             disabled={isUpdating}
           >
-            <FaBan />
-            Cancel Order
+            <FaArrowRight />
+            Next Status
           </button>
-        </div>
-      );
-    }
+        )}
   
-    return null;
+        {/* Hiển thị nút Payment cho trạng thái Pending hoặc Shipping */}
+        {(status === 0 || status === 2) && !isPaid && remainingAmount > 0 && (
+          <button
+            className="action-btn payment"
+            onClick={() => setShowPaymentDialog(true)}
+            disabled={isUpdating}
+          >
+            <FaCreditCard />
+            Pay Remaining: {formatCurrency(remainingAmount)}
+          </button>
+        )}
+  
+        {/* Hiển thị nút Upload khi ở trạng thái Shipping */}
+        {status === 2 && !deliveryConfirmationImage && 
+         ((isDeposit && isPaid) || !isDeposit || remainingAmount === 0) && (
+          <button
+            className="action-btn upload"
+            onClick={() => setShowImageUpload(true)}
+            disabled={isUpdating}
+          >
+            <FaUpload />
+            Upload Delivery Image
+          </button>
+        )}
+  
+        {/* Hiển thị nút Cancel cho tất cả trạng thái */}
+        <button
+          className="action-btn cancel"
+          onClick={() => initiateStatusUpdate(5)}
+          disabled={isUpdating}
+        >
+          <FaBan />
+          Cancel Order
+        </button>
+      </div>
+    );
   };
 
   // Render delivery confirmation section

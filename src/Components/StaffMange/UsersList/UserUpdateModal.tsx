@@ -232,7 +232,7 @@ const UserUpdateModal: React.FC<UserUpdateModalProps> = ({
         await Swal.fire({
           icon: "error",
           title: "Error",
-          text: error.response?.data?.message || "Failed to update user",
+          text: error.response.data[0] || "Failed to update user",
           confirmButtonColor: "#c79816",
         });
       }

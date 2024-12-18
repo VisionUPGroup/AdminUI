@@ -309,6 +309,7 @@ const Kiosk: React.FC = () => {
                 <table>
                   <thead>
                     <tr>
+                      <th>ID</th>
                       <th>Kiosk Information</th>
                       <th>Contact Details</th>
                       <th>Opening Hours</th>

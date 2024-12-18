@@ -134,7 +134,7 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
         setWards([]);
       }
     };
-
+  
     fetchWards();
   }, [formData.district]);
 

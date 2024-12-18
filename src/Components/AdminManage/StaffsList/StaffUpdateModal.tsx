@@ -199,7 +199,7 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
         await Swal.fire({
           icon: "error",
           title: "Error",
-          text: error.response?.data?.message || "Failed to update staff",
+          text: error.response.data[0] || "Failed to update staff",
           confirmButtonColor: "#c79816",
         });
       }

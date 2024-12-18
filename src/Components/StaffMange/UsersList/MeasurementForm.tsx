@@ -44,7 +44,7 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
     pupilDistance: 0,
     prescriptionDetails: '',
     notes: '',
-    lastCheckupDate: new Date().toISOString(),
+    lastCheckupDate: new Date().toISOString(), // Giữ nguyên
     nextCheckupDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
   };
 
@@ -144,9 +144,12 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
   };
 
   const handleDateChange = (field: string, value: string) => {
-    const dateValue = new Date(value).toISOString();
-    setLeftEyeData(prev => ({...prev, [field]: dateValue}));
-    setRightEyeData(prev => ({...prev, [field]: dateValue}));
+    // Chỉ cho phép thay đổi nextCheckupDate
+    if (field === 'nextCheckupDate') {
+      const dateValue = new Date(value).toISOString();
+      setLeftEyeData(prev => ({...prev, [field]: dateValue}));
+      setRightEyeData(prev => ({...prev, [field]: dateValue}));
+    }
   };
 
   if (!isOpen) return null;
@@ -298,14 +301,14 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
             </div>
 
             <div className="dates-grid">
-              <div className="form-group">
-                <label>Last Checkup Date</label>
-                <input
-                  type="date"
-                  value={leftEyeData.lastCheckupDate.split('T')[0]}
-                  onChange={(e) => handleDateChange('lastCheckupDate', e.target.value)}
-                />
-              </div>
+            <div className="form-group">
+  <label>Last Checkup Date</label>
+  <input
+    type="text"
+    value={new Date().toLocaleDateString()}
+    disabled
+  />
+</div>
 
               <div className="form-group">
                 <label>Next Checkup Date</label>
