@@ -333,6 +333,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
 
       <div className="order-content">
         <div className="main-info">
+          
           <div className="order-header">
             <div className="order-id">
               <span className="label">Order ID:</span>

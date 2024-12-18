@@ -122,10 +122,10 @@ const ViewExchangeDetailModal: React.FC<ViewExchangeDetailModalProps> = ({
 
   const getExchangeStatus = (status: number) => {
     const statuses = {
-      0: { label: "Pending", class: "pending" },
-      1: { label: "Processing", class: "pending" },
-      2: { label: "Completed", class: "active" },
-      3: { label: "Rejected", class: "inactive" }
+      0: { label: "Denied", class: "inactive" },
+      1: { label: "Request", class: "pending" },
+      2: { label: "Accepted", class: "active" },
+     
     };
     return statuses[status as keyof typeof statuses] || { label: "Unknown", class: "pending" };
   };
@@ -141,10 +141,10 @@ const ViewExchangeDetailModal: React.FC<ViewExchangeDetailModalProps> = ({
 
   const getReportStatus = (status: number) => {
     const statuses = {
-      0: { label: "Pending", class: "pending" },
-      1: { label: "Processing", class: "pending" },
-      2: { label: "Resolved", class: "active" },
-      3: { label: "Rejected", class: "inactive" }
+      0: { label: "Request", class: "inactive" },
+      1: { label: "Denied", class: "pending" },
+      2: { label: "Accepted", class: "active" },
+     
     };
     return statuses[status as keyof typeof statuses] || { label: "Unknown", class: "pending" };
   };
