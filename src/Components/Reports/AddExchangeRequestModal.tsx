@@ -1,3 +1,4 @@
+// ExchangeRequestModal.tsx
 import React, { useState, useEffect } from "react";
 import {
   Modal,
@@ -17,9 +18,26 @@ import { useExchangeEyeGlassService } from "../../../Api/exchangeEyeGlassService
 import { toast } from "react-toastify";
 import "./ExchangeRequestModalStyles.scss";
 
+interface AddExchangeRequestModalProps {
+  isOpen: boolean;
+  toggle: () => void;
+  reportId: number | null;
+  productGlassId: number | null;
+}
+
+interface FormData {
+  district: string;
+  ward: string;
+  streetAddress: string;
+  kioskID: number | null;
+  reason: string;
+  quantity: number;
+}
+
 interface District {
   code: string;
   name: string;
+  wards?: Ward[];
 }
 
 interface Ward {
@@ -34,147 +52,175 @@ interface Kiosk {
   address: string;
 }
 
-interface AddExchangeRequestModalProps {
-  isOpen: boolean;
-  toggle: () => void;
-  reportId: number | null;
-  productGlassId: number | null;
+interface ApiResponse {
+  Id: string;
+  Name: string;
+  Districts: Array<{
+    Id: string;
+    Name: string;
+    Wards: Array<{
+      Id: string;
+      Name: string;
+    }>;
+  }>;
 }
 
-type InputType =
-  | "text"
-  | "textarea"
-  | "number"
-  | "password"
-  | "email"
-  | "select"
-  | "file"
-  | "radio"
-  | "checkbox"
-  | "hidden";
+const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
+  isOpen,
+  toggle,
+  reportId,
+  productGlassId,
+}) => {
+  // Form Data State
+  const [formData, setFormData] = useState<FormData>({
+    district: "",
+    ward: "",
+    streetAddress: "",
+    kioskID: null,
+    reason: "",
+    quantity: 1,
+  });
 
-  const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
-    isOpen,
-    toggle,
-    reportId,
-    productGlassId,
-  }) => {
-    const initialFormData = {
-      productGlassID: productGlassId,
+  // UI States
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
+  const [isLoadingWards, setIsLoadingWards] = useState(false);
+  const [deliveryType, setDeliveryType] = useState<"kiosk" | "address">("kiosk");
+
+  // Data States
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
+  const [kiosks, setKiosks] = useState<Kiosk[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
+  const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
+
+  // Services
+  const { fetchAllKiosk } = useKioskService();
+  const { createExchangeEyeGlass } = useExchangeEyeGlassService();
+
+  // Constants
+  const HCM_ID = "79"; // Ho Chi Minh City ID
+  const DISTRICT_DATA_URL = "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json";
+  
+  // Cache for district and ward data
+  const [districtDataCache, setDistrictDataCache] = useState<ApiResponse[]>([]);
+
+  // Effects
+  useEffect(() => {
+    if (isOpen) {
+      if (deliveryType === "kiosk") {
+        loadKiosks();
+      } else {
+        loadDistricts();
+      }
+    }
+  }, [isOpen, deliveryType]);
+
+  useEffect(() => {
+    if (formData.district) {
+      loadWards(formData.district);
+    }
+  }, [formData.district]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
+  // Functions
+  const loadKiosks = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetchAllKiosk();
+      const activeKiosks = response.filter((kiosk: Kiosk) => kiosk.status);
+      setKiosks(activeKiosks);
+    } catch (error) {
+      console.error("Error loading kiosks:", error);
+      toast.error("Failed to load kiosks");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadDistricts = async () => {
+    setIsLoadingDistricts(true);
+    try {
+      let districtsData;
+      
+      if (districtDataCache.length > 0) {
+        districtsData = districtDataCache;
+      } else {
+        const response = await axios.get<ApiResponse[]>(DISTRICT_DATA_URL);
+        districtsData = response.data;
+        setDistrictDataCache(districtsData);
+      }
+
+      const hcmData = districtsData.find(city => city.Id === HCM_ID);
+      
+      if (hcmData && hcmData.Districts) {
+        const formattedDistricts = hcmData.Districts.map(district => ({
+          code: district.Id,
+          name: district.Name,
+          wards: district.Wards.map(ward => ({
+            code: ward.Id,
+            name: ward.Name
+          }))
+        }));
+        
+        setDistricts(formattedDistricts);
+        console.log("Districts loaded:", formattedDistricts);
+      }
+    } catch (error) {
+      console.error("Error loading districts:", error);
+      toast.error("Failed to load districts");
+    } finally {
+      setIsLoadingDistricts(false);
+    }
+  };
+
+  const loadWards = async (districtId: string) => {
+    if (!districtId) return;
+    
+    setIsLoadingWards(true);
+    try {
+      const district = districts.find(d => d.code === districtId);
+      
+      if (district && district.wards) {
+        setWards(district.wards);
+        console.log("Wards loaded:", district.wards);
+      } else {
+        setWards([]);
+      }
+    } catch (error) {
+      console.error("Error loading wards:", error);
+      toast.error("Failed to load wards");
+    } finally {
+      setIsLoadingWards(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
       district: "",
       ward: "",
       streetAddress: "",
       kioskID: null,
       reason: "",
       quantity: 1,
-    };
-
-  const [formData, setFormData] = useState(initialFormData);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [districts, setDistricts] = useState<District[]>([]);
-  const [wards, setWards] = useState<Ward[]>([]);
-  const [kiosks, setKiosks] = useState<Kiosk[]>([]);
-  const [isLoadingKiosks, setIsLoadingKiosks] = useState(false);
-  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
-  const [isLoadingWards, setIsLoadingWards] = useState(false);
-  const [deliveryType, setDeliveryType] = useState<"kiosk" | "address">(
-    "kiosk"
-  );
-
-
-  const { createExchangeEyeGlass } = useExchangeEyeGlassService();
-  const HCMC_CODE = "79";
-
-  const { fetchAllKiosk } = useKioskService();
-
-  const resetForm = () => {
-    setFormData(initialFormData);
+    });
     setErrors({});
-    setIsSubmitting(false);
     setDeliveryType("kiosk");
+    setSelectedDistrict(null);
+    setSelectedWard(null);
+    setWards([]);
   };
-
-  // Load kiosks when modal opens or delivery type changes
-  useEffect(() => {
-    const loadKiosks = async () => {
-      if (isOpen && deliveryType === "kiosk") {
-        setIsLoadingKiosks(true);
-        try {
-          const response = await fetchAllKiosk();
-          const activeKiosks = response.filter((kiosk: Kiosk) => kiosk.status);
-          setKiosks(activeKiosks);
-        } catch (error) {
-          console.error("Error loading kiosks:", error);
-        } finally {
-          setIsLoadingKiosks(false);
-        }
-      }
-    };
-    loadKiosks();
-  }, [isOpen, deliveryType]);
-
-  // Load districts
-  useEffect(() => {
-    const fetchDistricts = async () => {
-      if (isOpen && deliveryType === "address") {
-        setIsLoadingDistricts(true);
-        try {
-          const response = await axios.get(
-            `https://provinces.open-api.vn/api/p/${HCMC_CODE}?depth=2`
-          );
-          if (response.data && response.data.districts) {
-            setDistricts(response.data.districts);
-          }
-        } catch (error) {
-          console.error("Failed to fetch districts:", error);
-        } finally {
-          setIsLoadingDistricts(false);
-        }
-      }
-    };
-    fetchDistricts();
-  }, [isOpen, deliveryType]);
-
-  // Load wards when district changes
-  useEffect(() => {
-    const fetchWards = async () => {
-      if (formData.district && deliveryType === "address") {
-        setIsLoadingWards(true);
-        try {
-          const response = await axios.get(
-            `https://provinces.open-api.vn/api/d/${formData.district}?depth=2`
-          );
-          if (response.data && response.data.wards) {
-            setWards(response.data.wards);
-          }
-        } catch (error) {
-          console.error("Failed to fetch wards:", error);
-        } finally {
-          setIsLoadingWards(false);
-        }
-      } else {
-        setWards([]);
-      }
-    };
-    fetchWards();
-  }, [formData.district, deliveryType]);
-
-  // Reset form when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      resetForm();
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        productGlassID: productGlassId
-      }));
-    }
-  }, [isOpen, productGlassId]);
 
   const handleDeliveryTypeChange = (type: "kiosk" | "address") => {
     setDeliveryType(type);
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       district: "",
       ward: "",
@@ -182,212 +228,115 @@ type InputType =
       kioskID: null,
     }));
     setErrors({});
+    setSelectedDistrict(null);
+    setSelectedWard(null);
+    setWards([]);
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    console.log(`Handling change for ${name}:`, value);
 
-    if (
-      (name === "productGlassID" || name === "kioskID") &&
-      value.startsWith("-")
-    ) {
-      return;
+    if (name === "district") {
+      const district = districts.find(d => d.code === value);
+      setSelectedDistrict(district || null);
+      setSelectedWard(null);
+      setFormData(prev => ({
+        ...prev,
+        district: value,
+        ward: ""
+      }));
+    } else if (name === "ward") {
+      const ward = wards.find(w => w.code === value);
+      setSelectedWard(ward || null);
+      setFormData(prev => ({
+        ...prev,
+        ward: value
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: name === "quantity" ? Math.max(1, parseInt(value) || 0) : value
+      }));
     }
 
-    setFormData((prevData) => {
-      const newData = {
-        ...prevData,
-        [name]:
-          name === "quantity" || name === "kioskID" || name === "productGlassID"
-            ? value
-              ? Math.max(0, parseInt(value))
-              : null
-            : value,
-      };
-
-      if (name === "district") {
-        newData.ward = "";
-      }
-
-      return newData;
-    });
-
-    setErrors((prevErrors) => ({ ...prevErrors, [name]: "" }));
+    setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (formData.productGlassID === null || formData.productGlassID < 0)
-      newErrors.productGlassID = "Product Glass ID must be a positive number";
+    const newErrors: Record<string, string> = {};
 
     if (deliveryType === "address") {
       if (!formData.district) newErrors.district = "District is required";
       if (!formData.ward) newErrors.ward = "Ward is required";
-      if (!formData.streetAddress)
-        newErrors.streetAddress = "Street address is required";
+      if (!formData.streetAddress) newErrors.streetAddress = "Street address is required";
     } else {
       if (!formData.kioskID) newErrors.kioskID = "Please select a kiosk";
     }
 
     if (!formData.reason) newErrors.reason = "Reason is required";
-    if (formData.quantity <= 0)
-      newErrors.quantity = "Quantity must be greater than 0";
+    if (formData.quantity < 1) newErrors.quantity = "Quantity must be at least 1";
 
+    console.log("Validation errors:", newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSubmit = async () => {
-    if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-        let receiverAddress = "";
-        if (deliveryType === "address") {
-          const selectedDistrict = districts.find(
-            d => d.code.toString() === formData.district.toString()
-          );
-          const selectedWard = wards.find(
-            w => w.code.toString() === formData.ward.toString()
-          );
-          
-          const addressParts = [
-            formData.streetAddress,
-            selectedWard?.name,
-            selectedDistrict?.name,
-            "TP. Hồ Chí Minh"
-          ].filter(Boolean);
-          
-          receiverAddress = addressParts.join(", ");
-        }
+    if (!validateForm()) return;
 
-        const exchangeData = {
-          productGlassID: formData.productGlassID,
-          receiverAddress: deliveryType === "address" ? receiverAddress : "",
-          kioskID: deliveryType === "kiosk" ? formData.kioskID : null,
-          reportID: reportId,
-          reason: formData.reason,
-          quantity: formData.quantity
-        };
-
-        const response = await createExchangeEyeGlass(exchangeData);
+    setIsLoading(true);
+    try {
+      let receiverAddress = "";
+      if (deliveryType === "address" && selectedDistrict && selectedWard) {
+        const addressParts = [
+          formData.streetAddress,
+          selectedWard.name,
+          selectedDistrict.name,
+          "TP. Hồ Chí Minh"
+        ].filter(Boolean);
         
-        if (response) {
-          toast.success("Exchange request created successfully");
-          toggle();
-          resetForm();
-        } else {
-          toast.error("Failed to create exchange request");
-        }
-      } catch (error) {
-        console.error("Error creating exchange request:", error);
-        toast.error(error.response?.data?.[0] || "Failed to create exchange request");
-      } finally {
-        setIsSubmitting(false);
+        receiverAddress = addressParts.join(", ");
       }
+
+      const exchangeData = {
+        productGlassID: productGlassId,
+        receiverAddress,
+        kioskID: deliveryType === "kiosk" ? formData.kioskID : null,
+        reportID: reportId,
+        reason: formData.reason,
+        quantity: formData.quantity
+      };
+
+      console.log("Submitting exchange data:", exchangeData);
+
+      const response = await createExchangeEyeGlass(exchangeData);
+
+      if (response) {
+        toast.success("Exchange request created successfully");
+        toggle();
+        resetForm();
+      }
+    } catch (error: any) {
+      console.error("Submit error:", error);
+      toast.error(error.response?.data?.[0] || "Failed to create exchange request");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const renderFormGroup = (
-    label: string,
-    name: string,
-    inputType: InputType,
-    placeholder: string,
-    disabled: boolean = false,
-    min?: string,
-    options?: { value: string; label: string }[]
-  ) => (
-    <FormGroup>
-      <Label for={name} className="form-label">
-        {label}{" "}
-        {inputType !== "radio" && <span className="text-danger">*</span>}
-      </Label>
-      <div className="input-wrapper">
-        {inputType === "select" ? (
-          <div className="select-container">
-            <Input
-              type={inputType}
-              name={name}
-              id={name}
-              value={formData[name as keyof typeof formData] ?? ""}
-              onChange={handleChange}
-              disabled={disabled}
-              invalid={!!errors[name]}
-              className="custom-select"
-            >
-              <option value="">
-                {(name === "district" && isLoadingDistricts) ||
-                (name === "ward" && isLoadingWards)
-                  ? "Loading..."
-                  : placeholder}
-              </option>
-              {options?.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Input>
-            {((name === "district" && isLoadingDistricts) ||
-              (name === "ward" && isLoadingWards)) && (
-              <div className="select-loading-indicator">
-                <div className="spinner-border spinner-border-sm text-primary" />
-              </div>
-            )}
-          </div>
-        ) : (
-          <Input
-            type={inputType}
-            name={name}
-            id={name}
-            value={formData[name as keyof typeof formData] ?? ""}
-            onChange={handleChange}
-            disabled={disabled}
-            invalid={!!errors[name]}
-            placeholder={placeholder}
-            min={min}
-            className={
-              inputType === "textarea" ? "custom-textarea" : "custom-input"
-            }
-            rows={inputType === "textarea" ? 3 : undefined}
-          />
-        )}
-        {errors[name] && (
-          <FormFeedback className="error-feedback">
-            <AlertTriangle size={14} className="me-1" /> {errors[name]}
-          </FormFeedback>
-        )}
-      </div>
-    </FormGroup>
-  );
-
   return (
     <Modal isOpen={isOpen} toggle={toggle} className="exchange-request-modal" size="lg">
-      <ModalHeader toggle={toggle} className="bg-light">
-        <h5 className="modal-title">Create Exchange Request</h5>
+      <ModalHeader toggle={toggle}>
+        Create Exchange Request
       </ModalHeader>
 
       <ModalBody>
-        {/* Product Glass ID field */}
+        {/* Delivery Type */}
         <FormGroup>
-          <Label className="form-label">
-            Product Glass ID <span className="text-danger">*</span>
-          </Label>
-          <Input
-            type="number"
-            value={formData.productGlassID || ""}
-            disabled
-            className="custom-input"
-          />
-        </FormGroup>
-
-        {/* Delivery Type Selection */}
-        <FormGroup className="delivery-type-selection mb-4">
-          <Label className="d-block mb-2">
-            Delivery Option <span className="text-danger">*</span>
-          </Label>
-          <div className="delivery-options">
-            <div className="form-check form-check-inline">
+          <Label>Delivery Option</Label>
+          <div className="d-flex gap-4">
+            <div className="form-check">
               <Input
                 type="radio"
                 id="kioskDelivery"
@@ -396,11 +345,9 @@ type InputType =
                 onChange={() => handleDeliveryTypeChange("kiosk")}
                 className="form-check-input"
               />
-              <Label className="form-check-label" for="kioskDelivery">
-                Deliver to Kiosk
-              </Label>
+              <Label for="kioskDelivery">Kiosk Delivery</Label>
             </div>
-            <div className="form-check form-check-inline">
+            <div className="form-check">
               <Input
                 type="radio"
                 id="addressDelivery"
@@ -409,145 +356,97 @@ type InputType =
                 onChange={() => handleDeliveryTypeChange("address")}
                 className="form-check-input"
               />
-              <Label className="form-check-label" for="addressDelivery">
-                Deliver to Address
-              </Label>
+              <Label for="addressDelivery">Home Delivery</Label>
             </div>
           </div>
         </FormGroup>
 
-        {/* Kiosk Selection Section */}
+        {/* Kiosk Selection */}
         {deliveryType === "kiosk" && (
-          <div className="kiosk-section">
-            <FormGroup>
-              <Label for="kioskID" className="form-label">
-                Select Kiosk <span className="text-danger">*</span>
-              </Label>
-              <div className="input-wrapper">
-                <div className="select-container">
-                  <Input
-                    type="select"
-                    name="kioskID"
-                    id="kioskID"
-                    value={formData.kioskID || ""}
-                    onChange={handleChange}
-                    disabled={isLoadingKiosks}
-                    invalid={!!errors.kioskID}
-                    className="custom-select"
-                  >
-                    <option value="">
-                      {isLoadingKiosks ? "Loading kiosks..." : "Select a kiosk"}
-                    </option>
-                    {kiosks.map((kiosk) => (
-                      <option key={kiosk.id} value={kiosk.id}>
-                        {kiosk.name} - {kiosk.address}
-                      </option>
-                    ))}
-                  </Input>
-                  {isLoadingKiosks && (
-                    <div className="select-loading-indicator">
-                      <div className="spinner-border spinner-border-sm text-primary" />
-                    </div>
-                  )}
-                </div>
-                {errors.kioskID && (
-                  <FormFeedback className="error-feedback">
-                    <AlertTriangle size={14} className="me-1" /> {errors.kioskID}
-                  </FormFeedback>
-                )}
-              </div>
-            </FormGroup>
-          </div>
+          <FormGroup>
+            <Label for="kioskID">Select Kiosk</Label>
+            <Input
+              type="select"
+              name="kioskID"
+              id="kioskID"
+              value={formData.kioskID || ""}
+              onChange={handleChange}
+              invalid={!!errors.kioskID}
+              disabled={isLoading}
+            >
+              <option value="">Select a kiosk</option>
+              {kiosks.map(kiosk => (
+                <option key={kiosk.id} value={kiosk.id}>
+                  {kiosk.name} - {kiosk.address}
+                </option>
+              ))}
+            </Input>
+            {errors.kioskID && (
+              <FormFeedback>{errors.kioskID}</FormFeedback>
+            )}
+          </FormGroup>
         )}
 
-        {/* Address Selection Section */}
+        {/* Address Selection */}
         {deliveryType === "address" && (
-          <div className="address-section">
-            {/* District Selection */}
+          <>
             <FormGroup>
-              <Label for="district" className="form-label">
-                District <span className="text-danger">*</span>
-              </Label>
-              <div className="input-wrapper">
-                <div className="select-container">
-                  <Input
-                    type="select"
-                    name="district"
-                    id="district"
-                    value={formData.district}
-                    onChange={handleChange}
-                    invalid={!!errors.district}
-                    disabled={isLoadingDistricts}
-                    className="custom-select"
-                  >
-                    <option value="">
-                      {isLoadingDistricts ? "Loading districts..." : "Select District"}
-                    </option>
-                    {districts.map((district) => (
-                      <option key={district.code} value={district.code}>
-                        {district.name}
-                      </option>
-                    ))}
-                  </Input>
-                  {isLoadingDistricts && (
-                    <div className="select-loading-indicator">
-                      <div className="spinner-border spinner-border-sm text-primary" />
-                    </div>
-                  )}
-                </div>
-                {errors.district && (
-                  <FormFeedback className="error-feedback">
-                    <AlertTriangle size={14} className="me-1" /> {errors.district}
-                  </FormFeedback>
-                )}
-              </div>
+              <Label for="district">District</Label>
+              <Input
+                type="select"
+                name="district"
+                id="district"
+                value={formData.district}
+                onChange={handleChange}
+                invalid={!!errors.district}
+                disabled={isLoadingDistricts}
+              >
+                <option value="">
+                  {isLoadingDistricts ? "Loading districts..." : "Select District"}
+                </option>
+                {districts.map(district => (
+                  <option key={district.code} value={district.code}>
+                    {district.name}
+                  </option>
+                ))}
+              </Input>
+              {errors.district && (
+                <FormFeedback>{errors.district}</FormFeedback>
+              )}
             </FormGroup>
 
-            {/* Ward Selection */}
             <FormGroup>
-              <Label for="ward" className="form-label">
-                Ward <span className="text-danger">*</span>
-              </Label>
-              <div className="input-wrapper">
-                <div className="select-container">
-                  <Input
-                    type="select"
-                    name="ward"
-                    id="ward"
-                    value={formData.ward}
-                    onChange={handleChange}
-                    invalid={!!errors.ward}
-                    disabled={!formData.district || isLoadingWards}
-                    className="custom-select"
-                  >
-                    <option value="">
-                      {isLoadingWards ? "Loading wards..." : "Select Ward"}
-                    </option>
-                    {wards.map((ward) => (
-                      <option key={ward.code} value={ward.code}>
-                        {ward.name}
-                      </option>
-                    ))}
-                  </Input>
-                  {isLoadingWards && (
-                    <div className="select-loading-indicator">
-                      <div className="spinner-border spinner-border-sm text-primary" />
-                    </div>
-                  )}
-                </div>
-                {errors.ward && (
-                  <FormFeedback className="error-feedback">
-                    <AlertTriangle size={14} className="me-1" /> {errors.ward}
-                  </FormFeedback>
-                )}
-              </div>
+              <Label for="ward">Ward</Label>
+              <Input
+                type="select"
+                name="ward"
+                id="ward"
+                value={formData.ward}
+                onChange={handleChange}
+                invalid={!!errors.ward}
+                disabled={!formData.district || isLoadingWards}
+              >
+                <option value="">
+                  {!formData.district 
+                    ? "Please select district first"
+                    : isLoadingWards 
+                      ? "Loading wards..."
+                      : "Select Ward"
+                  }
+                </option>
+                {wards.map(ward => (
+                  <option key={ward.code} value={ward.code}>
+                    {ward.name}
+                  </option>
+                ))}
+              </Input>
+              {errors.ward && (
+                <FormFeedback>{errors.ward}</FormFeedback>
+              )}
             </FormGroup>
 
-            {/* Street Address */}
             <FormGroup>
-              <Label for="streetAddress" className="form-label">
-                Street Address <span className="text-danger">*</span>
-              </Label>
+              <Label for="streetAddress">Street Address</Label>
               <Input
                 type="text"
                 name="streetAddress"
@@ -555,23 +454,18 @@ type InputType =
                 value={formData.streetAddress}
                 onChange={handleChange}
                 invalid={!!errors.streetAddress}
-                placeholder="Enter street address"
-                className="custom-input"
+                placeholder="Enter your street address"
               />
               {errors.streetAddress && (
-                <FormFeedback className="error-feedback">
-                  <AlertTriangle size={14} className="me-1" /> {errors.streetAddress}
-                </FormFeedback>
+                <FormFeedback>{errors.streetAddress}</FormFeedback>
               )}
             </FormGroup>
-          </div>
+          </>
         )}
 
         {/* Reason */}
         <FormGroup>
-          <Label for="reason" className="form-label">
-            Reason <span className="text-danger">*</span>
-          </Label>
+          <Label for="reason">Reason for Exchange</Label>
           <Input
             type="textarea"
             name="reason"
@@ -579,22 +473,17 @@ type InputType =
             value={formData.reason}
             onChange={handleChange}
             invalid={!!errors.reason}
-            placeholder="Please provide reason for exchange"
-            className="custom-textarea"
             rows={3}
+            placeholder="Please provide the reason for exchange"
           />
           {errors.reason && (
-            <FormFeedback className="error-feedback">
-              <AlertTriangle size={14} className="me-1" /> {errors.reason}
-            </FormFeedback>
+            <FormFeedback>{errors.reason}</FormFeedback>
           )}
         </FormGroup>
 
         {/* Quantity */}
         <FormGroup>
-          <Label for="quantity" className="form-label">
-            Quantity <span className="text-danger">*</span>
-          </Label>
+          <Label for="quantity">Quantity</Label>
           <Input
             type="number"
             name="quantity"
@@ -602,31 +491,20 @@ type InputType =
             value={formData.quantity}
             onChange={handleChange}
             invalid={!!errors.quantity}
-            min="1"
-            className="custom-input"
+            min={1}
           />
           {errors.quantity && (
-            <FormFeedback className="error-feedback">
-              <AlertTriangle size={14} className="me-1" /> {errors.quantity}
-            </FormFeedback>
+            <FormFeedback>{errors.quantity}</FormFeedback>
           )}
         </FormGroup>
       </ModalBody>
 
-      <ModalFooter className="bg-light">
-        <Button
-          color="secondary"
-          onClick={() => {
-            toggle();
-            resetForm();
-          }}
-          disabled={isSubmitting}
-          className="me-2"
-        >
+      <ModalFooter>
+        <Button color="light" onClick={toggle} disabled={isLoading}>
           Cancel
         </Button>
-        <Button color="primary" onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? (
+        <Button color="primary" onClick={handleSubmit} disabled={isLoading}>
+          {isLoading ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" />
               Submitting...

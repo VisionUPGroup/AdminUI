@@ -169,11 +169,42 @@ const PaymentDetails: React.FC<{ paymentInfo: PaymentInfo }> = ({ paymentInfo })
     fetchAllPrices();
   }, []);
 
+
+
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
     }).format(amount);
+  };
+
+  const calculateSubtotal = () => {
+    return paymentInfo.productGlass.reduce((total, item) => {
+      const glassPrice = glassFramePrices[item.productGlassID] || 0;
+      const leftLensPrice = lensPrices[`left-${item.productGlassID}`] || 0; 
+      const rightLensPrice = lensPrices[`right-${item.productGlassID}`] || 0;
+      return total + (glassPrice + leftLensPrice + rightLensPrice);
+    }, 0);
+  };
+
+  const calculateDiscount = () => {
+    if (!voucherDetails || !voucherDetails.sale) return 0;
+    const discountAmount = (calculateSubtotal() * voucherDetails.sale) / 100;
+    return Math.min(discountAmount, calculateSubtotal());
+  };
+
+  const calculateTotalAfterDiscount = () => {
+    return calculateSubtotal() - calculateDiscount();
+  };
+
+  const calculateDeposit = () => {
+    const totalAfterDiscount = calculateTotalAfterDiscount();
+    return paymentInfo.isDeposit ? Math.round(totalAfterDiscount * 0.3) : totalAfterDiscount;
+  };
+
+  const calculateRemaining = () => {
+    if (!paymentInfo.isDeposit) return 0;
+    return calculateTotalAfterDiscount() * 0.7;
   };
 
   const calculateDiscountAmount = () => {
@@ -193,16 +224,17 @@ const PaymentDetails: React.FC<{ paymentInfo: PaymentInfo }> = ({ paymentInfo })
     return (
       <div className="voucher-details">
         <div className="voucher-header">
-        
-        
+        <span className="tag">
+            <FaTag className="tag-icon" />
+            {voucherDetails?.code || paymentInfo.voucher.code}
+          </span>
+         
         </div>
         
         {voucherDetails && (
           <div className="voucher-info">
-             <span className="tag">
-            <FaTag className="tag-icon" />
-            {voucherDetails?.code || paymentInfo.voucher.code}
-          </span>
+           
+         
             <div className="discount-amount">
               Discount: {formatCurrency(calculateDiscountAmount())}
             </div>
@@ -231,51 +263,73 @@ const PaymentDetails: React.FC<{ paymentInfo: PaymentInfo }> = ({ paymentInfo })
 
   return (
     <div className="payment-details">
-      <section className="payment-summary">
-        <h2 className="section-title">
-          <FaMoneyBillWave className="section-icon" />
-          Payment Summary
-        </h2>
-        <div className="summary-grid">
-          <div className="summary-item">
-            <span className="label">Subtotal Amount</span>
-            <span className="value">{formatCurrency(paymentInfo.totalAmount)}</span>
-          </div>
-          
-          <div className="summary-item voucher">
+    <section className="payment-summary">
+      <h2 className="section-title">
+        <FaMoneyBillWave className="section-icon" />
+        Payment Summary
+      </h2>
+      <div className="summary-grid">
+        {/* Subtotal */}
+        <div className="summary-item">
+          <span className="label">Subtotal</span>
+          <span className="value">{formatCurrency(calculateSubtotal())}</span>
+        </div>
+
+        {/* Voucher Discount */}
+        {voucherDetails && (
+          <div className="summary-item discount">
             <span className="label">
-              <FaTag /> Voucher
+              <FaTag /> Voucher Discount ({voucherDetails.sale}%)
             </span>
-            <span className="value">
-              {renderVoucherInfo()}
+            <span className="value warning">
+              -{formatCurrency(calculateDiscount())}
             </span>
           </div>
+        )}
 
+        {/* Total After Discount */}
+        <div className="summary-item">
+          <span className="label">Total After Discount</span>
+          <span className="value success">
+            {formatCurrency(calculateTotalAfterDiscount())}
+          </span>
+        </div>
+
+        {/* Deposit Amount (if applicable) */}
+        {paymentInfo.isDeposit && (
           <div className="summary-item">
-            <span className="label">Total After Discount</span>
-            <span className="value success">
-              {formatCurrency(paymentInfo.totalAmount - calculateDiscountAmount())}
-            </span>
+            <span className="label">Deposit Amount (30%)</span>
+            <span className="value">{formatCurrency(calculateDeposit())}</span>
           </div>
+        )}
 
-          <div className="summary-item">
-            <span className="label">Total Paid</span>
-            <span className="value success">{formatCurrency(paymentInfo.totalPaid)}</span>
-          </div>
+        {/* Total Paid */}
+        <div className="summary-item">
+          <span className="label">Total Paid</span>
+          <span className="value success">
+            {formatCurrency(paymentInfo.totalPaid)}
+          </span>
+        </div>
 
+        {/* Remaining Amount */}
+        {paymentInfo.isDeposit && (
           <div className="summary-item">
             <span className="label">Remaining Amount</span>
-            <span className="value warning">{formatCurrency(paymentInfo.remainingAmount)}</span>
-          </div>
-
-          <div className="summary-item">
-            <span className="label">Payment Status</span>
-            <span className={`value ${paymentInfo.isDeposit ? 'deposit' : 'full-payment'}`}>
-              {paymentInfo.isDeposit ? 'Deposit Payment' : 'Full Payment'}
+            <span className="value warning">
+              {formatCurrency(calculateRemaining())}
             </span>
           </div>
+        )}
+
+        {/* Payment Status */}
+        <div className="summary-item">
+          <span className="label">Payment Status</span>
+          <span className={`value ${paymentInfo.isDeposit ? 'deposit' : 'full-payment'}`}>
+            {paymentInfo.isDeposit ? 'Deposit Payment' : 'Full Payment'}
+          </span>
         </div>
-      </section>
+      </div>
+    </section>
 
       <section className="product-section">
         <h2 className="section-title">Product Details</h2>

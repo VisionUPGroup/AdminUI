@@ -28,6 +28,13 @@ import {
 } from "react-feather";
 import { FaArrowUp, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
+const STATUS_OPTIONS = [
+  { value: '', label: 'All Status' },
+  { value: '0', label: 'Denied' },
+  { value: '1', label: 'Request' },
+  { value: '2', label: 'Accepted' }
+];
+
 const ExchangeEyeGlass: React.FC = () => {
   const {
     fetchAllExchangeEyeGlass,
@@ -45,14 +52,41 @@ const ExchangeEyeGlass: React.FC = () => {
   const [productGlassID, setProductGlassID] = useState<string | null>(null);
   const [staffID, setStaffID] = useState<string | null>(null);
   const [orderID, setOrderID] = useState<string | null>(null);
+  const [reportID, setReportID] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>('');
   const [pageIndex, setPageIndex] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
-  const [selectedExchangeDetail, setSelectedExchangeDetail] = useState<
-    any | null
-  >(null);
+  const [selectedExchangeDetail, setSelectedExchangeDetail] = useState<any | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Helper Functions
+  const getStatusLabel = (status: number) => {
+    switch(status) {
+      case 0:
+        return 'Denied';
+      case 1:
+        return 'Request';
+      case 2:
+        return 'Accepted';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const getStatusClassName = (status: number) => {
+    switch(status) {
+      case 0:
+        return 'status-denied';
+      case 1:
+        return 'status-request';
+      case 2:
+        return 'status-accepted';
+      default:
+        return '';
+    }
+  };
 
   // Fetch Data
   const fetchData = async () => {
@@ -66,6 +100,8 @@ const ExchangeEyeGlass: React.FC = () => {
         accountID,
         productGlassID,
         orderID,
+        reportID,
+        status,
         pageIndex
       );
       if (items && items.length > 0) {
@@ -200,13 +236,7 @@ const ExchangeEyeGlass: React.FC = () => {
             <CardBody className="p-0">
               {/* Action Buttons */}
               <div className="action-buttons-container">
-                <Button
-                  className="action-button add-button"
-                  onClick={() => setIsAddRequestModalOpen(true)}
-                >
-                  <PlusCircle />
-                  New Exchange
-                </Button>
+          
 
                 <Button
                   className="action-button check-button"
@@ -317,6 +347,48 @@ const ExchangeEyeGlass: React.FC = () => {
                   </Col>
 
                   <Col md="4">
+                    <div className="search-input-group">
+                      <label>Report ID</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        placeholder="Enter Report ID"
+                        value={reportID || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === "" || parseInt(value) >= 0) {
+                            setReportID(value || null);
+                          }
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === "-") {
+                            e.preventDefault();
+                          }
+                        }}
+                        className="search-input"
+                      />
+                    </div>
+                  </Col>
+
+                  <Col md="4">
+                    <div className="search-input-group">
+                      <label>Status</label>
+                      <Input
+                        type="select"
+                        value={status}
+                        onChange={(e) => setStatus(e.target.value)}
+                        className="search-input"
+                      >
+                        {STATUS_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </Input>
+                    </div>
+                  </Col>
+
+                  <Col md="4">
                     <Button className="search-button" onClick={handleSearch}>
                       <Search size={18} />
                       Search Records
@@ -348,8 +420,6 @@ const ExchangeEyeGlass: React.FC = () => {
                           <th>ID</th>
                           <th>Account</th>
                           <th>Staff</th>
-                          <th>Product Glass</th>
-                          <th>Order ID</th>
                           <th>Reason</th>
                           <th>Status</th>
                           <th>Actions</th>
@@ -361,8 +431,6 @@ const ExchangeEyeGlass: React.FC = () => {
                             <td>{item.id}</td>
                             <td>{item.customer.id}</td>
                             <td>{item.staff.id}</td>
-                            <td>{item.productGlass.id}</td>
-                            <td>{item.order.id}</td>
                             <td>
                               <div className="reason-cell" title={item.reason}>
                                 {item.reason.length > 30
@@ -371,12 +439,8 @@ const ExchangeEyeGlass: React.FC = () => {
                               </div>
                             </td>
                             <td>
-                              <span
-                                className={`status-badge ${
-                                  item.status ? "active" : "inactive"
-                                }`}
-                              >
-                                {item.status ? "Active" : "Inactive"}
+                              <span className={`status-badge ${getStatusClassName(item.status)}`}>
+                                {getStatusLabel(item.status)}
                               </span>
                             </td>
                             <td>
@@ -387,20 +451,6 @@ const ExchangeEyeGlass: React.FC = () => {
                                 >
                                   <Eye size={16} />
                                 </Button>
-                                {/* <Button
-                                  className={`action-button delete-button ${
-                                    !item.status ? "disabled" : ""
-                                  }`}
-                                  onClick={() => handleDeleteClick(item.id)}
-                                  disabled={!item.status}
-                                  title={
-                                    !item.status
-                                      ? "Cannot delete inactive exchange"
-                                      : "Delete exchange"
-                                  }
-                                >
-                                  <Trash2 size={16} />
-                                </Button> */}
                               </div>
                             </td>
                           </tr>
@@ -410,11 +460,9 @@ const ExchangeEyeGlass: React.FC = () => {
 
                     {/* Pagination */}
                     <div className="pagination">
-                      <Button
+                    <Button
                         className="pagination-button nav-button"
-                        onClick={() =>
-                          setPageIndex((prev) => Math.max(prev - 1, 1))
-                        }
+                        onClick={() => setPageIndex((prev) => Math.max(prev - 1, 1))}
                         disabled={pageIndex === 1}
                       >
                         <FaChevronLeft />

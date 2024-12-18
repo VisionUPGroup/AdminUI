@@ -490,42 +490,24 @@ $dark-gradient: linear-gradient(135deg, $dark-gray 0%, $medium-gray 100%);
 // Table Styles
 // Table Styles
 .status-badge {
-  padding: 8px 16px;
-  border-radius: 30px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
   font-size: 0.875rem;
   font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  &.active {
-    background: rgba($primary-gold, 0.1);
-    color: $primary-gold;
-    position: relative;
-
-    &::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: $primary-gold;
-      margin-right: 4px;
-    }
+  
+  &.status-denied {
+    background-color: #fee2e2;
+    color: #dc2626;
   }
-
-  &.inactive {
-    background: rgba($primary-dark, 0.05);
-    color: rgba($primary-dark, 0.6);
-    position: relative;
-
-    &::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: rgba($primary-dark, 0.6);
-      margin-right: 4px;
-    }
+  
+  &.status-request {
+    background-color: #fef3c7;
+    color: #d97706;
+  }
+  
+  &.status-accepted {
+    background-color: #dcfce7;
+    color: #16a34a;
   }
 }
 .data-section {

@@ -259,7 +259,7 @@ const SalesOrders: React.FC = () => {
             return {
               orderId: order.id,
               username: userData.username,
-              phoneNumber: userData.phoneNumber
+              phoneNumber: userData.phoneNumber,
             };
           } catch (error) {
             console.error(
@@ -269,12 +269,12 @@ const SalesOrders: React.FC = () => {
             return {
               orderId: order.id,
               username: "Unknown User",
-              phoneNumber: "N/A"
+              phoneNumber: "N/A",
             };
           }
         }
       );
-      
+
       const usernameResults = await Promise.all(usernamePromises);
       const usernameMap = usernameResults.reduce(
         (acc, { orderId, username, phoneNumber }) => {
@@ -589,7 +589,6 @@ const SalesOrders: React.FC = () => {
         return "Unknown";
     }
   };
-  
 
   return (
     <div className="orders-dashboard">
@@ -787,30 +786,33 @@ const SalesOrders: React.FC = () => {
                     <tbody>
                       {orderData.map((order) => (
                         <tr key={order.id}>
-                       <td>
-  <div className="order-id">
-    <span className="order-number">
-      Order ID: {order.id}
-    </span>
-    <span className="username">
-      Account ID: {order.accountID}
-    </span>
-    <span className="username">
-      <FaUser /> {orderUsernames[order.id]?.username || "Loading..."}
-    </span>
-    <span className="phone">
-      <FaPhone /> {orderUsernames[order.id]?.phoneNumber || "N/A"}
-    </span>
-    <span className="time">
-      {new Date(order.orderTime).toLocaleString()}
-    </span>
-  </div>
-</td>
+                          <td>
+                            <div className="order-id">
+                              <span className="order-number">
+                                Order ID: {order.id}
+                              </span>
+                              <span className="username">
+                                Account ID: {order.accountID}
+                              </span>
+                              <span className="username">
+                                <FaUser />{" "}
+                                {orderUsernames[order.id]?.username ||
+                                  "Loading..."}
+                              </span>
+                              <span className="phone">
+                                <FaPhone />{" "}
+                                {orderUsernames[order.id]?.phoneNumber || "N/A"}
+                              </span>
+                              <span className="time">
+                                {new Date(order.orderTime).toLocaleString()}
+                              </span>
+                            </div>
+                          </td>
                           <td>
                             <div className="customer-info">
                               <span className="address">
                                 <FaMapMarkerAlt />
-                                {order.receiverAddress||"Kiosk Address"}
+                                {order.receiverAddress || "Kiosk Address"}
                               </span>
                             </div>
                           </td>

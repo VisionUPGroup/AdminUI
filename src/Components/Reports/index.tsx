@@ -60,7 +60,7 @@ interface PaginationResponse {
   currentPage: number;
 }
 interface NewReport {
-  orderID: string;
+  orderID: number;
   description: string;
   type: number;
   image?: File;
@@ -94,10 +94,10 @@ const ReportList: React.FC = () => {
     null
   );
   const [newReport, setNewReport] = useState<NewReport>({
-    orderID: "",
+    orderID: 0, // Thay đổi từ "" sang 0
     description: "",
     type: 0,
-    productGlassId: undefined, // Thêm giá trị mặc định
+    productGlassId: undefined,
   });
 
   const [updateReport, setUpdateReport] = useState({
@@ -182,10 +182,10 @@ const ReportList: React.FC = () => {
   };
   const clearForm = () => {
     setNewReport({
-      orderID: "",
+      orderID: 0, // Reset về 0 thay vì ""
       description: "",
       type: 0,
-      productGlassId: undefined, // Reset productGlassId
+      productGlassId: undefined,
     });
     setOrderDetails(null);
     setSelectedProductGlass("");
@@ -198,7 +198,7 @@ const ReportList: React.FC = () => {
 
   const handleOrderIdChange = async (value: number) => {
     try {
-      setNewReport((prev) => ({ ...prev, orderID: value })); // Cập nhật giá trị ngay lập tức
+      setNewReport((prev) => ({ ...prev, orderID: value })); // Giữ nguyên là number
 
       if (value > 0) {
         const orderData = await fetchOrderById(value);
@@ -209,11 +209,9 @@ const ReportList: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching order:", error);
-
       setOrderDetails(null);
     }
   };
-
   // Report Type and Status Label Functions
   const getReportTypeLabel = (type: number) => {
     switch (type) {
@@ -328,8 +326,8 @@ const ReportList: React.FC = () => {
         return;
       }
 
-      const orderID = parseInt(newReport.orderID);
-      if (isNaN(orderID) || orderID <= 0) {
+      // Không cần parse nữa vì orderID đã là number
+      if (newReport.orderID <= 0) {
         toast.warning("Please enter a valid Order ID");
         return;
       }
@@ -337,14 +335,13 @@ const ReportList: React.FC = () => {
       // Create FormData object
       const formData = new FormData();
 
-      // Append các field theo đúng API spec
-      formData.append("orderID", orderID.toString());
+      // Append các field theo đúng API spec - chuyển number sang string khi append
+      formData.append("orderID", newReport.orderID.toString()); // Chuyển number sang string
       formData.append("description", newReport.description.trim());
       formData.append("type", newReport.type.toString());
 
-      // Thêm productGlassId nếu có
+      // Thêm productGlassId nếu có và type là Product Issue
       if (newReport.type === 0) {
-        // Chỉ thêm khi type là Product Issue
         if (!selectedProductGlass) {
           toast.warning("Please select a product");
           return;
@@ -352,7 +349,7 @@ const ReportList: React.FC = () => {
         formData.append("productGlassId", selectedProductGlass);
       }
 
-      // Append image với key 'image'
+      // Append image nếu có
       if (selectedImage instanceof File) {
         formData.append("image", selectedImage);
       }
@@ -443,12 +440,12 @@ const ReportList: React.FC = () => {
               <label htmlFor="typeFilter">Type</label>
               <select
                 id="typeFilter"
-                value={typeFilter || ""}
-                onChange={(e) =>
-                  setTypeFilter(
-                    e.target.value ? Number(e.target.value) : undefined
-                  )
-                }
+                value={typeFilter ?? ""} // Sử dụng nullish coalescing
+                onChange={(e) => {
+                  const value =
+                    e.target.value === "" ? undefined : Number(e.target.value);
+                  setTypeFilter(value);
+                }}
                 className="filter-select"
               >
                 <option value="">All Types</option>
@@ -464,12 +461,12 @@ const ReportList: React.FC = () => {
               <label htmlFor="statusFilter">Status</label>
               <select
                 id="statusFilter"
-                value={statusFilter || ""}
-                onChange={(e) =>
-                  setStatusFilter(
-                    e.target.value ? Number(e.target.value) : undefined
-                  )
-                }
+                value={statusFilter ?? ""} // Sử dụng nullish coalescing
+                onChange={(e) => {
+                  const value =
+                    e.target.value === "" ? undefined : Number(e.target.value);
+                  setStatusFilter(value);
+                }}
                 className="filter-select"
               >
                 <option value="">All Statuses</option>
@@ -478,7 +475,6 @@ const ReportList: React.FC = () => {
                 <option value="2">Accepted</option>
               </select>
             </div>
-
             <button className="reset-filters-btn" onClick={resetFilters}>
               Reset Filters
             </button>
@@ -660,16 +656,18 @@ const ReportList: React.FC = () => {
                 id="orderInput"
                 type="number"
                 className="order-input"
-                value={newReport.orderID}
+                value={newReport.orderID || ""} // Thêm || '' để tránh hiển thị 0
                 onChange={(e) => {
-                  const value = e.target.value;
-                  // Cập nhật giá trị input trực tiếp
+                  // Chuyển đổi value thành number
+                  const value =
+                    e.target.value === "" ? 0 : parseInt(e.target.value);
+
+                  // Cập nhật giá trị input
                   setNewReport((prev) => ({ ...prev, orderID: value }));
 
-                  // Chỉ fetch order khi có giá trị hợp lệ
-                  const numericValue = parseInt(value);
-                  if (!isNaN(numericValue) && numericValue > 0) {
-                    handleOrderIdChange(numericValue);
+                  // Fetch order data nếu giá trị hợp lệ
+                  if (value > 0) {
+                    handleOrderIdChange(value);
                   } else {
                     setOrderDetails(null);
                   }
