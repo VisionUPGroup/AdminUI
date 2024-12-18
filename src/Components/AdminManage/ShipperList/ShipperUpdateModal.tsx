@@ -5,7 +5,6 @@ import { useAccountService } from "../../../../Api/accountService";
 import Swal from "sweetalert2";
 import "./ShipperStyle.scss"
 
-
 interface StaffUpdateModalProps {
   isOpen: boolean;
   toggle: () => void;
@@ -38,16 +37,20 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
 }) => {
   const { updateAccount } = useAccountService();
   const [apiError, setApiError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState<FormData>({
+  const initialFormData: FormData = {
     id: 0,
     username: "",
     email: "",
     phoneNumber: "",
     password: "",
-    status: false,
+    status: true,
     roleID: 0
-  });
+  };
+
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [errors, setErrors] = useState({
     email: "",
@@ -61,9 +64,6 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
     password: false
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Load dữ liệu staff khi modal mở
   useEffect(() => {
     if (staffData) {
       setFormData({
@@ -72,11 +72,10 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
         email: staffData.email,
         phoneNumber: staffData.phoneNumber,
         password: "",
-        status: staffData.status,
+        status: Boolean(staffData.status),
         roleID: staffData.roleID
       });
       
-      // Reset các trạng thái
       setTouched({
         email: false,
         phoneNumber: false,
@@ -91,21 +90,29 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
     }
   }, [staffData, isOpen]);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    // Kiểm tra xem name có phải là một field cần validate không
+    
     if (name === 'email' || name === 'phoneNumber' || name === 'password') {
       validateField(name, value);
     }
-};
+  };
+
+  const handleStatusChange = () => {
+    setFormData(prev => ({
+      ...prev,
+      status: !prev.status
+    }));
+  };
+
+  const togglePasswordVisibility = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowPassword(!showPassword);
+  };
 
   const handleBlur = (field: keyof typeof errors) => {
     setTouched(prev => ({
@@ -146,13 +153,9 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
       ...prev,
       [field]: errorMessage
     }));
-};
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setApiError(null);
-    
-    // Tạo mảng fields cần validate dựa trên điều kiện
+  const validateForm = () => {
     const fieldsToValidate: Array<'email' | 'phoneNumber' | 'password'> = ['email', 'phoneNumber'];
     if (formData.password) {
         fieldsToValidate.push('password');
@@ -166,44 +169,57 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
       }));
     });
 
-    const hasErrors = fieldsToValidate.some(field => errors[field] !== "");
+    return !fieldsToValidate.some(field => errors[field] !== "");
+  };
 
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    setApiError(null);
 
-    if (!hasErrors) {
-      try {
-        const updateData = {
-          id: formData.id,
-          username: formData.username,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          password: formData.password || undefined,
-          status: formData.status,
-          roleID: formData.roleID
-        };
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      return;
+    }
 
-        await updateAccount(updateData);
+    try {
+      const updateData = {
+        id: formData.id,
+        username: formData.username,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        password: formData.password || undefined,
+        status: formData.status,
+        roleID: formData.roleID
+      };
 
-        await Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "Staff information has been updated successfully!",
-          confirmButtonColor: "#c79816",
-        });
+      await updateAccount(updateData);
 
-        onSuccess();
-        toggle();
-        
-      } catch (error: any) {
-        console.error("Error updating staff:", error);
-        setApiError(error.response?.data?.message || "Failed to update staff");
-        
-        await Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: error.response?.data?.message || "Failed to update staff",
-          confirmButtonColor: "#c79816",
-        });
-      }
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Staff information has been updated successfully!",
+        confirmButtonColor: "#c79816",
+      });
+
+      onSuccess();
+      toggle();
+      
+    } catch (error: any) {
+      console.error("Error updating staff:", error);
+      setApiError(error.response?.data?.message || "Failed to update staff");
+      
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.response?.data?.message || "Failed to update staff",
+        confirmButtonColor: "#c79816",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -214,7 +230,7 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
       </ModalHeader>
       
       <ModalBody>
-        <Form onSubmit={handleSubmit}>
+        <Form onSubmit={e => e.preventDefault()}>
           {apiError && (
             <div className="api-error-message">
               {apiError}
@@ -227,6 +243,7 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
               <Input
                 type="text"
                 id="username"
+                name="username"
                 value={formData.username}
                 disabled
                 className="disabled-input"
@@ -306,15 +323,39 @@ const StaffUpdateModal: React.FC<StaffUpdateModalProps> = ({
               )}
             </div>
           </FormGroup>
+
+          <FormGroup>
+  <div className="input-wrapper">
+    <Label>Status</Label>
+    <div className="status-wrapper">
+      <span className="status-label">Status</span>
+      <label className="toggle-switch">
+        <input
+          type="checkbox"
+          checked={formData.status}
+          onChange={handleStatusChange}
+        />
+        <span className="toggle-slider"></span>
+      </label>
+      <span className={`status-text ${formData.status ? 'active' : 'inactive'}`}>
+        {formData.status ? 'Active' : 'Inactive'}
+      </span>
+    </div>
+  </div>
+</FormGroup>
         </Form>
       </ModalBody>
 
       <ModalFooter>
-        <button className="btn-cancel" onClick={toggle}>
+        <button className="btn-cancel" onClick={toggle} disabled={isSubmitting}>
           Cancel
         </button>
-        <button className="btn-save" onClick={handleSubmit}>
-          Update Staff
+        <button 
+          className="btn-save" 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Updating...' : 'Update Staff'}
         </button>
       </ModalFooter>
     </Modal>
