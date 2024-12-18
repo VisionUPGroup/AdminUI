@@ -270,7 +270,6 @@ const LensList: React.FC = () => {
 
   const handleUpdateStatus = async (lens: Lens) => {
     try {
-      // Tạo data để update với format yêu cầu của API
       const updateData = {
         id: lens.id,
         status: !lens.status 
@@ -289,19 +288,30 @@ const LensList: React.FC = () => {
         preConfirm: async () => {
           try {
             const response = await updateLens(updateData);
-            if (response) {
-              return response;
+            if (!response) {
+              Swal.showValidationMessage('Failed to update lens status');
+              return false;
             }
-            throw new Error('Failed to update lens status');
-          } catch (error) {
-            Swal.showValidationMessage(`Error: ${error.message}`);
-            throw error;
+            return response;
+          } catch (error: any) {
+            let errorMessage = 'Something went wrong';
+            
+            if (error.response?.data?.message) {
+              errorMessage = error.response.data.message;
+            } else if (error.message) {
+              errorMessage = error.message;
+            } else if (error.response?.data?.error) {
+              errorMessage = error.response.data.error;
+            }
+
+            Swal.showValidationMessage(`Error: ${errorMessage}`);
+            return false;
           }
         },
         allowOutsideClick: () => !Swal.isLoading()
       });
 
-      if (result.isConfirmed) {
+      if (result.isConfirmed && result.value) {
         // Update local state
         setLenses((prevLenses) =>
           prevLenses.map((item) =>
@@ -319,13 +329,39 @@ const LensList: React.FC = () => {
         });
 
         // Refresh data
-        fetchData(filterParams);
+        try {
+          await fetchData(filterParams);
+        } catch (error: any) {
+          console.error("Error refreshing data:", error);
+          let errorMessage = 'Unable to fetch latest list';
+          
+          if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          await Swal.fire({
+            title: "Note",
+            text: errorMessage,
+            icon: "warning",
+            confirmButtonText: "Close",
+          });
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in update process:', error);
-      Swal.fire({
+      let errorMessage = 'Unable to update lens status';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      await Swal.fire({
         title: 'Error!',
-        text: error.message || 'Unable to update lens status. Please try again later.',
+        text: errorMessage,
         icon: 'error',
         confirmButtonColor: '#dc3545'
       });

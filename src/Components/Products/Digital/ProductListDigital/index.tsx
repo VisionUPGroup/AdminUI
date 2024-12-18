@@ -294,14 +294,13 @@ const EyeGlassList: React.FC = () => {
   //   }
   // };
 
-  const handleUpdateStatus = async (product: EyeGlass) => {
+const handleUpdateStatus = async (product: EyeGlass) => {
     try {
-      // Tạo data để update với status ngược lại
       const updateData = {
         id: product.id,
         status: !product.status
       };
-
+      
       const result = await Swal.fire({
         title: "Confirm Status Update?",
         text: `Are you sure you want to ${product.status ? "deactivate" : "activate"} "${product.name}"?`,
@@ -314,29 +313,43 @@ const EyeGlassList: React.FC = () => {
         showLoaderOnConfirm: true,
         preConfirm: async () => {
           try {
-            console.log("updateData", updateData)
             const response = await updateEyeGlass(updateData);
-            if (response) {
-              return response;
+            if (!response) {
+              Swal.showValidationMessage('Failed to update product status');
+              return false;
             }
-            throw new Error("Failed to update product status");
-          } catch (error) {
-            Swal.showValidationMessage(`Error: ${error.message}`);
-            throw error;
+            return response;
+          } catch (error: any) {
+            // Xử lý error message từ API
+            let errorMessage = 'Something went wrong';
+            
+            // Trường hợp 1: Error message nằm trong error.response.data
+            if (error.response?.data?.message) {
+              errorMessage = error.response.data.message;
+            }
+            // Trường hợp 2: Error message nằm trực tiếp trong error.message 
+            else if (error.message) {
+              errorMessage = error.message;
+            }
+            // Trường hợp 3: Error message nằm trong error.response.data.error
+            else if (error.response?.data?.error) {
+              errorMessage = error.response.data.error;
+            }
+
+            Swal.showValidationMessage(`Error: ${errorMessage}`);
+            return false;
           }
         },
         allowOutsideClick: () => !Swal.isLoading(),
       });
 
-      if (result.isConfirmed) {
-        // Update local state
+      if (result.isConfirmed && result.value) {
         setEyeGlasses((prevGlasses) =>
           prevGlasses.map((glass) =>
             glass.id === product.id ? { ...glass, status: !glass.status } : glass
           )
         );
 
-        // Show success message
         await Swal.fire({
           title: "Updated!",
           text: `Product has been ${product.status ? "deactivated" : "activated"} successfully.`,
@@ -345,29 +358,44 @@ const EyeGlassList: React.FC = () => {
           showConfirmButton: false,
         });
 
-        // Fetch updated data
         try {
           await fetchData(filterParams);
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error refreshing data:", error);
-          Swal.fire({
+          let errorMessage = 'Unable to fetch latest list';
+          
+          if (error.response?.data?.message) {
+            errorMessage = error.response.data.message;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+
+          await Swal.fire({
             title: "Note",
-            text: "Status updated but unable to fetch latest list",
+            text: errorMessage,
             icon: "warning",
             confirmButtonText: "Close",
           });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in update process:", error);
-      Swal.fire({
+      let errorMessage = 'Unable to update product status';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      await Swal.fire({
         title: "Error!",
-        text: error.message || "Unable to update product status. Please try again later.",
+        text: errorMessage,
         icon: "error",
         confirmButtonColor: "#dc3545",
       });
     }
-  };
+};
 
   const handleView = (product: EyeGlass) => {
     if (!product.isDeleted) {

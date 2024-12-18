@@ -1,18 +1,27 @@
 // components/PrintReceipt/PrintReceipt.tsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { OrderSuccessData } from '../types/orderSuccess';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { CompanyInfo } from '../types/company';
 import styles from '../styles/PrintReceipt.module.scss';
-import Image from 'next/image' 
+import Image from 'next/image'
 import Logo from '../../../../../public/assets/images/visionUp/logo.jpg'
+import { useLensService } from '../../../../../Api/lensService';
 
 interface PrintReceiptProps {
   orderData: OrderSuccessData;
   companyInfo: CompanyInfo;
   staffName: string;
+}
+
+interface LensDetail {
+  id: number;
+  lensName: string;
+  lensDescription: string;
+  lensPrice: number;
+  lensImage?: string;
 }
 
 const PrintReceipt: React.FC<PrintReceiptProps> = ({
@@ -22,14 +31,54 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
 }) => {
   const receiptNumber = `#${orderData.orderID.toString().padStart(6, '0')}`;
   const latestPayment = orderData.payments[orderData.payments.length - 1];
-  console.log("tung",orderData )
+  const [lensDetails, setLensDetails] = useState<{ [key: number]: LensDetail }>({});
+  const { fetchLensById } = useLensService();
+  console.log("tung", orderData)
+
+  useEffect(() => {
+    const fetchLensDetails = async () => {
+      const lensIds = orderData.productGlass.reduce((ids: number[], item) => {
+        if (!lensDetails[item.leftLen.id]) {
+          ids.push(item.leftLen.id);
+        }
+        if (!lensDetails[item.rightLen.id] && item.leftLen.id !== item.rightLen.id) {
+          ids.push(item.rightLen.id);
+        }
+        return ids;
+      }, []);
+
+      try {
+        const detailsPromises = lensIds.map(id => fetchLensById(id));
+        const details = await Promise.all(detailsPromises);
+
+        const newLensDetails = details.reduce((acc, lens) => {
+          if (lens) {
+            acc[lens.id] = {
+              id: lens.id,
+              lensName: lens.lensName,
+              lensDescription: lens.lensDescription,
+              lensPrice: lens.lensPrice,
+              lensImage: lens.lensImage
+            };
+          }
+          return acc;
+        }, {});
+
+        setLensDetails(prev => ({ ...prev, ...newLensDetails }));
+      } catch (error) {
+        console.error('Error fetching lens details:', error);
+      }
+    };
+
+    fetchLensDetails();
+  }, [orderData.productGlass]);
 
   return (
     <div className={styles.printReceiptWrapper}>
       {/* Enhanced Header */}
       <header className={styles.header}>
         <div className={styles.brandSection}>
-          
+
           <div className={styles.companyInfo}>
             <h1>{companyInfo.name}</h1>
             <div className={styles.companyDetails}>
@@ -103,9 +152,9 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
                   <td className={styles.specifications}>
                     <div className={styles.specDetails}>Brand Specifications</div>
                   </td>
-                  <td className={styles.amount}>
-                    {formatCurrency(orderData.totalAmount / 2)}
-                  </td>
+                  {/* <td className={styles.amount}>
+                    {formatCurrency(item.eyeGlass?.price)}
+                  </td> */}
                 </tr>
                 <tr className={styles.lensRow}>
                   <td className={styles.productInfo}>
@@ -116,17 +165,28 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
                       <div className={styles.lensDetail}>
                         <strong>Left Eye:</strong>
                         <p>{item.leftLen.lensName}</p>
-                        <small>{item.leftLen.lensDescription}</small>
+                        {lensDetails[item.leftLen.id] && (
+                          <div className={styles.lensPrice}>
+                            Price: {formatCurrency(lensDetails[item.leftLen.id].lensPrice)}
+                          </div>
+                        )}
                       </div>
                       <div className={styles.lensDetail}>
                         <strong>Right Eye:</strong>
                         <p>{item.rightLen.lensName}</p>
-                        <small>{item.rightLen.lensDescription}</small>
+                        {lensDetails[item.rightLen.id] && (
+                          <div className={styles.rightLen}>
+                            Price: {formatCurrency(lensDetails[item.rightLen.id].lensPrice)}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </td>
                   <td className={styles.amount}>
-                    {formatCurrency(orderData.totalAmount / 2)}
+                    {formatCurrency(
+                      (lensDetails[item.leftLen.id]?.lensPrice || 0) +
+                      (lensDetails[item.rightLen.id]?.lensPrice || 0)
+                    )}
                   </td>
                 </tr>
               </React.Fragment>
