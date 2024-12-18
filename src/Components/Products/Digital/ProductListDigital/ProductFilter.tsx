@@ -14,6 +14,8 @@ export interface FilterParams {
   MaxPrice?: number;
   SortBy?: string;
   Descending?: boolean;
+  isDeleted?: boolean;
+  status?: boolean;
   PageIndex: number;
   PageSize: number;
 }
@@ -26,6 +28,8 @@ export interface FilterParams {
   MaxPrice?: number;
   SortBy?: string;
   Descending?: boolean;
+  isDeleted?: boolean;
+  status?: boolean;
   PageIndex: number;
   PageSize: number;
 }
@@ -42,25 +46,31 @@ interface ProductFilterProps {
   onFilterChange: (params: FilterParams) => void;
   eyeGlassTypes: Array<{ id: number; glassType: string }>;
   initialParams: FilterParams;
+  activeTab: 'active' | 'inactive'; 
+  totalItems: number;
 }
 
 const DEFAULT_PARAMS: FilterParams = {
   PageIndex: 1,
-  PageSize: 20
+  PageSize: 20,
+  isDeleted: false,
 };
 
 const PAGE_SIZE_OPTIONS = [
   { value: 10, label: '10 items' },
   { value: 20, label: '20 items' },
   { value: 50, label: '50 items' },
-  { value: 100, label: '100 items' }
+  { value: 100, label: '100 items' },
+  { value: -1, label: 'All items' } 
 ];
 
 
 const ProductFilter: React.FC<ProductFilterProps> = ({
   onFilterChange,
   eyeGlassTypes,
-  initialParams
+  initialParams,
+  activeTab,
+  totalItems
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filterParams, setFilterParams] = useState<FilterParams>(initialParams);
@@ -98,7 +108,12 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPageSize = parseInt(e.target.value);
-    handleFilterChange({ PageSize: newPageSize, PageIndex: 1 });
+    // Nếu chọn All (-1), set PageSize bằng tổng số items
+    const effectivePageSize = newPageSize === -1 ? totalItems : newPageSize;
+    handleFilterChange({ 
+      PageSize: effectivePageSize, 
+      PageIndex: 1 
+    });
   };
 
   const clearFilter = (filterType: string) => {
@@ -131,19 +146,22 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   };
 
   const clearAllFilters = () => {
-    // Reset về params mặc định hoàn toàn
     const defaultParams: FilterParams = {
       PageIndex: 1,
-      PageSize: filterParams.PageSize // Chỉ giữ lại PageSize
+      PageSize: filterParams.PageSize,
+      Descending: true,
+      status: filterParams.status, // Giữ lại status hiện tại
+      isDeleted: false
     };
-    
-    // Reset tất cả state
+  
     setFilterParams(defaultParams);
     setPriceRange([0, 10000000]);
     setActiveFilters([]);
-    
-    // Gọi callback với params mặc định
-    onFilterChange(defaultParams);
+  
+    onFilterChange({
+      PageIndex: 1,
+      PageSize: filterParams.PageSize
+    }); 
   };
 
   const formatPrice = (value: number) => {

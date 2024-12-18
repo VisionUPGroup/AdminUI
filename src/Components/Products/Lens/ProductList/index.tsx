@@ -7,6 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import Swal from 'sweetalert2';
 import CommonBreadcrumb from '@/CommonComponents/CommonBreadcrumb';
 import CustomTable from '../../Digital/ProductListDigital/CustomTable';
+import Pagination from '../../Digital/Helper/Pagination';
 import LensFilter from './LensFilter';
 import { useLensService } from '../../../../../Api/lensService';
 import LensTypeManagement from '../../LensType';
@@ -41,6 +42,7 @@ interface Lens {
   lensPrice: number;
   quantity: number;
   status: boolean;
+  isDeleted: boolean;
   rate: number;
   rateCount: number;
   lensTypeID: number;
@@ -54,6 +56,8 @@ const defaultParams = {
   PageIndex: 1,
   PageSize: 10,
   Descending: true,
+  status: true,
+  isDeleted: false
 };
 
 const LensList: React.FC = () => {
@@ -62,7 +66,8 @@ const LensList: React.FC = () => {
     fetchLenses,
     fetchLensTypes,
     deleteLens,
-    fetchEyeReflactives
+    fetchEyeReflactives,
+    updateLens
   } = useLensService();
 
   // States
@@ -76,6 +81,7 @@ const LensList: React.FC = () => {
   const [isLensTypeModalOpen, setIsLensTypeModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
   const sortLenses = (lenses: Lens[]) => {
     return [...lenses].sort((a, b) => {
       // Sort by status first (active first, then inactive)
@@ -141,13 +147,18 @@ const LensList: React.FC = () => {
 
     let updatedParams;
     if (isClearAll) {
-      // When clearing all filters, maintain default params including Descending: true
-      updatedParams = { ...defaultParams };
+      updatedParams = {
+        ...defaultParams,
+        PageSize: newParams.PageSize,
+        status: activeTab === 'active', // Giữ lại status từ activeTab
+        isDeleted: false
+      };
     } else {
       updatedParams = {
         ...filterParams,
         ...newParams,
-        Descending: true, // Always ensure Descending is true
+        status: activeTab === 'active',
+        isDeleted: false,
         PageIndex: newParams.PageIndex || 1
       };
     }
@@ -252,8 +263,73 @@ const LensList: React.FC = () => {
     }
   };
 
-  const handleEdit = (id: number) => {
-    router.push(`/en/products/lens/${id}`);
+  // const handleEdit = (id: number) => {
+  //   router.push(`/en/products/lens/${id}/edit`);
+  // };
+
+
+  const handleUpdateStatus = async (lens: Lens) => {
+    try {
+      // Tạo data để update với format yêu cầu của API
+      const updateData = {
+        id: lens.id,
+        status: !lens.status 
+      };
+
+      const result = await Swal.fire({
+        title: 'Confirm Status Update?',
+        text: `Are you sure you want to ${lens.status ? 'deactivate' : 'activate'} "${lens.lensName}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: lens.status ? '#dc3545' : '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: lens.status ? 'Deactivate' : 'Activate',
+        cancelButtonText: 'Cancel',
+        showLoaderOnConfirm: true,
+        preConfirm: async () => {
+          try {
+            const response = await updateLens(updateData);
+            if (response) {
+              return response;
+            }
+            throw new Error('Failed to update lens status');
+          } catch (error) {
+            Swal.showValidationMessage(`Error: ${error.message}`);
+            throw error;
+          }
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+      });
+
+      if (result.isConfirmed) {
+        // Update local state
+        setLenses((prevLenses) =>
+          prevLenses.map((item) =>
+            item.id === lens.id ? { ...item, status: !item.status } : item
+          )
+        );
+
+        // Show success message
+        await Swal.fire({
+          title: 'Updated!',
+          text: `Lens has been ${lens.status ? 'deactivated' : 'activated'} successfully.`,
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
+
+        // Refresh data
+        fetchData(filterParams);
+      }
+    } catch (error) {
+      console.error('Error in update process:', error);
+      Swal.fire({
+        title: 'Error!',
+        text: error.message || 'Unable to update lens status. Please try again later.',
+        icon: 'error',
+        confirmButtonColor: '#dc3545'
+      });
+    }
   };
 
   const handleView = (id: number) => {
@@ -363,7 +439,7 @@ const LensList: React.FC = () => {
           >
             <Eye size={14} />
           </Button>
-          <Button
+          {/* <Button
             color="primary"
             size="sm"
             className={`${styles.actionBtn} ${!row.status ? styles.disabledButton : ''}`}
@@ -372,6 +448,15 @@ const LensList: React.FC = () => {
             disabled={!row.status}
           >
             <Edit2 size={14} />
+          </Button> */}
+          <Button
+            color={row.status ? "warning" : "success"}
+            size="sm"
+            title={row.status ? "Deactivate Lens" : "Activate Lens"}
+            onClick={() => handleUpdateStatus(row)}
+            className={styles.actionBtn}
+          >
+            <i className={`fa fa-${row.status ? 'toggle-on' : 'toggle-off'}`} style={{ fontSize: '14px' }} />
           </Button>
           <Button
             color="danger"
@@ -410,6 +495,51 @@ const LensList: React.FC = () => {
       toast.error('Failed to save lens type');
     }
   };
+
+  const renderTabs = () => (
+    <div className={styles.tabsContainer}>
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === 'active' ? styles.active : ''}`}
+          onClick={() => {
+            setActiveTab('active');
+            const newParams = {
+              ...filterParams,
+              status: true,
+              PageIndex: 1
+            };
+            setFilterParams(newParams);
+            fetchData(newParams);
+          }}
+        >
+          <span className={styles.tabContent}>
+            <i className="fa fa-check-circle" />
+            Active Lenses
+          </span>
+          {activeTab === 'active' && <span className={styles.activeCount}>{totalItems}</span>}
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'inactive' ? styles.active : ''}`}
+          onClick={() => {
+            setActiveTab('inactive');
+            const newParams = {
+              ...filterParams,
+              status: false,
+              PageIndex: 1
+            };
+            setFilterParams(newParams);
+            fetchData(newParams);
+          }}
+        >
+          <span className={styles.tabContent}>
+            <i className="fa fa-times-circle" />
+            Inactive Lenses
+          </span>
+          {activeTab === 'inactive' && <span className={styles.activeCount}>{totalItems}</span>}
+        </button>
+      </div>
+    </div>
+  );
 
   const handleLensTypeDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this lens type?')) return;
@@ -483,29 +613,28 @@ const LensList: React.FC = () => {
                       color="info"
                       size="sm"
                       title={lens.status ? "View Details" : "Lens Inactive"}
-                      onClick={() => lens.status && handleView(lens.id)}
-                      disabled={!lens.status}
-                      className={!lens.status ? styles.disabledButton : ''}
+                      onClick={() => !lens.isDeleted && handleView(lens.id)}
+                      disabled={lens.isDeleted}
+                      className={lens.isDeleted ? styles.disabledButton : ''}
                     >
                       <Eye size={14} />
                     </Button>
                     <Button
-                      color="primary"
+                      color={lens.status ? "warning" : "success"}
                       size="sm"
-                      title={lens.status ? "Edit Lens" : "Lens Inactive"}
-                      onClick={() => lens.status && handleEdit(lens.id)}
-                      disabled={!lens.status}
-                      className={!lens.status ? styles.disabledButton : ''}
+                      title={lens.status ? "Deactivate Lens" : "Activate Lens"}
+                      onClick={() => handleUpdateStatus(lens)}
+                      className={styles.actionBtn}
                     >
-                      <Edit2 size={14} />
+                      <i className={`fa fa-${lens.status ? 'toggle-on' : 'toggle-off'}`} style={{ fontSize: '14px' }} />
                     </Button>
                     <Button
                       color="danger"
                       size="sm"
                       title={lens.status ? "Delete Lens" : "Lens Inactive"}
-                      onClick={() => lens.status && handleDelete(lens)}
-                      disabled={!lens.status}
-                      className={!lens.status ? styles.disabledButton : ''}
+                      onClick={() => !lens.isDeleted && handleDelete(lens)}
+                      disabled={lens.isDeleted}
+                      className={lens.isDeleted ? styles.disabledButton : ''}
                     >
                       <Trash2 size={14} />
                     </Button>
@@ -528,7 +657,7 @@ const LensList: React.FC = () => {
       );
     }
 
-    const sortedLenses = sortLenses(lenses);
+    const totalPages = Math.ceil(totalItems / filterParams.PageSize);
 
     return (
       <>
@@ -540,11 +669,8 @@ const LensList: React.FC = () => {
           <div className={`${styles.tableWrapper} ${isLoading ? styles.loadingOverlay : ''}`}>
             <CustomTable
               columns={memoizedTableColumns}
-              data={sortedLenses}
-              pagination
-              paginationServer
-              paginationTotalRows={totalItems}
-              onChangePage={handlePageChange}
+              data={lenses}
+              pagination={false}
               progressPending={isLoading}
               className={styles.productTable}
             />
@@ -554,6 +680,14 @@ const LensList: React.FC = () => {
             {renderGridView()}
           </div>
         )}
+
+        <Pagination
+          currentPage={filterParams.PageIndex}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          maxPagesToShow={5}
+          showNavigationText
+        />
       </>
     );
   };
@@ -624,43 +758,34 @@ const LensList: React.FC = () => {
   return (
     <div className={styles.productListPage}>
       {renderHeader()}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+      <ToastContainer />
       <CommonBreadcrumb parent="Digital" title="Lens List" />
       <Container fluid>
         <Row>
           <Col lg={12}>
+            {renderTabs()} {/* Thêm tabs vào đây */}
             <div className={styles.filterWrapper}>
               <LensFilter
                 onFilterChange={handleFilterChange}
                 lensTypes={lensTypes}
                 eyeReflactives={eyeReflactives}
                 initialParams={filterParams}
+                activeTab={activeTab}
+                totalItems={totalItems}
               />
             </div>
             {renderContent()}
           </Col>
         </Row>
       </Container>
-
       <LensTypeManagement
         isOpen={isLensTypeModalOpen}
         onClose={() => setIsLensTypeModalOpen(false)}
       />
-      <EyeReflactiveManagement 
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-/>
+      <EyeReflactiveManagement
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

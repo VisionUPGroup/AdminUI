@@ -472,7 +472,7 @@ const AddLens: React.FC = () => {
                                                                 name="lensPrice"
                                                                 value={formatCurrency(formData.lensPrice)}
                                                                 onChange={handleInputChange}
-                                                                placeholder="Nhập giá sản phẩm"
+                                                                placeholder="Enter price"
                                                                 className={`${styles.modernInput} ${styles.priceInput}`}
                                                             />
                                                             {errors.lensPrice && <div className={styles.errorMessage}>{errors.lensPrice}</div>}

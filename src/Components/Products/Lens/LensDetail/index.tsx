@@ -39,6 +39,7 @@ interface LensDetail {
     lensPrice: number;
     quantity: number;
     status: boolean;
+    isDeleted: boolean;
     rate: number;
     rateCount: number;
     lensTypeID: number;
@@ -232,7 +233,7 @@ const LensDetail: React.FC<LensDetailProps> = ({ id }) => {
                             <Button color="light" onClick={handleBack}>
                                 <ArrowLeft size={14} className="me-2" /> Back
                             </Button>
-                            <Button color="primary" onClick={handleEdit}>
+                            <Button  disabled={!lens.status} color="primary" onClick={handleEdit}>
                                 <Edit2 size={14} className="me-2" /> Edit Product
                             </Button>
                         </div>

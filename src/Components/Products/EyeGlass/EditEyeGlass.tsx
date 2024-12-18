@@ -65,6 +65,30 @@ enum ColorType {
     White = 6
 }
 
+enum MaterialType {
+    StainlessSteel = "Stainless Steel",
+    Titanium = "Titanium",
+    Aluminum = "Aluminum",
+    Monel = "Monel",
+    Nylon = "Nylon",
+    Wood = "Wood",
+    Bamboo = "Bamboo",
+    CarbonFiber = "Carbon Fiber",
+    Gold = "Gold",
+    Silver = "Silver"
+}
+
+enum DesignType {
+    Round = "Round",
+    Wayfarer = "Wayfarer",
+    Aviator = "Aviator",
+    CatEye = "Cat-Eye",
+    Oversized = "Oversized",
+    Slimline = "Slimline",
+    SemiRimless = "Semi-Rimless",
+    Rimless = "Rimless"
+}
+
 // Tạo mapper để chuyển đổi giữa string và enum number
 const colorStringToEnum: { [key: string]: ColorType } = {
     'Red': ColorType.Red,
@@ -111,10 +135,10 @@ interface FormData {
     name: string;
     price: string;
     // quantity: string;
-    material: string;
+    material: MaterialType | string;
     color: string;
     style: StyleType | string;
-    design: string;
+    design: DesignType | string;
     eyeGlassTypeID: string;
     status: boolean;
     lensWidth: string;
@@ -469,7 +493,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
             toast.success("Updated successfully!");
 
             // Quay lại trang trước
-            router.back();
+            router.push(`/en/products/eyeglass/${updateResult.id}`);
 
         } catch (error) {
             console.error("Error updating eye glass:", error);
@@ -599,7 +623,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                                     name="price"
                                                                     value={formatCurrency(formData.price)}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Nhập giá sản phẩm"
+                                                                    placeholder="Enter price"
                                                                     className={`${styles.modernInput} ${styles.priceInput}`}
                                                                 />
                                                                 {errors.price && <div className={styles.errorMessage}>{errors.price}</div>}
@@ -664,11 +688,18 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                                 <Input
                                                                     id="material"
                                                                     name="material"
+                                                                    type="select"
                                                                     value={formData.material}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Material"
                                                                     className={styles.modernInput}
-                                                                />
+                                                                >
+                                                                    <option value="">Select Material</option>
+                                                                    {Object.values(MaterialType).map(material => (
+                                                                        <option key={material} value={material}>
+                                                                            {material}
+                                                                        </option>
+                                                                    ))}
+                                                                </Input>
                                                                 {errors.material && <div className={styles.errorMessage}>{errors.material}</div>}
                                                             </div>
                                                         </div>
@@ -729,11 +760,18 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                                                                 <Input
                                                                     id="design"
                                                                     name="design"
+                                                                    type="select"
                                                                     value={formData.design}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Design"
                                                                     className={styles.modernInput}
-                                                                />
+                                                                >
+                                                                    <option value="">Select Design</option>
+                                                                    {Object.values(DesignType).map(design => (
+                                                                        <option key={design} value={design}>
+                                                                            {design}
+                                                                        </option>
+                                                                    ))}
+                                                                </Input>
                                                                 {errors.design && <div className={styles.errorMessage}>{errors.design}</div>}
                                                             </div>
                                                         </div>

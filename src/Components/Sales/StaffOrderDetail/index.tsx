@@ -186,6 +186,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
         setIsLoading(true);
         // Fetch order data
         const orderData = await fetchOrderById(Number(id));
+        console.log("tung",orderData)
 
         if (orderData.accountID) {
           const accountData = await fetchAccountById(orderData.accountID);
@@ -205,6 +206,8 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               orderDetailId: detail.id,
               productGlass: productGlassData
             };
+            
+            
           } catch (error) {
             console.error(`Error fetching product glass data:`, error);
             return {
@@ -541,7 +544,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                             <div className="spec-group">
                               <h5>Right Eye (OD)</h5>
                               <div>
-                                Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD}
+                                Sphere: {productGlassDetail?.sphereOD || orderDetail.productGlass.sphereOD }
                               </div>
                               <div>
                                 Cylinder: {productGlassDetail?.cylinderOD || orderDetail.productGlass.cylinderOD}

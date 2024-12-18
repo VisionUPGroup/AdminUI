@@ -360,7 +360,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
             setChangedImages({});
 
             toast.success("Updated successfully!");
-            router.back();
+            router.push(`/en/products/lens/${updateResult.id}`);
 
         } catch (error) {
             console.error("Error updating lens:", error);
@@ -510,7 +510,7 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
                                                                     name="lensPrice"
                                                                     value={formatCurrency(formData.lensPrice)}
                                                                     onChange={handleInputChange}
-                                                                    placeholder="Nhập giá sản phẩm"
+                                                                    placeholder="Enter price"
                                                                     className={`${styles.modernInput} ${styles.priceInput}`}
                                                                 />
                                                                 {errors.lensPrice && <div className={styles.errorMessage}>{errors.lensPrice}</div>}
