@@ -24,6 +24,7 @@ import OrderStatusTracker from "./OderTracker";
 import { toast } from "react-toastify";
 import "./OrderDetailStyle.scss";
 import ProductAndPaymentInfo from "./PaymentDetail";
+import OrderPrintButton from './Print/OrderPrintButton';
 
 interface OrderDetailProps {
   id: string;
@@ -340,15 +341,16 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
 
   return (
     <div className="order-detail-page">
-      <div className="page-header">
-        <div className="header-content">
-          <h1>
-            Order Details
-            <span className="order-time">
-              {formatDateTime(order.orderTime)}
-            </span>
-          </h1>
-          <button
+    <div className="page-header">
+      <div className="header-content">
+        <h1>
+          Order Details
+          <span className="order-time">
+            {formatDateTime(order.orderTime)}
+          </span>
+        </h1>
+                <div className="header-actions">
+                   <button
             className="back-button"
             onClick={() => router.back()}
           >
@@ -356,6 +358,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
           </button>
         </div>
       </div>
+    </div>
 
       <div className="order-content">
         <div className="main-info">
@@ -366,7 +369,13 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 <h3>
                   <FaUser /> Customer Information
                 </h3>
+                <OrderPrintButton 
+            order={order}
+            accountInfo={accountInfo}
+            paymentInfo={paymentInfo}
+          />
               </div>
+              
               <div className="customer-details">
                 <div className="info-item">
                   <span className="label">Username:</span>

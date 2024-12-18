@@ -256,7 +256,7 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
         <div style={{ display: 'none' }}>
           <div ref={printComponentRef}>
             <PrintReceipt
-              orderData={orderData}
+              orderId={orderData.orderID}
               companyInfo={companyInfo}
               staffName="Staff Member"
             />
