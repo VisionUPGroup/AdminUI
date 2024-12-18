@@ -210,12 +210,12 @@ const MeasurementModal: React.FC<MeasurementFormProps> = ({
                       >
                         <FaPen />
                       </button>
-                      <button
+                      {/* <button
                         className="delete-btn"
                         onClick={() => measurement.id && handleDeleteMeasurement(measurement.id)}
                       >
                         <FaTrash />
-                      </button>
+                      </button> */}
                     </div>
                   </div>
 
