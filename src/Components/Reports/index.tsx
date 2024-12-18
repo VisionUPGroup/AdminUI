@@ -773,13 +773,8 @@ const ReportList: React.FC = () => {
               <button
                 className="cancel-btn"
                 onClick={() => {
-                  setShowUpdateModal(false);
-                  setSelectedReport(null);
-                  // Reset form khi đóng
-                  setUpdateReport({
-                    feedback: "",
-                    status: 0,
-                  });
+                  setShowCreateModal(false);
+                  clearForm(); // Gọi hàm clearForm để reset form
                 }}
               >
                 Cancel
