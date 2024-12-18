@@ -150,7 +150,7 @@ const MeasurementModal: React.FC<MeasurementFormProps> = ({
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to save measurements",
+        text: error.response.data[0],
         confirmButtonColor: "#c79816", 
       });
     }

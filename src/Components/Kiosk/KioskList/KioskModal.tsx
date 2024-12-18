@@ -265,7 +265,7 @@ const KioskModal: React.FC<KioskModalProps> = ({ isOpen, toggle, onSave }) => {
       handleClose();
   
     } catch (error: any) {
-      // ... phần xử lý lỗi giữ nguyên
+     toast.error(error.response.data[0])
     } finally {
       setIsSubmitting(false);
     }

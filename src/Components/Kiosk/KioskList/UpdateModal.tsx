@@ -311,7 +311,7 @@ const KioskUpdateModal: React.FC<KioskUpdateModalProps> = ({ isOpen, toggle, onS
         }
         toast.error(apiErrors.message || error.response.data[0] || 'Failed to update kiosk');
       } else {
-        toast.error(error.message || 'Failed to update kiosk. Please try again.');
+        toast.error(error.response.data[0] || 'Failed to update kiosk. Please try again.');
       }
     } finally {
       setIsSubmitting(false);

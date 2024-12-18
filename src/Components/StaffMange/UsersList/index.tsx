@@ -65,7 +65,7 @@ interface Profile {
 }
 
 const UsersList: React.FC = () => {
-  const { fetchAccountByRole, deleteAccount } = useAccountService();
+  const { fetchAccountByRole, deleteAccount, createAccount } = useAccountService();
   const { register } = useAuthService();
   const {
     fetchProfilesByAccountId,
@@ -242,9 +242,9 @@ const UsersList: React.FC = () => {
   const handleSaveProfile = async (profileData: any) => {
     try {
       if (editingProfile) {
-        await updateProfile({
-          ...profileData,
-        });
+        await updateProfile({...profileData});
+        setIsProfileModalOpen(false);
+        
         await Swal.fire({
           icon: "success",
           title: "Success",
@@ -253,34 +253,37 @@ const UsersList: React.FC = () => {
         });
       } else {
         await createProfiles(profileData);
+        setIsProfileModalOpen(false); // Đóng modal ngay khi thành công
+        
         await Swal.fire({
           icon: "success",
-          title: "Success",
+          title: "Success", 
           text: "Profile has been created successfully!",
           confirmButtonColor: "#c79816",
         });
       }
-      // Refresh profiles với trang hiện tại
+  
+      // Refresh profiles sau khi tạo/cập nhật thành công
       if (selectedUser) {
         const response = await fetchProfilesByAccountId(
           selectedUser.id,
           profileCurrentPage,
           profileItemsPerPage
         );
-        setUserProfiles(
-          Array.isArray(response.items) ? response.items : [response.items]
-        );
-        setProfileTotalPages(
-          Math.ceil(response.totalItems / profileItemsPerPage)
-        );
+        setUserProfiles(Array.isArray(response.items) ? response.items : [response.items]);
+        setProfileTotalPages(Math.ceil(response.totalItems / profileItemsPerPage));
       }
-      setIsProfileModalOpen(false);
+  
     } catch (error) {
       console.error("Error saving profile:", error);
-      Swal.fire({
+      const errorMessage = error instanceof Error ? error.message : 
+                          error.response?.data?.[0] || 
+                          "Failed to save profile. Please try again.";
+      
+      await Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to save profile. Please try again.",
+        text: error.response.data[0],
         confirmButtonColor: "#c79816",
       });
     }
@@ -340,39 +343,38 @@ const UsersList: React.FC = () => {
     setEditingUser(user);
     setModalOpen(true);
   };
-
   const handleSaveUser = async (userData: {
     username: string;
     email: string;
     phoneNumber: string;
-    password: string;
   }) => {
     try {
-      const response = await register(
-        userData.username,
-        userData.password,
-        userData.email,
-        userData.phoneNumber
-      );
-
-      if (response) {
-        await Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "User has been registered successfully!",
-          confirmButtonText: "OK",
-        });
-        getUserData(currentPage, searchTerm);
-      }
+      const response = await createAccount({
+        ...userData,
+        roleID: 1 // Thêm roleID mặc định
+      });
+      
+      // Handle success
+      // Hiển thị thông báo thành công
+      await Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "User has been created successfully!"
+      });
+      
+      // Đóng modal
+      setModalOpen(false);
+      
+      // Refresh user list
+      getUserData(currentPage, searchTerm);
     } catch (error) {
-      console.error("Error registering user:", error);
+      console.error("Error creating user:", error);
       Swal.fire({
-        icon: "error",
+        icon: "error", 
         title: "Error",
-        text: "Failed to register user. Please try again.",
+        text: error.response?.data?.[0] || "Failed to create user"
       });
     }
-    toggleModal();
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -870,3 +872,10 @@ const UsersList: React.FC = () => {
 };
 
 export default UsersList;
+function createAccount(arg0: {
+  roleID: number; // Thêm roleID mặc định
+  username: string; email: string; phoneNumber: string;
+}) {
+  throw new Error("Function not implemented.");
+}
+

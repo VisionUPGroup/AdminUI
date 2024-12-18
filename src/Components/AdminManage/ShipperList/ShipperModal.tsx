@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from "reactstrap";
 import { 
-  FaEye, 
-  FaEyeSlash, 
   FaUserPlus, 
   FaEnvelope, 
   FaPhone, 
-  FaLock, 
   FaMapMarkerAlt, 
   FaUser, 
   FaBirthdayCake 
@@ -15,13 +12,19 @@ import axios from "axios";
 import "./ShipperModal.scss";
 
 interface District {
-  code: string;
+  code: number; // API trả về code dạng number
   name: string;
+  division_type: string;
+  codename: string;
+  province_code: number;
 }
 
 interface Ward {
-  code: string;
+  code: number; // API trả về code dạng number
   name: string;
+  division_type: string;
+  codename: string;
+  district_code: number;
 }
 
 interface ShipperModalProps {
@@ -29,7 +32,6 @@ interface ShipperModalProps {
   toggle: () => void;
   onSave: (data: {
     username: string;
-    password: string;
     email: string;
     fullName: string;
     phoneNumber: string;
@@ -50,8 +52,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
     username: "",
     email: "",
     phoneNumber: "",
-    password: "",
-    confirmPassword: "",
     fullName: "",
     district: "",
     ward: "",
@@ -63,8 +63,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
     username: "",
     email: "",
     phoneNumber: "",
-    password: "",
-    confirmPassword: "",
     fullName: "",
     district: "",
     ward: "",
@@ -72,17 +70,10 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
     birthday: ""
   });
 
-  const [showPassword, setShowPassword] = useState({
-    password: false,
-    confirmPassword: false
-  });
-
   const [touched, setTouched] = useState({
     username: false,
     email: false,
     phoneNumber: false,
-    password: false,
-    confirmPassword: false,
     fullName: false,
     district: false,
     ward: false,
@@ -99,7 +90,15 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
           `https://provinces.open-api.vn/api/p/${HCMC_CODE}?depth=2`
         );
         if (response.data && response.data.districts) {
-          setDistricts(response.data.districts);
+          // Transform data to match our interface
+          const transformedDistricts = response.data.districts.map((district: any) => ({
+            code: district.code,
+            name: district.name,
+            division_type: district.division_type,
+            codename: district.codename,
+            province_code: district.province_code
+          }));
+          setDistricts(transformedDistricts);
         }
       } catch (error) {
         console.error("Failed to fetch districts:", error);
@@ -123,7 +122,15 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             `https://provinces.open-api.vn/api/d/${formData.district}?depth=2`
           );
           if (response.data && response.data.wards) {
-            setWards(response.data.wards);
+            // Transform data to match our interface
+            const transformedWards = response.data.wards.map((ward: any) => ({
+              code: ward.code,
+              name: ward.name,
+              division_type: ward.division_type,
+              codename: ward.codename,
+              district_code: ward.district_code
+            }));
+            setWards(transformedWards);
           }
         } catch (error) {
           console.error("Failed to fetch wards:", error);
@@ -138,19 +145,11 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
     fetchWards();
   }, [formData.district]);
 
-  const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
-    setShowPassword(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value,
-      // Reset ward when district changes
       ...(name === 'district' ? { ward: '' } : {})
     }));
     validateField(name, value);
@@ -189,22 +188,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
           errorMessage = "Phone number is required";
         } else if (!/^(?:\+84|0)(?:[1-9][0-9]{8})$/.test(value)) {
           errorMessage = "Please enter a valid phone number (start with +84 or 0)";
-        }
-        break;
-        
-      case "password":
-        if (!value) {
-          errorMessage = "Password is required";
-        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(value)) {
-          errorMessage = "Password must be at least 6 characters with uppercase, lowercase, number and special character";
-        }
-        break;
-        
-      case "confirmPassword":
-        if (!value) {
-          errorMessage = "Please confirm your password";
-        } else if (value !== formData.password) {
-          errorMessage = "Passwords do not match";
         }
         break;
 
@@ -267,21 +250,20 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
         [field]: true
       }));
     });
-
+  
     const hasErrors = Object.values(errors).some(error => error !== "");
     if (!hasErrors) {
       try {
         const { 
-          confirmPassword, 
           district, 
           ward, 
           streetAddress, 
           ...otherData 
         } = formData;
         
-        // Format full address
-        const selectedDistrict = districts.find(d => d.code === district);
-        const selectedWard = wards.find(w => w.code === ward);
+        // Format full address - convert string to number for comparison
+        const selectedDistrict = districts.find(d => d.code === Number(district));
+        const selectedWard = wards.find(w => w.code === Number(ward));
         
         const fullAddress = [
           streetAddress,
@@ -289,22 +271,20 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
           selectedDistrict?.name,
           "TP. Hồ Chí Minh"
         ].filter(Boolean).join(", ");
-
+  
         const submitData = {
           ...otherData,
           address: fullAddress,
           birthday: new Date(otherData.birthday).toISOString()
         };
-
+  
         await onSave(submitData);
         
-        // Reset form after successful submission
+        // Reset form
         setFormData({
           username: "",
           email: "",
           phoneNumber: "",
-          password: "",
-          confirmPassword: "",
           fullName: "",
           district: "",
           ward: "",
@@ -315,8 +295,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
           username: false,
           email: false,
           phoneNumber: false,
-          password: false,
-          confirmPassword: false,
           fullName: false,
           district: false,
           ward: false,
@@ -438,7 +416,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             <div className="input-wrapper">
               <Label for="district">District</Label>
               <div className="input-container">
-               
                 <Input
                   type="select"
                   id="district"
@@ -470,7 +447,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             <div className="input-wrapper">
               <Label for="ward">Ward</Label>
               <div className="input-container">
-                
                 <Input
                   type="select"
                   id="ward"
@@ -521,6 +497,7 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
           </FormGroup>
 
           {/* Birthday Field */}
+          {/* Birthday Field */}
           <FormGroup>
             <div className="input-wrapper">
               <Label for="birthday">Birthday</Label>
@@ -542,65 +519,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             </div>
           </FormGroup>
 
-          {/* Password Field */}
-          <FormGroup>
-            <div className="input-wrapper">
-              <Label for="password">Password</Label>
-              <div className="input-container">
-                <FaLock className="field-icon" />
-                <Input
-                  type={showPassword.password ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  placeholder="Enter password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
-                  className={touched.password && errors.password ? 'is-invalid' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => togglePasswordVisibility('password')}
-                >
-                  {showPassword.password ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {touched.password && errors.password && (
-                <div className="error-message">{errors.password}</div>
-              )}
-            </div>
-          </FormGroup>
-
-          {/* Confirm Password Field */}
-          <FormGroup>
-            <div className="input-wrapper">
-              <Label for="confirmPassword">Confirm Password</Label>
-              <div className="input-container">
-                <FaLock className="field-icon" />
-                <Input
-                  type={showPassword.confirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  className={touched.confirmPassword && errors.confirmPassword ? 'is-invalid' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => togglePasswordVisibility('confirmPassword')}
-                >
-                  {showPassword.confirmPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {touched.confirmPassword && errors.confirmPassword && (
-                <div className="error-message">{errors.confirmPassword}</div>
-              )}
-            </div>
-          </FormGroup>
         </Form>
       </ModalBody>
 
