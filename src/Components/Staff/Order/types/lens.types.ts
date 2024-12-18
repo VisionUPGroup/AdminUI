@@ -19,6 +19,7 @@ export interface LensSelectionState {
     addOD: number;
     addOS: number;
     pd: number;
+    
   }
   
   export interface MeasurementRecord {

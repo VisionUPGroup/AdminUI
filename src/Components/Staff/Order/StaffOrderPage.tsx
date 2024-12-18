@@ -141,15 +141,15 @@ const StaffOrderPage: React.FC = () => {
           leftLenID: item.leftLens.id,
           rightLenID: item.rightLens.id,
           accountID: selectedCustomer.id,
-          sphereOD: item.prescriptionData.sphereOD || 0,
-          cylinderOD: item.prescriptionData.cylinderOD || 0,
-          axisOD: item.prescriptionData.axisOD || 0,
-          sphereOS: item.prescriptionData.sphereOS || 0,
-          cylinderOS: item.prescriptionData.cylinderOS || 0,
-          axisOS: item.prescriptionData.axisOS || 0,
-          addOD: item.prescriptionData.addOD || 0,
-          addOS: item.prescriptionData.addOS || 0,
-          pd: item.prescriptionData.pd || 0
+          sphereOD: item.prescriptionData?.sphereOD || undefined,
+          cylinderOD: item.prescriptionData?.cylinderOD || undefined,
+          axisOD: item.prescriptionData?.axisOD || undefined,
+          sphereOS: item.prescriptionData?.sphereOS || undefined,
+          cylinderOS: item.prescriptionData?.cylinderOS || undefined,
+          axisOS: item.prescriptionData?.axisOS || undefined,
+          addOD: item.prescriptionData?.addOD || undefined,
+          addOS: item.prescriptionData?.addOS || undefined,
+          pd: item.prescriptionData?.pd || undefined
         }
       }));
       console.log('Order details:', orderDetails);  

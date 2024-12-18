@@ -179,10 +179,14 @@ const LensSelection: React.FC<LensSelectionProps> = ({
   const handlePrescriptionComplete = (data: any) => {
     const { prescriptionData, leftLens, rightLens } = data;
     
-    if (!leftLens || !rightLens || !prescriptionData) {
-      setError('Missing required lens or prescription data');
-      return;
+    console.log("data", data )
+    if(!leftLens.lensType.isNoPrescription || !rightLens.lensType.isNoPrescription){
+      if (!leftLens || !rightLens || !prescriptionData) {
+        setError('Missing required lens or prescription data');
+        return;
+      }
     }
+    
 
     onLensSelect({
       leftLens,

@@ -55,7 +55,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckout }) =>
                     <h3>{item.eyeGlass.name}</h3>
                     <div className={styles.lensInfo}>
                       <p>Lens: {item.leftLens.lensName}</p>
-                      {item.prescriptionData.pd && (
+                      {item.prescriptionData?.pd && (
                         <span className={styles.prescription}>
                           PD: {item.prescriptionData.pd}mm
                         </span>

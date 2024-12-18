@@ -39,8 +39,11 @@ export interface EyeGlassImage {
   // types/lens.ts
 export interface LensType {
   id: number;
+  name: string;
   description: string;
   status: boolean;
+  isNoPrescription: boolean;
+
 }
 
 export interface EyeReflactive {
