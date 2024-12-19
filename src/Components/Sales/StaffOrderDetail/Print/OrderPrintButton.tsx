@@ -3,17 +3,20 @@ import React, { useState } from 'react';
 import { FaPrint } from 'react-icons/fa';
 import OrderPrintHandler from './OrderPrintHandler';
 import styles from './OrderPrintButton.module.scss';
+import LensDetail from '@/Components/Products/Lens/LensDetail';
 
 interface OrderPrintButtonProps {
   order: any;
   accountInfo: any;
   paymentInfo: any;
+  lensDetails: any;
 }
 
 const OrderPrintButton: React.FC<OrderPrintButtonProps> = ({
   order,
   accountInfo,
-  paymentInfo
+  paymentInfo,
+  lensDetails
 }) => {
   const [showPrintHandler, setShowPrintHandler] = useState(false);
 
@@ -52,6 +55,7 @@ const OrderPrintButton: React.FC<OrderPrintButtonProps> = ({
           paymentInfo={paymentInfo}
           onPrintComplete={handlePrintComplete}
           onPrintError={handlePrintError}
+          lensDetails={lensDetails}
         />
       )}
     </>

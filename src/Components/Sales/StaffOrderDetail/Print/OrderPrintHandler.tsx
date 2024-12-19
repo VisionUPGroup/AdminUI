@@ -8,6 +8,7 @@ interface OrderPrintHandlerProps {
   orderData: any;
   paymentInfo: any;
   accountInfo: any;
+  lensDetails: {[key: string]: any};
   onPrintComplete?: () => void;
   onPrintError?: (error: Error) => void;
 }
@@ -16,6 +17,7 @@ const OrderPrintHandler: React.FC<OrderPrintHandlerProps> = ({
   orderData,
   paymentInfo,
   accountInfo,
+  lensDetails,
   onPrintComplete,
   onPrintError
 }) => {
@@ -71,6 +73,7 @@ const OrderPrintHandler: React.FC<OrderPrintHandlerProps> = ({
           paymentInfo={paymentInfo}
           accountInfo={accountInfo}
           companyInfo={companyInfo}
+          lensDetails={lensDetails}
         />
       </div>
 
