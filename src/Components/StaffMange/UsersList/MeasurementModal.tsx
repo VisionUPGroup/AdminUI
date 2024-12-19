@@ -150,7 +150,7 @@ const MeasurementModal: React.FC<MeasurementFormProps> = ({
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to save measurements",
+        text: error.response.data[0],
         confirmButtonColor: "#c79816", 
       });
     }
@@ -210,12 +210,12 @@ const MeasurementModal: React.FC<MeasurementFormProps> = ({
                       >
                         <FaPen />
                       </button>
-                      <button
+                      {/* <button
                         className="delete-btn"
                         onClick={() => measurement.id && handleDeleteMeasurement(measurement.id)}
                       >
                         <FaTrash />
-                      </button>
+                      </button> */}
                     </div>
                   </div>
 

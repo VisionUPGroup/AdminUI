@@ -879,7 +879,7 @@ const SalesOrders: React.FC = () => {
                               >
                                 View Details
                               </button>
-                              <button
+                              {/* <button
                                 className="report-btn"
                                 onClick={() => {
                                   setSelectedOrderId(order.id);
@@ -887,7 +887,7 @@ const SalesOrders: React.FC = () => {
                                 }}
                               >
                                 View Reports
-                              </button>
+                              </button> */}
                             </div>
                           </td>
                         </tr>

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from "reactstrap";
-import { FaEye, FaEyeSlash, FaUserPlus, FaEnvelope, FaPhone, FaLock } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUserPlus, FaEnvelope, FaPhone } from "react-icons/fa";
 import "./UserModal.scss";
 
 interface UserModalProps {
   isOpen: boolean;
   toggle: () => void;
-  onSave: (data: { username: string; email: string; roleID: number; phoneNumber: string; password: string }) => void;
+  onSave: (data: { username: string; email: string; phoneNumber: string }) => void;
 }
 
 const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
@@ -16,37 +16,19 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
     username: "",
     email: "",
     phoneNumber: "",
-    password: "",
-    confirmPassword: ""
   });
 
   const [errors, setErrors] = useState({
     username: "",
     email: "",
     phoneNumber: "",
-    password: "",
-    confirmPassword: ""
-  });
-
-  const [showPassword, setShowPassword] = useState({
-    password: false,
-    confirmPassword: false
   });
 
   const [touched, setTouched] = useState({
     username: false,
     email: false,
     phoneNumber: false,
-    password: false,
-    confirmPassword: false
   });
-
-  const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
-    setShowPassword(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -92,22 +74,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
           errorMessage = "Please enter a valid phone number (start with +84 or 0)";
         }
         break;
-        
-      case "password":
-        if (!value) {
-          errorMessage = "Password is required";
-        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/.test(value)) {
-          errorMessage = "Password must be at least 12 characters with uppercase, lowercase, number and special character";
-        }
-        break;
-        
-      case "confirmPassword":
-        if (!value) {
-          errorMessage = "Please confirm your password";
-        } else if (value !== formData.password) {
-          errorMessage = "Passwords do not match";
-        }
-        break;
     }
 
     setErrors(prev => ({
@@ -118,7 +84,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApiError(null); // Reset api error
+    setApiError(null);
     
     // Validate all fields
     Object.keys(formData).forEach(field => {
@@ -136,9 +102,13 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
         await onSave({
           username: formData.username,
           email: formData.email,
-          roleID: 1,
           phoneNumber: formData.phoneNumber,
-          password: formData.password
+        });
+        // Reset form after successful submission
+        setFormData({
+          username: "",
+          email: "",
+          phoneNumber: "",
         });
       } catch (error: any) {
         if (error.response?.status === 400) {
@@ -150,12 +120,12 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
 
   return (
     <Modal isOpen={isOpen} toggle={toggle} className="user-modal">
-    <ModalHeader toggle={toggle}>
-      <FaUserPlus className="modal-icon" /> Create New User
-    </ModalHeader>
+      <ModalHeader toggle={toggle}>
+        <FaUserPlus className="modal-icon" /> Create New User
+      </ModalHeader>
       
       <ModalBody>
-      <Form onSubmit={handleSubmit}>
+        <Form onSubmit={handleSubmit}>
           {apiError && (
             <div className="api-error-message">
               {apiError}
@@ -223,64 +193,6 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, toggle, onSave }) => {
               </div>
               {touched.phoneNumber && errors.phoneNumber && (
                 <div className="error-message">{errors.phoneNumber}</div>
-              )}
-            </div>
-          </FormGroup>
-
-          <FormGroup>
-            <div className="input-wrapper">
-              <Label for="password">Password</Label>
-              <div className="input-container">
-                <FaLock className="field-icon" />
-                <Input
-                  type={showPassword.password ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  placeholder="Enter password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
-                  className={touched.password && errors.password ? 'is-invalid' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => togglePasswordVisibility('password')}
-                >
-                  {showPassword.password ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {touched.password && errors.password && (
-                <div className="error-message">{errors.password}</div>
-              )}
-            </div>
-          </FormGroup>
-
-          <FormGroup>
-            <div className="input-wrapper">
-              <Label for="confirmPassword">Confirm Password</Label>
-              <div className="input-container">
-                <FaLock className="field-icon" />
-                <Input
-                  type={showPassword.confirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  className={touched.confirmPassword && errors.confirmPassword ? 'is-invalid' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => togglePasswordVisibility('confirmPassword')}
-                >
-                  {showPassword.confirmPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {touched.confirmPassword && errors.confirmPassword && (
-                <div className="error-message">{errors.confirmPassword}</div>
               )}
             </div>
           </FormGroup>

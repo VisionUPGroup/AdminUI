@@ -284,34 +284,34 @@ const AddExchangeRequestModal: React.FC<AddExchangeRequestModalProps> = ({
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-
+  
     setIsLoading(true);
     try {
-      let receiverAddress = "";
-      if (deliveryType === "address" && selectedDistrict && selectedWard) {
-        const addressParts = [
-          formData.streetAddress,
-          selectedWard.name,
-          selectedDistrict.name,
-          "TP. Hồ Chí Minh"
-        ].filter(Boolean);
-        
-        receiverAddress = addressParts.join(", ");
-      }
-
+      // Set receiverAddress dựa vào deliveryType
+      const receiverAddress = deliveryType === "address" && selectedDistrict && selectedWard
+        ? [
+            formData.streetAddress,
+            selectedWard.name,
+            selectedDistrict.name,
+            "TP. Hồ Chí Minh"
+          ].filter(Boolean).join(", ")
+        : null;
+  
       const exchangeData = {
         productGlassID: productGlassId,
-        receiverAddress,
+        // Chỉ set receiverAddress khi là home delivery
+        receiverAddress: deliveryType === "address" ? receiverAddress : null,
+        // Chỉ set kioskID khi là kiosk delivery
         kioskID: deliveryType === "kiosk" ? formData.kioskID : null,
         reportID: reportId,
         reason: formData.reason,
         quantity: formData.quantity
       };
-
+  
       console.log("Submitting exchange data:", exchangeData);
-
+  
       const response = await createExchangeEyeGlass(exchangeData);
-
+  
       if (response) {
         toast.success("Exchange request created successfully");
         toggle();

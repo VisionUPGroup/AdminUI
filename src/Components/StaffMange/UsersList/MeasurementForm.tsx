@@ -8,13 +8,11 @@ interface MeasurementFormProps {
   onSave: (data: Measurement[]) => void;
   editingMeasurement?: Measurement | Measurement[];
   recordId: number;
-  
 }
 
 interface Measurement {
   id?: number;
   recordID: number;
-  
   testType: number;
   spherical: number;
   cylindrical: number;
@@ -33,7 +31,6 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
   onSave,
   editingMeasurement,
   recordId,
-
 }) => {
   const initialFormState = {
     recordID: recordId,
@@ -86,6 +83,11 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
     
+    // Validate prescription details
+    if (!leftEyeData.prescriptionDetails.trim()) {
+      newErrors.prescriptionDetails = 'Prescription details are required';
+    }
+    
     // Validate pupil distance
     if (commonPupilDistance === null || commonPupilDistance === undefined || isNaN(commonPupilDistance)) {
       newErrors.pupilDistance = 'Pupil distance is required';
@@ -104,7 +106,7 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
 
     if (leftEyeData.axis === null || leftEyeData.axis === undefined || isNaN(leftEyeData.axis)) {
       newErrors.leftAxis = 'Axis value is required';
-    } else if (leftEyeData.axis < 0 || leftEyeData.axis > 180) { // Giữ lại validation không cho số âm cho Axis
+    } else if (leftEyeData.axis < 0 || leftEyeData.axis > 180) {
       newErrors.leftAxis = 'Axis must be between 0 and 180 degrees';
     }
 
@@ -119,13 +121,14 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
 
     if (rightEyeData.axis === null || rightEyeData.axis === undefined || isNaN(rightEyeData.axis)) {
       newErrors.rightAxis = 'Axis value is required';
-    } else if (rightEyeData.axis < 0 || rightEyeData.axis > 180) { // Giữ lại validation không cho số âm cho Axis
+    } else if (rightEyeData.axis < 0 || rightEyeData.axis > 180) {
       newErrors.rightAxis = 'Axis must be between 0 and 180 degrees';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-};
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
@@ -144,9 +147,11 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
   };
 
   const handleDateChange = (field: string, value: string) => {
-    const dateValue = new Date(value).toISOString();
-    setLeftEyeData(prev => ({...prev, [field]: dateValue}));
-    setRightEyeData(prev => ({...prev, [field]: dateValue}));
+    if (field === 'nextCheckupDate') {
+      const dateValue = new Date(value).toISOString();
+      setLeftEyeData(prev => ({...prev, [field]: dateValue}));
+      setRightEyeData(prev => ({...prev, [field]: dateValue}));
+    }
   };
 
   if (!isOpen) return null;
@@ -285,7 +290,9 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
           {/* Common Fields */}
           <div className="common-fields">
             <div className="form-group">
-              <label>Prescription Details</label>
+              <label>
+                Prescription Details <span className="required">*</span>
+              </label>
               <textarea
                 value={leftEyeData.prescriptionDetails}
                 onChange={(e) => {
@@ -294,16 +301,19 @@ const MeasurementForm: React.FC<MeasurementFormProps> = ({
                 }}
                 placeholder="Enter detailed prescription information..."
                 rows={3}
+                className={errors.prescriptionDetails ? 'error' : ''}
+                required
               />
+              {errors.prescriptionDetails && <span className="error-message">{errors.prescriptionDetails}</span>}
             </div>
 
             <div className="dates-grid">
               <div className="form-group">
                 <label>Last Checkup Date</label>
                 <input
-                  type="date"
-                  value={leftEyeData.lastCheckupDate.split('T')[0]}
-                  onChange={(e) => handleDateChange('lastCheckupDate', e.target.value)}
+                  type="text"
+                  value={new Date().toLocaleDateString()}
+                  disabled
                 />
               </div>
 

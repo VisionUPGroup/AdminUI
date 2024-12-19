@@ -14,6 +14,7 @@ import {
   MdEmail,
   MdPhone,
   MdDescription,
+  MdFeedback,
 } from "react-icons/md";
 import {
   FaFileAlt,
@@ -574,9 +575,14 @@ const ReportList: React.FC = () => {
                       )}
 
                       {report.feedback && (
-                        <div className="feedback">
-                          <strong>Feedback:</strong>
-                          <p>{report.feedback}</p>
+                        <div className="feedback-section">
+                          <div className="feedback-header">
+                            <MdFeedback className="feedback-icon" />
+                            <h4>Feedback from Handler</h4>
+                          </div>
+                          <div className="feedback-content">
+                            <pre>{report.feedback}</pre>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -587,9 +593,10 @@ const ReportList: React.FC = () => {
                           className="update-btn"
                           onClick={() => {
                             setSelectedReport(report);
+                            // Reset updateReport state với giá trị mới
                             setUpdateReport({
-                              feedback: report.feedback || "",
-                              status: report.status,
+                              feedback: "", // Không lấy report.feedback nữa
+                              status: 0, // Set về giá trị mặc định 0
                             });
                             setShowUpdateModal(true);
                           }}
@@ -767,7 +774,7 @@ const ReportList: React.FC = () => {
                 className="cancel-btn"
                 onClick={() => {
                   setShowCreateModal(false);
-                  clearForm();
+                  clearForm(); // Gọi hàm clearForm để reset form
                 }}
               >
                 Cancel

@@ -1,14 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, ModalHeader, ModalBody, ModalFooter, Form, FormGroup, Label, Input } from "reactstrap";
-import { FaEye, FaEyeSlash, FaUserPlus, FaEnvelope, FaPhone, FaLock, FaMapMarkerAlt, FaUser, FaBirthdayCake } from "react-icons/fa";
+import { 
+  FaUserPlus, 
+  FaEnvelope, 
+  FaPhone, 
+  FaMapMarkerAlt, 
+  FaUser, 
+  FaBirthdayCake 
+} from "react-icons/fa";
+import axios from "axios";
 import "./ShipperModal.scss";
+
+interface District {
+  code: number; // API trả về code dạng number
+  name: string;
+  division_type: string;
+  codename: string;
+  province_code: number;
+}
+
+interface Ward {
+  code: number; // API trả về code dạng number
+  name: string;
+  division_type: string;
+  codename: string;
+  district_code: number;
+}
 
 interface ShipperModalProps {
   isOpen: boolean;
   toggle: () => void;
   onSave: (data: {
     username: string;
-    password: string;
     email: string;
     fullName: string;
     phoneNumber: string;
@@ -18,16 +41,21 @@ interface ShipperModalProps {
 }
 
 const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) => {
+  const HCMC_CODE = "79";
   const [apiError, setApiError] = useState<string | null>(null);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
+  const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
+  const [isLoadingWards, setIsLoadingWards] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     phoneNumber: "",
-    password: "",
-    confirmPassword: "",
     fullName: "",
-    address: "",
+    district: "",
+    ward: "",
+    streetAddress: "",
     birthday: ""
   });
 
@@ -35,41 +63,94 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
     username: "",
     email: "",
     phoneNumber: "",
-    password: "",
-    confirmPassword: "",
     fullName: "",
-    address: "",
+    district: "",
+    ward: "",
+    streetAddress: "",
     birthday: ""
-  });
-
-  const [showPassword, setShowPassword] = useState({
-    password: false,
-    confirmPassword: false
   });
 
   const [touched, setTouched] = useState({
     username: false,
     email: false,
     phoneNumber: false,
-    password: false,
-    confirmPassword: false,
     fullName: false,
-    address: false,
+    district: false,
+    ward: false,
+    streetAddress: false,
     birthday: false
   });
 
-  const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
-    setShowPassword(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
+  // Load districts when component mounts
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      setIsLoadingDistricts(true);
+      try {
+        const response = await axios.get(
+          `https://provinces.open-api.vn/api/p/${HCMC_CODE}?depth=2`
+        );
+        if (response.data && response.data.districts) {
+          // Transform data to match our interface
+          const transformedDistricts = response.data.districts.map((district: any) => ({
+            code: district.code,
+            name: district.name,
+            division_type: district.division_type,
+            codename: district.codename,
+            province_code: district.province_code
+          }));
+          setDistricts(transformedDistricts);
+        }
+      } catch (error) {
+        console.error("Failed to fetch districts:", error);
+      } finally {
+        setIsLoadingDistricts(false);
+      }
+    };
+    
+    if (isOpen) {
+      fetchDistricts();
+    }
+  }, [isOpen]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Load wards when district changes
+  useEffect(() => {
+    const fetchWards = async () => {
+      if (formData.district) {
+        setIsLoadingWards(true);
+        try {
+          const response = await axios.get(
+            `https://provinces.open-api.vn/api/d/${formData.district}?depth=2`
+          );
+          if (response.data && response.data.wards) {
+            // Transform data to match our interface
+            const transformedWards = response.data.wards.map((ward: any) => ({
+              code: ward.code,
+              name: ward.name,
+              division_type: ward.division_type,
+              codename: ward.codename,
+              district_code: ward.district_code
+            }));
+            setWards(transformedWards);
+          }
+        } catch (error) {
+          console.error("Failed to fetch wards:", error);
+        } finally {
+          setIsLoadingWards(false);
+        }
+      } else {
+        setWards([]);
+      }
+    };
+  
+    fetchWards();
+  }, [formData.district]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
+      ...(name === 'district' ? { ward: '' } : {})
     }));
     validateField(name, value);
   };
@@ -109,22 +190,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
           errorMessage = "Please enter a valid phone number (start with +84 or 0)";
         }
         break;
-        
-        case "password":
-          if (!value) {
-            errorMessage = "Password is required";
-          } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(value)) {
-            errorMessage = "Password must be at least 6 characters with uppercase, lowercase, number and special character";
-          }
-          break;
-        
-      case "confirmPassword":
-        if (!value) {
-          errorMessage = "Please confirm your password";
-        } else if (value !== formData.password) {
-          errorMessage = "Passwords do not match";
-        }
-        break;
 
       case "fullName":
         if (!value) {
@@ -134,11 +199,23 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
         }
         break;
 
-      case "address":
+      case "district":
         if (!value) {
-          errorMessage = "Address is required";
+          errorMessage = "District is required";
+        }
+        break;
+
+      case "ward":
+        if (!value) {
+          errorMessage = "Ward is required";
+        }
+        break;
+
+      case "streetAddress":
+        if (!value) {
+          errorMessage = "Street address is required";
         } else if (value.length < 5) {
-          errorMessage = "Address must be at least 5 characters";
+          errorMessage = "Street address must be at least 5 characters";
         }
         break;
 
@@ -165,6 +242,7 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
     e.preventDefault();
     setApiError(null);
     
+    // Validate all fields
     Object.keys(formData).forEach(field => {
       validateField(field, formData[field as keyof typeof formData]);
       setTouched(prev => ({
@@ -172,35 +250,55 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
         [field]: true
       }));
     });
-
+  
     const hasErrors = Object.values(errors).some(error => error !== "");
     if (!hasErrors) {
       try {
-        const { confirmPassword, ...submitData } = formData;
-        const formattedData = {
-          ...submitData,
-          birthday: new Date(submitData.birthday).toISOString()
-        };
-        await onSave(formattedData);
+        const { 
+          district, 
+          ward, 
+          streetAddress, 
+          ...otherData 
+        } = formData;
         
+        // Format full address - convert string to number for comparison
+        const selectedDistrict = districts.find(d => d.code === Number(district));
+        const selectedWard = wards.find(w => w.code === Number(ward));
+        
+        const fullAddress = [
+          streetAddress,
+          selectedWard?.name,
+          selectedDistrict?.name,
+          "TP. Hồ Chí Minh"
+        ].filter(Boolean).join(", ");
+  
+        const submitData = {
+          ...otherData,
+          address: fullAddress,
+          birthday: new Date(otherData.birthday).toISOString()
+        };
+  
+        await onSave(submitData);
+        
+        // Reset form
         setFormData({
           username: "",
           email: "",
           phoneNumber: "",
-          password: "",
-          confirmPassword: "",
           fullName: "",
-          address: "",
+          district: "",
+          ward: "",
+          streetAddress: "",
           birthday: ""
         });
         setTouched({
           username: false,
           email: false,
           phoneNumber: false,
-          password: false,
-          confirmPassword: false,
           fullName: false,
-          address: false,
+          district: false,
+          ward: false,
+          streetAddress: false,
           birthday: false
         });
         
@@ -244,6 +342,7 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             </div>
           </FormGroup>
 
+          {/* Username Field */}
           <FormGroup>
             <div className="input-wrapper">
               <Label for="username">Username</Label>
@@ -266,6 +365,7 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             </div>
           </FormGroup>
 
+          {/* Email Field */}
           <FormGroup>
             <div className="input-wrapper">
               <Label for="email">Email</Label>
@@ -288,6 +388,7 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             </div>
           </FormGroup>
 
+          {/* Phone Number Field */}
           <FormGroup>
             <div className="input-wrapper">
               <Label for="phoneNumber">Phone Number</Label>
@@ -310,28 +411,93 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             </div>
           </FormGroup>
 
+          {/* District Field */}
           <FormGroup>
             <div className="input-wrapper">
-              <Label for="address">Address</Label>
+              <Label for="district">District</Label>
               <div className="input-container">
-                <FaMapMarkerAlt className="field-icon" />
                 <Input
-                  type="text"
-                  id="address"
-                  name="address"
-                  placeholder="Enter address"
-                  value={formData.address}
+                  type="select"
+                  id="district"
+                  name="district"
+                  value={formData.district}
                   onChange={handleChange}
-                  onBlur={() => handleBlur('address')}
-                  className={touched.address && errors.address ? 'is-invalid' : ''}
-                />
+                  onBlur={() => handleBlur('district')}
+                  className={touched.district && errors.district ? 'is-invalid' : ''}
+                  disabled={isLoadingDistricts}
+                >
+                  <option value="">
+                    {isLoadingDistricts ? "Loading districts..." : "Select District"}
+                  </option>
+                  {districts.map((district) => (
+                    <option key={district.code} value={district.code}>
+                      {district.name}
+                    </option>
+                  ))}
+                </Input>
               </div>
-              {touched.address && errors.address && (
-                <div className="error-message">{errors.address}</div>
+              {touched.district && errors.district && (
+                <div className="error-message">{errors.district}</div>
               )}
             </div>
           </FormGroup>
 
+          {/* Ward Field */}
+          <FormGroup>
+            <div className="input-wrapper">
+              <Label for="ward">Ward</Label>
+              <div className="input-container">
+                <Input
+                  type="select"
+                  id="ward"
+                  name="ward"
+                  value={formData.ward}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('ward')}
+                  className={touched.ward && errors.ward ? 'is-invalid' : ''}
+                  disabled={!formData.district || isLoadingWards}
+                >
+                  <option value="">
+                  {isLoadingWards ? "Loading wards..." : "Select Ward"}
+                  </option>
+                  {wards.map((ward) => (
+                    <option key={ward.code} value={ward.code}>
+                      {ward.name}
+                    </option>
+                  ))}
+                </Input>
+              </div>
+              {touched.ward && errors.ward && (
+                <div className="error-message">{errors.ward}</div>
+              )}
+            </div>
+          </FormGroup>
+
+          {/* Street Address Field */}
+          <FormGroup>
+            <div className="input-wrapper">
+              <Label for="streetAddress">Street Address</Label>
+              <div className="input-container">
+                <FaMapMarkerAlt className="field-icon" />
+                <Input
+                  type="text"
+                  id="streetAddress"
+                  name="streetAddress"
+                  placeholder="Enter street address"
+                  value={formData.streetAddress}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('streetAddress')}
+                  className={touched.streetAddress && errors.streetAddress ? 'is-invalid' : ''}
+                />
+              </div>
+              {touched.streetAddress && errors.streetAddress && (
+                <div className="error-message">{errors.streetAddress}</div>
+              )}
+            </div>
+          </FormGroup>
+
+          {/* Birthday Field */}
+          {/* Birthday Field */}
           <FormGroup>
             <div className="input-wrapper">
               <Label for="birthday">Birthday</Label>
@@ -353,63 +519,6 @@ const ShipperModal: React.FC<ShipperModalProps> = ({ isOpen, toggle, onSave }) =
             </div>
           </FormGroup>
 
-          <FormGroup>
-            <div className="input-wrapper">
-              <Label for="password">Password</Label>
-              <div className="input-container">
-                <FaLock className="field-icon" />
-                <Input
-                  type={showPassword.password ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  placeholder="Enter password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
-                  className={touched.password && errors.password ? 'is-invalid' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => togglePasswordVisibility('password')}
-                >
-                  {showPassword.password ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {touched.password && errors.password && (
-                <div className="error-message">{errors.password}</div>
-              )}
-            </div>
-          </FormGroup>
-
-          <FormGroup>
-            <div className="input-wrapper">
-              <Label for="confirmPassword">Confirm Password</Label>
-              <div className="input-container">
-                <FaLock className="field-icon" />
-                <Input
-                  type={showPassword.confirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  className={touched.confirmPassword && errors.confirmPassword ? 'is-invalid' : ''}
-                />
-                <button
-                  type="button"
-                  className="toggle-password"
-                  onClick={() => togglePasswordVisibility('confirmPassword')}
-                >
-                  {showPassword.confirmPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              {touched.confirmPassword && errors.confirmPassword && (
-                <div className="error-message">{errors.confirmPassword}</div>
-              )}
-            </div>
-          </FormGroup>
         </Form>
       </ModalBody>
 
