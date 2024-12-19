@@ -1,20 +1,12 @@
-// components/PrintReceipt/PrintReceipt.tsx
-
-import React, { useEffect, useState } from 'react';
+import React, {useRef, useEffect, useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { OrderSuccessData } from '../types/orderSuccess';
-import { formatCurrency, formatDate } from '../utils/formatters';
-import { CompanyInfo } from '../types/company';
-import styles from '../styles/PrintReceipt.module.scss';
-import Image from 'next/image'
+import Image from 'next/image';
+import { useOrderService } from '../../../../../Api/orderService';
+import { usePaymentService } from '../../../../../Api/paymentService';
+import { useVoucherService } from '../../../../../Api/voucherService';
 import Logo from '../../../../../public/assets/images/visionUp/logo.jpg'
 import { useLensService } from '../../../../../Api/lensService';
-
-interface PrintReceiptProps {
-  orderData: OrderSuccessData;
-  companyInfo: CompanyInfo;
-  staffName: string;
-}
+import styles from '../styles/PrintReceipt.module.scss'
 
 interface LensDetail {
   id: number;
@@ -24,34 +16,79 @@ interface LensDetail {
   lensImage?: string;
 }
 
+interface VoucherDetail {
+  id: number;
+  name: string;
+  code: string;
+  quantity: number;
+  sale: number;
+  status: boolean;
+}
+
+interface PrintReceiptProps {
+  orderId: number;
+  companyInfo: {
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+    taxId: string;
+    website: string;
+  };
+  staffName: string;
+}
+
 const PrintReceipt: React.FC<PrintReceiptProps> = ({
-  orderData,
+  orderId,
   companyInfo,
   staffName
 }) => {
-  const receiptNumber = `#${orderData.orderID.toString().padStart(6, '0')}`;
-  const latestPayment = orderData.payments[orderData.payments.length - 1];
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [orderData, setOrderData] = useState<any>(null);
+  const [paymentData, setPaymentData] = useState<any>(null);
   const [lensDetails, setLensDetails] = useState<{ [key: number]: LensDetail }>({});
+  const [voucherDetails, setVoucherDetails] = useState<VoucherDetail | null>(null);
+  const componentRef = useRef<HTMLDivElement>(null);
+
+  console.log("componentRef",componentRef.current)
+
+  const orderService = useOrderService();
+  const paymentService = usePaymentService();
   const { fetchLensById } = useLensService();
-  console.log("tung", orderData)
+  const { fetchVoucherById } = useVoucherService();
 
   useEffect(() => {
-    const fetchLensDetails = async () => {
-      const lensIds = orderData.productGlass.reduce((ids: number[], item) => {
-        if (!lensDetails[item.leftLen.id]) {
-          ids.push(item.leftLen.id);
-        }
-        if (!lensDetails[item.rightLen.id] && item.leftLen.id !== item.rightLen.id) {
-          ids.push(item.rightLen.id);
-        }
-        return ids;
-      }, []);
-
+    const fetchOrderDetails = async () => {
       try {
-        const detailsPromises = lensIds.map(id => fetchLensById(id));
+        setIsLoading(true);
+        const [orderResponse, paymentResponse] = await Promise.all([
+          orderService.fetchOrderById(orderId),
+          paymentService.fetchPaymentByOrderId(orderId)
+        ]);
+
+        setOrderData(orderResponse);
+        setPaymentData(paymentResponse);
+
+        if (paymentResponse.voucherID) {
+          const voucherResponse = await fetchVoucherById(paymentResponse.voucherID);
+          setVoucherDetails(voucherResponse);
+        }
+
+        const lensIds = paymentResponse.productGlass.reduce((ids: number[], item: any) => {
+          if (!lensDetails[item.leftLen.id]) {
+            ids.push(item.leftLen.id);
+          }
+          if (!lensDetails[item.rightLen.id] && item.leftLen.id !== item.rightLen.id) {
+            ids.push(item.rightLen.id);
+          }
+          return ids;
+        }, []);
+
+        const detailsPromises = lensIds.map((id:any) => fetchLensById(id));
         const details = await Promise.all(detailsPromises);
 
-        const newLensDetails = details.reduce((acc, lens) => {
+        const newLensDetails = details.reduce((acc: any, lens) => {
           if (lens) {
             acc[lens.id] = {
               id: lens.id,
@@ -64,21 +101,256 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
           return acc;
         }, {});
 
-        setLensDetails(prev => ({ ...prev, ...newLensDetails }));
+        setLensDetails(newLensDetails);
+        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching lens details:', error);
+        setError('Error fetching order details');
+        setIsLoading(false);
+        console.error('Error:', error);
       }
     };
 
-    fetchLensDetails();
-  }, [orderData.productGlass]);
+    if (orderId) {
+      fetchOrderDetails();
+    }
+  }, [orderId]);
+
+  // Calculation functions similar to OrderSummary
+  const calculateSubtotal = () => {
+    try {
+      if (!orderData?.orderDetails || !Array.isArray(orderData.orderDetails)) {
+        console.error('Invalid orderDetails data');
+        return 0;
+      }
+      
+      return orderData.orderDetails.reduce((total: number, orderDetail: any) => {
+        // Lấy total từ productGlass và nhân với quantity
+        const itemTotal = Number(orderDetail.productGlass?.total || 0) * Number(orderDetail.quantity || 1);
+        return total + itemTotal;
+      }, 0);
+    } catch (error) {
+      console.error('Error calculating subtotal:', error);
+      return 0;
+    }
+  };
+
+  const calculateDiscount = () => {
+    try {
+      if (!voucherDetails || !voucherDetails.sale) return 0;
+      const subtotal = calculateSubtotal();
+      const discountAmount = (subtotal * Number(voucherDetails.sale)) / 100;
+      return Math.min(discountAmount, subtotal);
+    } catch (error) {
+      console.error('Error calculating discount:', error);
+      return 0;
+    }
+  };
+
+  const calculateAmountAfterDiscount = () => {
+    try {
+      const subtotal = calculateSubtotal();
+      const discount = calculateDiscount();
+      return Math.max(0, subtotal - discount);
+    } catch (error) {
+      console.error('Error calculating amount after discount:', error);
+      return 0;
+    }
+  };
+
+  const calculateShippingCost = () => {
+    try {
+      // Chỉ tính phí ship khi chỉ có 1 lần payment
+      if (!paymentData?.payments || paymentData.payments.length > 1) {
+        return 0;
+      }
+
+      if (orderData?.receiverAddress) {
+        return 30000; 
+      }
+      
+      return 0; 
+    } catch (error) {
+      console.error('Error calculating shipping cost:', error);
+      return 0;
+    }
+  };
+
+  const calculateDepositAmount = () => {
+    try {
+      const amountAfterDiscount = calculateAmountAfterDiscount();
+      if (!paymentData?.isDeposit) return amountAfterDiscount;
+      return Math.round(amountAfterDiscount * 0.3);
+    } catch (error) {
+      console.error('Error calculating deposit amount:', error);
+      return 0;
+    }
+  };
+
+  const calculateRemainingPayment = () => {
+    try {
+      if (!paymentData?.isDeposit) return 0;
+      const amountAfterDiscount = calculateAmountAfterDiscount();
+      return Math.round(amountAfterDiscount * 0.7);
+    } catch (error) {
+      console.error('Error calculating remaining payment:', error);
+      return 0;
+    }
+  };
+
+  const isFirstPayment = () => {
+    return paymentData?.payments?.length === 1;
+  };
+
+  const isSecondPayment = () => {
+    return paymentData?.payments?.length === 2 && 
+           paymentData?.payments[1]?.id === latestPayment?.id;
+  };
+
+  const calculateFinalAmount = () => {
+    try {
+      if (isSecondPayment()) {
+        // Nếu là lần thanh toán thứ 2, trả về chính xác số tiền của payment đó
+        return latestPayment.totalAmount;
+      }
+
+      // Logic cho lần thanh toán đầu tiên
+      const depositAmount = calculateDepositAmount();
+      const shipping = calculateShippingCost();
+      return depositAmount + shipping;
+    } catch (error) {
+      console.error('Error calculating final amount:', error);
+      return 0;
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (isLoading) {
+    return <div className="text-center p-4">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4">{error}</div>;
+  }
+
+  if (!orderData || !paymentData) {
+    return <div className="text-center p-4">No data available</div>;
+  }
+
+
+  const receiptNumber = `#${orderData.id.toString().padStart(6, '0')}`;
+  const latestPayment = paymentData.payments[paymentData.payments.length - 1];
+  
+
+  const renderPaymentSummary = () => (
+    <section className={styles.paymentSection}>
+      <div className={styles.paymentSummary}>
+        <div className={styles.summaryTable}>
+          {!isSecondPayment() && (
+            <>
+              {/* Subtotal */}
+              <div className={styles.summaryRow}>
+                <span>Subtotal:</span>
+                <span>{formatCurrency(calculateSubtotal())}</span>
+              </div>
+              
+              {/* Voucher Discount */}
+              {voucherDetails && (
+                <div className={`${styles.summaryRow} ${styles.discount}`}>
+                  <span>Voucher Discount ({voucherDetails.code} - {voucherDetails.sale}%):</span>
+                  <span>-{formatCurrency(calculateDiscount())}</span>
+                </div>
+              )}
+
+              {/* Amount after discount */}
+              <div className={`${styles.summaryRow} ${styles.subtotalRow}`}>
+                <span>Amount After Discount:</span>
+                <span>{formatCurrency(calculateAmountAfterDiscount())}</span>
+              </div>
+
+              {/* Deposit Amount if applicable */}
+              {paymentData?.isDeposit && (
+                <div className={styles.summaryRow}>
+                  <span>Deposit Amount (30%):</span>
+                  <span>{formatCurrency(calculateDepositAmount())}</span>
+                </div>
+              )}
+
+              {/* Shipping Fee - chỉ hiển thị ở lần thanh toán đầu */}
+              {isFirstPayment() && (
+                <div className={styles.summaryRow}>
+                  <span>Shipping Fee:</span>
+                  <span>
+                    {orderData?.kiosks ? 'Free' : formatCurrency(calculateShippingCost())}
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Final Total */}
+          <div className={`${styles.summaryRow} ${styles.total}`}>
+            <span>
+              {isSecondPayment() 
+                ? 'Remaining Payment Amount:'
+                : paymentData?.isDeposit 
+                  ? 'Total Deposit Amount:'
+                  : 'Total Amount:'}
+            </span>
+            <span>{formatCurrency(calculateFinalAmount())}</span>
+          </div>
+
+          {/* Show Remaining Amount if it's first payment and deposit */}
+          {isFirstPayment() && paymentData?.isDeposit && (
+            <div className={`${styles.summaryRow} ${styles.remaining}`}>
+              <span>Remaining Balance:</span>
+              <span>{formatCurrency(calculateRemainingPayment())}</span>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.paymentMethods}>
+          <h3>Payment Details</h3>
+          {paymentData?.payments.map((payment: any, index: number) => (
+            <div key={index} className={styles.paymentMethod}>
+              <div className={styles.methodInfo}>
+                <span className={styles.methodType}>
+                  {payment.paymentMethod}
+                  {index === 0 && paymentData.isDeposit && ' (Deposit)'}
+                  {index === 1 && ' (Final Payment)'}
+                </span>
+                <span className={styles.methodDate}>{formatDate(payment.date)}</span>
+              </div>
+              <span className={styles.methodAmount}>
+                {formatCurrency(payment.totalAmount)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 
   return (
     <div className={styles.printReceiptWrapper}>
-      {/* Enhanced Header */}
+      {/* Header Section */}
       <header className={styles.header}>
         <div className={styles.brandSection}>
-
           <div className={styles.companyInfo}>
             <h1>{companyInfo.name}</h1>
             <div className={styles.companyDetails}>
@@ -120,7 +392,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
           <div className={styles.receiptInfo}>
             <div className={styles.infoItem}>
               <span>Date:</span>
-              <strong>{formatDate(latestPayment?.date || new Date().toISOString())}</strong>
+              <strong>{formatDate(latestPayment?.date || orderData.orderTime)}</strong>
             </div>
             <div className={styles.infoItem}>
               <span>Staff:</span>
@@ -130,7 +402,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
         </div>
       </header>
 
-      {/* Enhanced Products Section */}
+      {/* Products Section */}
       <section className={styles.productsSection}>
         <table className={styles.productsTable}>
           <thead>
@@ -141,7 +413,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
             </tr>
           </thead>
           <tbody>
-            {orderData.productGlass.map((item, index) => (
+            {paymentData.productGlass.map((item: any, index: number) => (
               <React.Fragment key={index}>
                 <tr className={styles.frameRow}>
                   <td className={styles.productInfo}>
@@ -152,9 +424,9 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
                   <td className={styles.specifications}>
                     <div className={styles.specDetails}>Brand Specifications</div>
                   </td>
-                  {/* <td className={styles.amount}>
-                    {formatCurrency(item.eyeGlass?.price)}
-                  </td> */}
+                  <td className={styles.amount}>
+                    {formatCurrency(orderData.orderDetails[0].productGlass.eyeGlass.price)}
+                  </td>
                 </tr>
                 <tr className={styles.lensRow}>
                   <td className={styles.productInfo}>
@@ -175,7 +447,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
                         <strong>Right Eye:</strong>
                         <p>{item.rightLen.lensName}</p>
                         {lensDetails[item.rightLen.id] && (
-                          <div className={styles.rightLen}>
+                          <div className={styles.lensPrice}>
                             Price: {formatCurrency(lensDetails[item.rightLen.id].lensPrice)}
                           </div>
                         )}
@@ -195,33 +467,33 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
         </table>
       </section>
 
-      {/* Enhanced Payment Summary */}
-      <section className={styles.paymentSection}>
+      {/* Payment Summary */}
+      {/* <section className={styles.paymentSection}>
         <div className={styles.paymentSummary}>
           <div className={styles.summaryTable}>
             <div className={styles.summaryRow}>
               <span>Subtotal:</span>
-              <span>{formatCurrency(orderData.totalAmount)}</span>
+              <span>{formatCurrency(paymentData.totalAmount)}</span>
             </div>
-            {orderData.voucher && (
+            {paymentData.voucher && (
               <div className={`${styles.summaryRow} ${styles.discount}`}>
-                <span>Discount ({orderData.voucher.code}):</span>
-                <span>-{formatCurrency(orderData.voucher.discountValue)}</span>
+                <span>Discount ({paymentData.voucher.code}):</span>
+                <span>-{formatCurrency(paymentData.voucher.discountValue)}</span>
               </div>
             )}
             <div className={`${styles.summaryRow} ${styles.total}`}>
               <span>Total Amount:</span>
-              <span>{formatCurrency(orderData.totalAmount)}</span>
+              <span>{formatCurrency(paymentData.totalAmount)}</span>
             </div>
-            {orderData.isDeposit && (
+            {paymentData.isDeposit && (
               <>
                 <div className={`${styles.summaryRow} ${styles.paid}`}>
                   <span>Paid Amount:</span>
-                  <span>{formatCurrency(orderData.totalPaid)}</span>
+                  <span>{formatCurrency(paymentData.totalPaid)}</span>
                 </div>
                 <div className={`${styles.summaryRow} ${styles.remaining}`}>
                   <span>Remaining Balance:</span>
-                  <span>{formatCurrency(orderData.remainingAmount)}</span>
+                  <span>{formatCurrency(paymentData.remainingAmount)}</span>
                 </div>
               </>
             )}
@@ -229,7 +501,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
 
           <div className={styles.paymentMethods}>
             <h3>Payment Details</h3>
-            {orderData.payments.map((payment, index) => (
+            {paymentData.payments.map((payment: any, index: number) => (
               <div key={index} className={styles.paymentMethod}>
                 <div className={styles.methodInfo}>
                   <span className={styles.methodType}>{payment.paymentMethod}</span>
@@ -242,9 +514,11 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
-      {/* Enhanced Footer */}
+      {renderPaymentSummary()}
+
+      {/* Footer */}
       <footer className={styles.footer}>
         <div className={styles.qrSection}>
           <QRCodeCanvas

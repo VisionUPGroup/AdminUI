@@ -215,7 +215,7 @@ const LensSelection: React.FC<LensSelectionProps> = ({
               <span className={styles.price}>
                 {selectedProduct.price.toLocaleString('vi-VN')}₫
               </span>
-              <span className={styles.label}>Selected Frame</span>
+              <span className={styles.label}>Selected Eyeglass</span>
             </div>
           </div>
         </div>

@@ -24,6 +24,7 @@ import OrderStatusTracker from "./OderTracker";
 import { toast } from "react-toastify";
 import "./OrderDetailStyle.scss";
 import ProductAndPaymentInfo from "./PaymentDetail";
+import OrderPrintButton from './Print/OrderPrintButton';
 
 interface OrderDetailProps {
   id: string;
@@ -165,6 +166,37 @@ interface ProductGlass {
   status: boolean;
 }
 
+interface LensDetail {
+  leftLens: {
+    id: number;
+    lensName: string;
+    lensDescription: string;
+    lensPrice: number;
+    eyeReflactive: {
+      reflactiveName: string;
+    };
+    lensType: {
+      name: string;
+    };
+  } | null;
+  rightLens: {
+    id: number;
+    lensName: string;
+    lensDescription: string;
+    lensPrice: number;
+    eyeReflactive: {
+      reflactiveName: string;
+    };
+    lensType: {
+      name: string;
+    };
+  } | null;
+}
+
+interface LensDetailsMap {
+  [key: string]: LensDetail;
+}
+
 const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
   const router = useRouter();
   const { fetchOrderById, deleteOrder } = useOrderService();
@@ -181,6 +213,7 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [accountInfo, setAccountInfo] = useState<Account | null>(null);
+  const [printLensDetails, setPrintLensDetails] = useState<LensDetailsMap>({});
 
   useEffect(() => {
     const loadOrderData = async () => {
@@ -310,6 +343,61 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
     }).format(amount);
   };
 
+  //Print
+  // Thêm function fetch lens details cho print bill
+  const fetchPrintLensDetails = async () => {
+    if (order?.orderDetails) {
+      try {
+        const details = await Promise.all(
+          order.orderDetails.map(async (detail) => {
+            const productGlass = detail.productGlass;
+            console.log("Fetching lens details for productGlass ID:", productGlass.id); // Debug log
+
+            const leftLens = productGlass.leftLenID ? await fetchLensById(productGlass.leftLenID) : null;
+            const rightLens = productGlass.rightLenID ? await fetchLensById(productGlass.rightLenID) : null;
+
+            // Debug log
+            console.log("Fetched lens data:", {
+              productGlassId: productGlass.id,
+              leftLens,
+              rightLens
+            });
+
+            return {
+              productGlassId: productGlass.id,
+              details: {
+                leftLens,
+                rightLens
+              }
+            };
+          })
+        );
+
+        const detailsMap = details.reduce<LensDetailsMap>((acc, curr) => {
+          // Sử dụng toString() để đảm bảo key là string
+          acc[curr.productGlassId.toString()] = curr.details;
+          return acc;
+        }, {});
+
+        // Debug log
+        console.log("Final lens details map:", detailsMap);
+
+        setPrintLensDetails(detailsMap);
+      } catch (error) {
+        console.error('Error fetching lens details for print:', error);
+      }
+    }
+  };
+
+  ///
+
+  // Thêm useEffect để fetch data khi order thay đổi
+  useEffect(() => {
+    if (order) {
+      fetchPrintLensDetails();
+    }
+  }, [order]);
+
   const formatDateTime = (dateString: string): string => {
     return new Date(dateString).toLocaleString("vi-VN");
   };
@@ -348,12 +436,14 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
               {formatDateTime(order.orderTime)}
             </span>
           </h1>
-          <button
-            className="back-button"
-            onClick={() => router.back()}
-          >
-            Back to Orders
-          </button>
+          <div className="header-actions">
+            <button
+              className="back-button"
+              onClick={() => router.back()}
+            >
+              Back to Orders
+            </button>
+          </div>
         </div>
       </div>
 
@@ -366,7 +456,14 @@ const OrderDetailComponent: React.FC<OrderDetailProps> = ({ id }) => {
                 <h3>
                   <FaUser /> Customer Information
                 </h3>
+                <OrderPrintButton
+                  order={order}
+                  accountInfo={accountInfo}
+                  paymentInfo={paymentInfo}
+                  lensDetails={printLensDetails}
+                />
               </div>
+
               <div className="customer-details">
                 <div className="info-item">
                   <span className="label">Username:</span>

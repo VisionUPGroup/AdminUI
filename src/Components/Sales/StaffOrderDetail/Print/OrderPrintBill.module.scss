@@ -1,0 +1,345 @@
+// OrderPrintBill.module.scss
+.printBillWrapper {
+  background: white;
+  padding: 2.5rem;
+  max-width: 210mm; // A4 width
+  margin: 0 auto;
+  font-size: 14px;
+  color: #1f2937;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media print {
+    padding: 0;
+    max-width: none;
+    box-shadow: none;
+  }
+}
+
+// Enhanced Header Styles
+.header {
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 2rem;
+
+  .brandSection {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    justify-content: space-between;
+
+    .logoWrapper {
+      flex-shrink: 0;
+      
+      .logo {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: 8px;
+      }
+    }
+
+    .companyInfo {
+      .companyDetails {
+        display: grid;
+        gap: 0.5rem;
+
+        div {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          color: #64748b;
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+  }
+
+  .receiptInfo {
+    text-align: center;
+    
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #d39d4e;
+      margin-bottom: 0.75rem;
+    }
+
+    .receiptDetails {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      font-size: 0.95rem;
+      color: #64748b;
+    }
+  }
+}
+
+.customerSection {
+  margin-bottom: 2rem;
+  padding: 1.2rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  
+  h3 {
+    font-size: 1.1rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .customerDetails {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+}
+
+.productsSection {
+  margin-bottom: 2.5rem;
+
+  h3 {
+    font-size: 1.1rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .productsTable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    
+    th {
+      background: rgba(37, 99, 235, 0.05);
+      padding: 1rem;
+      font-weight: 600;
+      text-align: left;
+      color: #d39d4e;
+      border-bottom: 2px solid rgba(37, 99, 235, 0.1);
+    }
+
+    .frameRow, .lensRow {
+      td {
+        padding: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+    }
+
+    .frameRow {
+      background: white;
+    }
+
+    .lensRow {
+      background: rgba(248, 250, 252, 0.5);
+    }
+
+    .productName {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 0.5rem;
+    }
+
+    .productId {
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    .frameDetails {
+      font-size: 0.9rem;
+      color: #64748b;
+      line-height: 1.5;
+
+      div {
+        margin-bottom: 0.25rem;
+      }
+    }
+
+    .lensDetails {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin: 0.5rem 0;
+    
+      .lensInfo {
+        strong {
+          display: block;
+          color: #d39d4e;
+          margin-bottom: 0.5rem;
+          font-size: 0.9rem;
+        }
+    
+        div {
+          color: #64748b;
+          font-size: 0.9rem;
+          margin-bottom: 0.25rem;
+    
+          &.price {
+            font-weight: 500;
+            color: #1f2937;
+          }
+        }
+      }
+    
+      .pdInfo {
+        grid-column: span 2;
+        text-align: right;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed rgba(0, 0, 0, 0.08);
+        font-weight: 500;
+    
+        strong {
+          color: #d39d4e;
+          margin-right: 0.5rem;
+        }
+      }
+    }
+
+    .price {
+      text-align: right;
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+}
+
+.paymentSection {
+  margin-bottom: 2rem;
+  border-top: 2px solid rgba(0, 0, 0, 0.08);
+  padding-top: 1.5rem;
+
+  .summary {
+    margin-bottom: 1.5rem;
+    width: 350px;
+    margin-left: auto;
+
+    .summaryRow {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      font-size: 0.95rem;
+
+      &.discount {
+        color: #dc2626;
+      }
+
+      &.total {
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-top: 2px solid rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-bottom: none;
+      }
+    }
+  }
+
+  .paymentMethod {
+    background-color: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    width: 350px;
+    margin-left: auto;
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .paymentItem {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px dashed rgba(0, 0, 0, 0.08);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      div:first-child {
+        div {
+          color: #64748b;
+          font-size: 0.9rem;
+          margin-bottom: 0.25rem;
+
+          &:first-child {
+            color: #1f2937;
+            font-weight: 500;
+          }
+        }
+      }
+
+      div:last-child {
+        font-weight: 600;
+        color: #1f2937;
+      }
+    }
+  }
+}
+
+.footer {
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid rgba(0, 0, 0, 0.08);
+
+  .qrCode {
+    margin-bottom: 1.5rem;
+
+    canvas {
+      padding: 8px;
+      background: white;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+    }
+
+    span {
+      display: block;
+      margin-top: 0.5rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  }
+
+  .footerText {
+    color: #64748b;
+    line-height: 1.6;
+
+    p {
+      margin-bottom: 0.5rem;
+
+      &:last-child {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #1f2937;
+      }
+    }
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  .printBillWrapper {
+    font-size: 11pt;
+  }
+
+  .productsTable th,
+  .lensRow td,
+  .paymentMethod {
+    background-color: #f8fafc !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

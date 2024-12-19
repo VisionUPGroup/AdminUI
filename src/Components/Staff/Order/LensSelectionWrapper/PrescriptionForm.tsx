@@ -215,7 +215,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
             whileHover={{ scale: isDisabled ? 1 : 1.02 }}
             whileTap={{ scale: isDisabled ? 1 : 0.98 }}
           >
-            {isDisabled && (
+            {/* {isDisabled && (
               <motion.div
                 className={styles.nonPrescriptionBadge}
                 initial={{ opacity: 0, y: -10 }}
@@ -225,7 +225,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
                 <ShieldCheck size={14} />
                 <span>Non-Prescription</span>
               </motion.div>
-            )}
+            )} */}
 
             <div className={styles.eyeContent}>
               <Eye size={24} />
@@ -239,7 +239,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
               </div>
             </div>
 
-            {isDisabled && (
+            {/* {isDisabled && (
               <motion.div
                 className={styles.disabledMessage}
                 initial={{ opacity: 0, y: 10 }}
@@ -249,7 +249,7 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
                 <CheckCircle2 size={16} />
                 <span>Type 4 lens selected - No prescription needed</span>
               </motion.div>
-            )}
+            )} */}
 
             {activeEye === eye && !isDisabled && (
               <motion.div
@@ -275,13 +275,13 @@ const ModernPrescriptionForm: React.FC<PrescriptionFormProps> = ({
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.3 }}
       >
-        {isCurrentEyeDisabled && (
+        {/* {isCurrentEyeDisabled && (
           <div className={styles.formOverlay}>
             <CheckCircle className={styles.icon} size={32} />
             <h4>Non-Prescription Lens Selected</h4>
             <p>This lens type doesn't require prescription values</p>
           </div>
-        )}
+        )} */}
 
         <div className={styles.column}>
           <h3>Sphere & Cylinder</h3>

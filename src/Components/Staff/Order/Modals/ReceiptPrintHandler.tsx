@@ -61,7 +61,7 @@ const ReceiptPrintHandler: React.FC<ReceiptPrintHandlerProps> = ({
     <div style={{ display: 'none' }}>
       <div ref={componentRef}>
         <PrintReceipt
-          orderData={orderData}
+          orderId={orderData.orderID}
           companyInfo={companyInfo}
           staffName={staffName}
         />
