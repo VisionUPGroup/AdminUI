@@ -519,7 +519,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
       {renderPaymentSummary()}
 
       {/* Footer */}
-      <footer className={styles.footer}>
+      {/* <footer className={styles.footer}>
         <div className={styles.qrSection}>
           <QRCodeCanvas
             value={`${companyInfo.website}/receipt/${receiptNumber}`}
@@ -541,7 +541,7 @@ const PrintReceipt: React.FC<PrintReceiptProps> = ({
         <div className={styles.copyright}>
           <p>This is an official receipt of {companyInfo.name}</p>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 };

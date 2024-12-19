@@ -227,6 +227,7 @@ const StaffOrderPage: React.FC = () => {
     cartDispatch({ type: 'CLEAR_CART' });
   };
 
+
   const handlePrintReceipt = () => {
     window.print();
   };

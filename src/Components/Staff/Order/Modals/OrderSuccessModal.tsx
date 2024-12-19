@@ -76,6 +76,7 @@ interface OrderSuccessModalProps {
   onClose: () => void;
   onNewOrder: () => void;
   companyInfo: CompanyInfo;
+  onViewDetails?: () => void;
 }
 
 const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
@@ -83,7 +84,8 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
   orderData,
   onClose,
   onNewOrder,
-  companyInfo
+  companyInfo,
+  onViewDetails
 }) => {
   const printComponentRef = useRef<HTMLDivElement>(null);
 
@@ -248,6 +250,13 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             >
               <ArrowRight size={18} />
               <span>New Order</span>
+            </button>
+            <button 
+              onClick={onViewDetails}
+              className={styles.primaryButton}
+            >
+              <ArrowRight size={18} />
+              <span>View Order</span>
             </button>
           </div>
         </div>

@@ -85,62 +85,63 @@ const OrderSuccessPage = () => {
 
   useEffect(() => {
     if (!hasMounted || hasFetchedPayment) return;
-
+  
     const handleVNPayResponse = async () => {
       const vnp_ResponseCode = searchParams.get('vnp_ResponseCode');
       const vnp_OrderInfo = searchParams.get('vnp_OrderInfo');
       const vnp_TransactionStatus = searchParams.get('vnp_TransactionStatus');
-      const vnp_Amount = searchParams.get('vnp_Amount');
-      const vnp_PayDate = searchParams.get('vnp_PayDate');
-
+  
       if (vnp_ResponseCode === '00' && vnp_TransactionStatus === '00') {
         try {
+          // Lấy OrderId từ OrderInfo (bỏ prefix VSU)
           const orderId = vnp_OrderInfo?.replace('VSU', '');
           
           if (orderId) {
+            // Fetch payment và order details song song
             const [paymentDetails, orderDetails] = await Promise.all([
               fetchPaymentByOrderId(orderId),
               fetchOrderById(orderId)
             ]);
             
             if (paymentDetails) {
-              // Map API response to OrderSuccessData format
-              const newOrderData: OrderSuccessData = {
+              // Transform data cho OrderSuccessModal
+              const orderSuccessData = {
                 orderID: parseInt(orderId),
                 code: vnp_OrderInfo || '',
-                orderTime: vnp_PayDate || new Date().toISOString(),
-                totalAmount: vnp_Amount ? parseInt(vnp_Amount) / 100 : 0,
+                orderTime: new Date().toISOString(),
+                totalAmount: paymentDetails.totalAmount,
                 isDeposit: paymentDetails.isDeposit,
                 receiverAddress: paymentDetails.receiverAddress || null,
                 kioskID: paymentDetails.kioskID,
-                process: paymentDetails.process,
+                process: paymentDetails.process || 1,
                 productGlass: paymentDetails.productGlass.map((item: any) => ({
                   productGlassID: item.productGlassID,
                   eyeGlass: {
                     id: item.eyeGlass.id,
                     name: item.eyeGlass.name,
-                    eyeGlassImage: item.eyeGlass.eyeGlassImage,
+                    eyeGlassImage: item.eyeGlass.eyeGlassImage
                   },
                   leftLen: {
                     id: item.leftLen.id,
                     lensName: item.leftLen.lensName,
                     lensDescription: item.leftLen.lensDescription,
-                    leftLensImage: item.leftLen.leftLensImage || null,
+                    leftLensImage: item.leftLen.leftLensImage || null
                   },
                   rightLen: {
                     id: item.rightLen.id,
                     lensName: item.rightLen.lensName,
                     lensDescription: item.rightLen.lensDescription,
-                    rightLensImage: item.rightLen.rightLensImage || null, // Fixed: changed rightLens to rightLen
-                  },
+                    rightLensImage: item.rightLen.rightLensImage || null
+                  }
                 })),
-                totalPaid: paymentDetails.totalPaid,
-                remainingAmount: paymentDetails.remainingAmount,
+                totalPaid: paymentDetails.totalPaid || 0,
+                remainingAmount: paymentDetails.remainingAmount || 0,
                 voucher: paymentDetails.voucher,
-                payments: paymentDetails.payments
+                payments: paymentDetails.payments || []
               };
               
-              setOrderData(newOrderData);
+              // Set data và show modal
+              setOrderData(orderSuccessData);
               setShowModal(true);
               setHasFetchedPayment(true);
               toast.success('Payment completed successfully');
@@ -156,7 +157,7 @@ const OrderSuccessPage = () => {
         router.push('/en/sales/staff-orders');
       }
     };
-
+  
     if (searchParams.toString()) {
       handleVNPayResponse();
     }
@@ -182,7 +183,7 @@ const OrderSuccessPage = () => {
 
   const handleViewOrderDetails = () => {
     if (orderData?.orderID) {
-      router.push(`/en/sales/staff-orders/${orderData.orderID}`);
+      router.push(`/en/sales/staff-orderdetail/${orderData.orderID}`);
     }
   };
 
@@ -207,7 +208,7 @@ const OrderSuccessPage = () => {
         isOpen={showModal}
         orderData={orderData}
         onClose={handleCloseModal}
-        // onViewDetails={handleViewOrderDetails}
+        onViewDetails={handleViewOrderDetails}
         onNewOrder={handleNewOrder}
         companyInfo={COMPANY_INFO}
       />
