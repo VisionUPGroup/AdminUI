@@ -71,6 +71,7 @@ const PaymentHistory: React.FC<{ payments: Payment[] }> = ({ payments }) => {
   if (!payments || payments.length === 0) {
     return <div className="no-payments">No payment history available</div>;
   }
+  
  
   return (
     <div className="history-list">
@@ -204,6 +205,10 @@ const PaymentDetails: React.FC<{ paymentInfo: PaymentInfo }> = ({ paymentInfo })
 
   const calculateRemaining = () => {
     if (!paymentInfo.isDeposit) return 0;
+    // Kiểm tra số lần thanh toán
+    if (paymentInfo.payments.length >= 2) {
+      return 0;
+    }
     return calculateTotalAfterDiscount() * 0.7;
   };
 
