@@ -109,7 +109,8 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
         updateLens,
         updateLensImage,
         fetchLensTypes,
-        fetchEyeReflactives
+        fetchEyeReflactives,
+        uploadLensImage
     } = useLensService();
 
     // Form state
@@ -326,42 +327,66 @@ const EditLens: React.FC<EditLensProps> = ({ id }) => {
             toast.error("Please check all required fields");
             return;
         }
-
+    
         setLoading(true);
         try {
+            // 1. Update thông tin cơ bản của lens
             const lensUpdateData = {
                 id: parseInt(id as string),
                 lensName: formData.lensName,
                 lensDescription: formData.lensDescription,
                 lensPrice: parseFloat(formData.lensPrice),
-                quantity: parseInt(formData.quantity),
+                quantity: 1000,
                 status: true,
                 lensTypeID: parseInt(formData.lensTypeID),
                 eyeReflactiveID: parseInt(formData.eyeReflactiveID)
             };
-            console.log("lensUpdateData", lensUpdateData);
-
+    
+            // Thực hiện update lens
             const updateResult = await updateLens(lensUpdateData);
-
+    
             if (!updateResult) {
                 throw new Error("Failed to update lens information");
             }
-
-            const imageUpdatePromises = Object.entries(changedImages).map(([index, file]) => {
-                const imageData = formData.images[parseInt(index)];
-                return updateLensImage(file, {
-                    ID: imageData.id,
-                    LensID: parseInt(id as string),
-                    AngleView: imageData.angleView
+    
+            // 2. Fetch current images sau khi update thành công
+            const currentImages = await fetchLensImages(updateResult.id);
+    
+            if (currentImages) {
+                // 3. Update các ảnh đã thay đổi
+                const imageUpdatePromises = Object.entries(changedImages).map(([index, file]) => {
+                    const imageData = formData.images[parseInt(index)];
+                    // Tìm ảnh tương ứng trong currentImages
+                    const currentImage = currentImages.find((img:any) => img.angleView === imageData.angleView);
+                    
+                    if (currentImage) {
+                        // Nếu ảnh đã tồn tại, update với ID từ currentImages
+                        return updateLensImage(file, {
+                            ID: currentImage.id,
+                            LensID: updateResult.id,
+                            AngleView: imageData.angleView
+                        });
+                    } else {
+                        // Nếu là ảnh mới, thực hiện upload mới
+                        return uploadLensImage(file, {
+                            LensID: updateResult.id,
+                            AngleView: imageData.angleView
+                        });
+                    }
                 });
-            });
-
-            await Promise.all(imageUpdatePromises);
+    
+                await Promise.all(imageUpdatePromises);
+            }
+    
+            // Clear changed images sau khi update thành công
             setChangedImages({});
-
+    
+            // Hiển thị thông báo thành công
             toast.success("Updated successfully!");
+    
+            // Quay lại trang trước
             router.push(`/en/products/lens/${updateResult.id}`);
-
+    
         } catch (error) {
             console.error("Error updating lens:", error);
             toast.error("Failed to update lens. Please try again.");

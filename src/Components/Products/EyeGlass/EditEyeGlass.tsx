@@ -176,7 +176,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
     const [loading, setLoading] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-    const { fetchEyeGlassById, fetchEyeGlassImagesById, updateEyeGlass, updateEyeGlassImage, fetchEyeGlassTypes } = useEyeGlassService();
+    const { fetchEyeGlassById, fetchEyeGlassImagesById, updateEyeGlass, updateEyeGlassImage, fetchEyeGlassTypes, uploadEyeGlassImage } = useEyeGlassService();
     // Form state
     const [formData, setFormData] = useState({
         name: '',
@@ -442,7 +442,7 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
             toast.error("Please check all required fields");
             return;
         }
-
+    
         setLoading(true);
         try {
             // 1. Update thông tin cơ bản của kính
@@ -464,37 +464,52 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
                 design: formData.design,
                 status: formData.status
             };
-
-            console.log("update", eyeGlassUpdateData);
-
-
+    
+            // Thực hiện update eyeglass
             const updateResult = await updateEyeGlass(eyeGlassUpdateData);
-
+    
             if (!updateResult) {
                 throw new Error("Failed to update eye glass information");
             }
-
-            // 2. Update các ảnh đã thay đổi
-            const imageUpdatePromises = Object.entries(changedImages).map(([index, file]) => {
-                const imageData = formData.images[parseInt(index)];
-                return updateEyeGlassImage(file, {
-                    ID: imageData.id,
-                    EyeGlassID: parseInt(id as string),
-                    AngleView: imageData.angleView
+    
+            // 2. Fetch current images sau khi update thành công
+            const currentImages = await fetchEyeGlassImagesById(updateResult.id);
+    
+            if (currentImages) {
+                // 3. Update các ảnh đã thay đổi
+                const imageUpdatePromises = Object.entries(changedImages).map(([index, file]) => {
+                    const imageData = formData.images[parseInt(index)];
+                    // Tìm ảnh tương ứng trong currentImages
+                    const currentImage = currentImages.find((img:any) => img.angleView === imageData.angleView);
+                    
+                    if (currentImage) {
+                        // Nếu ảnh đã tồn tại, update với ID từ currentImages
+                        return updateEyeGlassImage(file, {
+                            ID: currentImage.id,
+                            EyeGlassID: updateResult.id,
+                            AngleView: imageData.angleView
+                        });
+                    } else {
+                        // Nếu là ảnh mới, thực hiện upload mới
+                        return uploadEyeGlassImage(file, {
+                            EyeGlassID: updateResult.id,
+                            AngleView: imageData.angleView
+                        });
+                    }
                 });
-            });
-
-            await Promise.all(imageUpdatePromises);
-
+    
+                await Promise.all(imageUpdatePromises);
+            }
+    
             // Clear changed images sau khi update thành công
             setChangedImages({});
-
+    
             // Hiển thị thông báo thành công
             toast.success("Updated successfully!");
-
+    
             // Quay lại trang trước
             router.push(`/en/products/eyeglass/${updateResult.id}`);
-
+    
         } catch (error) {
             console.error("Error updating eye glass:", error);
             toast.error("Failed to update eye glass. Please try again.");
@@ -502,7 +517,6 @@ const EditEyeGlass: React.FC<EditEyeGlassProps> = ({ id }) => {
             setLoading(false);
         }
     };
-
 
     const handleCancel = () => {
         if (id) {

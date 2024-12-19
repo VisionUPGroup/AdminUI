@@ -31,6 +31,12 @@ interface EyeGlassImage {
   url: string;
 }
 
+interface EyeGlassType {
+  id: number;
+  glassType: string;
+  status: boolean;
+}
+
 interface EyeGlassDetail {
   id: number;
   eyeGlassTypeID: number;
@@ -51,11 +57,8 @@ interface EyeGlassDetail {
   design: string;
   isDeleted: boolean;
   status: boolean;
-  eyeGlassTypes: {
-    id: number;
-    glassType: string;
-    status: boolean;
-  };
+  eyeGlassType?: EyeGlassType;
+  
 }
 
 const EyeGlassDetail: React.FC<EyeGlassDetailProps> = ({ id }) => {
@@ -65,41 +68,69 @@ const EyeGlassDetail: React.FC<EyeGlassDetailProps> = ({ id }) => {
   const [eyeGlass, setEyeGlass] = useState<EyeGlassDetail | null>(null);
   const [eyeGlassImages, setEyeGlassImages] = useState<EyeGlassImage[]>([]);
   const [loading, setLoading] = useState(true);
-  const { fetchEyeGlassById, fetchEyeGlassImagesById } = useEyeGlassService();
+  const { fetchEyeGlassById, fetchEyeGlassImagesById, fetchEyeGlassTypes } = useEyeGlassService();
 
-useEffect(() => {
-  const fetchData = async () => {
-    if (id) {
-      setLoading(true);
-      try {
-        const [eyeGlassData, imagesData] = await Promise.all([
-          fetchEyeGlassById(Number(id)),
-          fetchEyeGlassImagesById(Number(id))
-        ]);
-
-        if (eyeGlassData) {
-          setEyeGlass(eyeGlassData);
-        }
-        
-        // Lọc ra những ảnh có url hợp lệ
-        if (imagesData) {
-          const validImages = imagesData.filter((img:EyeGlassImage) => img.url && img.url.trim() !== '');
-          setEyeGlassImages(validImages);
-          // Set selected image chỉ khi có ảnh hợp lệ
-          if (validImages.length > 0) {
-            setSelectedImage(validImages[0].url);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (id) {
+        setLoading(true);
+        try {
+          // Fetch eyeglass data và images song song
+          const [eyeGlassData, imagesData] = await Promise.all([
+            fetchEyeGlassById(Number(id)),
+            fetchEyeGlassImagesById(Number(id))
+          ]);
+  
+          if (eyeGlassData) {
+            // Fetch thêm thông tin type
+            const typeData = await fetchEyeGlassTypes();
+            if (typeData) {
+              // Tìm type tương ứng
+              const matchedType = typeData.find(
+                (type: EyeGlassType) => type.id === eyeGlassData.eyeGlassTypeID
+              );
+              // Gán type vào eyeGlassData
+              setEyeGlass({
+                ...eyeGlassData,
+                eyeGlassType: matchedType || null
+              });
+            } else {
+              setEyeGlass(eyeGlassData);
+            }
           }
+          
+          if (imagesData) {
+            const validImages = imagesData.filter((img: EyeGlassImage) => img.url && img.url.trim() !== '');
+            setEyeGlassImages(validImages);
+            if (validImages.length > 0) {
+              setSelectedImage(validImages[0].url);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching eyeglass data:', error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching eyeglass data:', error);
-      } finally {
-        setLoading(false);
       }
-    }
-  };
+    };
+  
+    fetchData();
+  }, [id]);
 
-  fetchData();
-}, [id]);
+  const renderType = () => {
+    if (!eyeGlass?.eyeGlassType) return null;
+    
+    const typeClass = eyeGlass.eyeGlassType.glassType.toLowerCase().replace(/\s+/g, '-');
+    
+    return (
+      <div className={styles.type}>
+        <span className={`${styles.typeTag} ${styles[typeClass]}`}>
+          {eyeGlass.eyeGlassType.glassType}
+        </span>
+      </div>
+    );
+  };
+  
 
 const renderImage = (url: string) => {
   if (!url || url.trim() === '') {
@@ -218,8 +249,8 @@ const renderImage = (url: string) => {
                   </div>
 
                   <div className={styles.type}>
-                    <span className={`${styles.typeTag} ${styles[eyeGlass.eyeGlassTypes?.glassType ? eyeGlass.eyeGlassTypes.glassType.toLowerCase() : 'n/a']}`}>
-                      {eyeGlass.eyeGlassTypes?.glassType || 'n/a'}
+                    <span className={`${styles.typeTag} ${styles[eyeGlass.eyeGlassType?.glassType ? eyeGlass.eyeGlassType.glassType.toLowerCase() : 'n/a']}`}>
+                      {eyeGlass.eyeGlassType?.glassType || 'n/a'}
                     </span>
                   </div>
 
