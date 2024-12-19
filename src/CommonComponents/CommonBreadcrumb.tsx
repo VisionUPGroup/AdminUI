@@ -12,7 +12,7 @@ const CommonBreadcrumb = ({ title, parent }: CommonBreadcrumbType) => {
             <div className="page-header-left">
               <h3>
                 {title}
-                <small>Multikart Admin panel</small>
+                {/* <small>Multikart Admin panel</small> */}
               </h3>
             </div>
           </Col>
